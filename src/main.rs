@@ -6,3 +6,4 @@ pub mod LaraCore;
 fn main() {
     println!("Welcome to L.A.R.A.!");
 }
+
