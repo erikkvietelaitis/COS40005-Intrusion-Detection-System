@@ -1,16 +1,10 @@
 use chrono::Local;
-use std::thread;
+use std::thread;  //I am aware this is currently not being used, but I am keeping it here for future reference.
 use std::thread::*;
-//use std::io;
-use std::io::*;
-
 use std::io;
+use std::io::*;
 use std::fs::File;
-
-
 use std::time::Duration;
-
-
 use sysinfo::{
     System, Components, Disks, Networks 
 };
