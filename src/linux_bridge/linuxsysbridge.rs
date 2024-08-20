@@ -1,12 +1,21 @@
 use chrono::Local;
-//use std::io::BufReader;
-use std::thread::sleep;
-use std::time::Duration;
-use sysinfo::{
-    System, Components, Disks, Networks, 
-};
+use std::thread;
+use std::thread::*;
+//use std::io;
+use std::io::*;
+
+use std::io;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader};
+use std::io::SeekFrom;
+
+
+use std::time::Duration;
+
+
+use sysinfo::{
+    System, Components, Disks, Networks 
+};
+
 // Function to get and print the current system time
 pub fn system_time() {
     loop {
@@ -42,14 +51,27 @@ pub fn system_os_version(){
 
 
 
-//Basic:: Hard Coded file reading 
-pub fn sys_file_read() -> io::Result<()>{
-let filepath = "/home/erik/Documents/test.txt";  // Hard coded file path
-let file = File::open(filepath)?;
-let reader = BufReader::new(file);
-    for line in reader.lines(){
-        let line = line?;
-        println!("{}", line)
+/* 
+Function to read the content of a file, with a path specified as a parameter, and return the content as a string (content), hence returns an io::Result<String> type.
+The file information is stored in the buffer, and the content is read line by line and stored in the content variable.
+The function returns the content as a string, and the function breaks if the content cant be read.
+*/
+pub fn sys_file_read(filepath: &str) -> io::Result<String> { 
+    let  file = File::open(filepath)?;
+    let mut reader = BufReader::new(file);
+    let mut content = String::new();
+    loop {
+        let mut buffer = String::new();
+        let bytes_read = reader.read_line(&mut buffer)?;
+
+        if bytes_read > 0 {
+            content.push_str(&buffer);
+        } else {
+            break;
+        }
+        if content.len() > 1000 {
+            break;
+        }
     }
-    Ok(())
+     Ok(content)
 }
