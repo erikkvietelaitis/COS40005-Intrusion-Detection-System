@@ -47,9 +47,6 @@ pub fn system_os_version(){
     let system_os_version: String = System::os_version().unwrap();
    print!("{}", system_os_version);
     }
-
-
-
 /* 
 Function to read the content of a file, with a path specified as a parameter, and return the content as a string (content), hence returns an io::Result<String> type.
 The file information is stored in the buffer, and the content is read line by line and stored in the content variable.
