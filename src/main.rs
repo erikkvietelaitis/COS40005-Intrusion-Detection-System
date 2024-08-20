@@ -9,9 +9,17 @@ pub use crate::linux_bridge::{
     linuxnetbridge::*,
 };
 
+
+
 fn main() {
     println!("Welcome to L.A.R.A.!");
-   // basic_system_specs();
-    system_time(); // Call the system_time function from the linux module
+       // basic_system_specs();
+       // system_name();
+       // system_host_name();
+       // system_kernel_version();
+       // system_os_version();
+       // ipadd();
+       // system_time();
 }
+
 
