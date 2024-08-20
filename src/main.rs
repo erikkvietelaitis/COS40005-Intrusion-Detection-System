@@ -9,8 +9,6 @@ pub use crate::linux_bridge::{
     linuxnetbridge::*,
 };
 
-
-
 fn main() {
     println!("Welcome to L.A.R.A.!");
        // basic_system_specs();
