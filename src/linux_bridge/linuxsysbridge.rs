@@ -57,7 +57,7 @@ pub fn sys_file_read(filepath: &str) -> io::Result<String> {
         if bytes_read > 0 {
             content.push_str(&buffer);
         } else {
-            break;
+            break;      //Erik use this as part of a more "stable"/"automatic" solution to move away from hardcoding file paths.
         }
     }
      Ok(content)
