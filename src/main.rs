@@ -7,6 +7,7 @@ mod linux_bridge;
 pub use crate::linux_bridge::{
     linuxsysbridge::*,
     linuxnetbridge::*,
+    linuxauthbridge::*,
 };
 
 fn main() {
