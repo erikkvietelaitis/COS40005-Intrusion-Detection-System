@@ -31,7 +31,7 @@ fn main() {
 
 // Function to read the content of a file, with a path specified as a parameter, and return the content as a string (content), hence returns an io::Result<String> type.
 //This could be modifed to return a Result<String> type, if we wanted to pass through the OK(log_content), as to move the information to another function.
-//This could be Result<()> if we dont want to return anything.
+//This could be Result<()> if we dont want to return anything, or you could remove the Result<> and return.
 //This file_read() in theory should be able to kept now where ever we want to read a file and off the main function.
 fn file_read() -> std::io::Result<String> {
     // Declare the path to the file
