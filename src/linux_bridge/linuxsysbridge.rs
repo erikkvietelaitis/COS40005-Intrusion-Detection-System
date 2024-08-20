@@ -6,7 +6,6 @@ use std::io::*;
 
 use std::io;
 use std::fs::File;
-use std::io::SeekFrom;
 
 
 use std::time::Duration;
@@ -67,9 +66,6 @@ pub fn sys_file_read(filepath: &str) -> io::Result<String> {
         if bytes_read > 0 {
             content.push_str(&buffer);
         } else {
-            break;
-        }
-        if content.len() > 1000 {
             break;
         }
     }

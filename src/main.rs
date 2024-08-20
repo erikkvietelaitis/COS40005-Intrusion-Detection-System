@@ -23,7 +23,7 @@ fn main() {
          //Ok("I am testing some really spicey code at the moment.\nI am tryint to see if the code will read in spaces and new lines.\n")
          //I want to try and fix this so that prints out properly
       print!("{:?}",test);
-       }
+   }
        
 
 
@@ -36,7 +36,7 @@ fn file_read() -> std::io::Result<String> {
     // Declare the path to the file
        let path = "/home/erik/Documents/test.txt";
     // Read the content of the file
-       let log_content = sys_file_read(&path)?;
+       let log_content = sys_file_read(&path)?; 
     // Print the log content 
     //I am testing some really spicey code at the moment.
     //I am tryint to see if the code will read in spaces and new lines.
