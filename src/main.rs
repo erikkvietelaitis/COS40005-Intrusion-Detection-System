@@ -18,6 +18,8 @@ fn main() {
        // system_os_version();
        // ipadd();
        // system_time();
+
+       file_read();
 }
 
 

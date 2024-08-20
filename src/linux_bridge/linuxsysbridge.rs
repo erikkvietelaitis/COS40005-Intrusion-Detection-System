@@ -1,10 +1,12 @@
 use chrono::Local;
+//use std::io::BufReader;
 use std::thread::sleep;
 use std::time::Duration;
 use sysinfo::{
     System, Components, Disks, Networks, 
 };
-
+use std::fs::File;
+use std::io::{self, BufRead, BufReader};
 // Function to get and print the current system time
 pub fn system_time() {
     loop {
@@ -37,3 +39,15 @@ pub fn system_os_version(){
     let system_os_version: String = System::os_version().unwrap();
    print!("{}", system_os_version);
     }
+
+//Basic:: Hard Coded file reading 
+pub fn file_read() -> io::Result<()>{
+let filepath = "/home/erik/Documents/test.txt";
+let file = File::open(filepath)?;
+let reader = BufReader::new(file);
+    for line in reader.lines(){
+        let line = line?;
+        println!("{}", line)
+    }
+    Ok(())
+}
