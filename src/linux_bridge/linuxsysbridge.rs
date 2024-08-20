@@ -5,7 +5,6 @@ use sysinfo::{
     System, Components, Disks, Networks, 
 };
 
-
 // Function to get and print the current system time
 pub fn system_time() {
     loop {
