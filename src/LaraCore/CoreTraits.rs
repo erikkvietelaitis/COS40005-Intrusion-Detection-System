@@ -14,4 +14,8 @@ pub trait AnalysisModule {
      * This analyses the most recent set of data and returns logs to be logged.
      */
     fn perform_analysis(&mut self) -> Vec<Log>;
+    /**
+     * 
+     */
+    fn get_name(&self) -> String;
 }

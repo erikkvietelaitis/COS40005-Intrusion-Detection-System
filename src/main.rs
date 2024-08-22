@@ -2,12 +2,8 @@ use std::any::type_name;
 use std::vec;
 
 use std::{thread, time};
-use LaraCore::CoreStruts;
-use LaraCore::CoreTraits;
 use LaraCore::CoreTraits::AnalysisModule;
 
-use crate::AnalysisModules::*;
-use crate::LaraCore::CoreEnums::*;
 use crate::LaraCore::CoreStruts::*;
 pub mod AnalysisModules;
 pub mod LaraCore;
@@ -32,7 +28,11 @@ fn main() {
     loop {
         println!("Starting Tick({})", i.to_string());
         for module in modules.iter_mut() {
-            module.get_data();
+            if (module.get_data()) {
+               println!("Module:'{}' succesfulled gathered data", module.get_name());
+            } else {
+               println!("ERROR::Module:'{}' failed trying to collect data",module.get_name());
+            }
             logs.append(&mut module.perform_analysis());
         }
         println!("Following logs were generated this tick:");

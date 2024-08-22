@@ -16,6 +16,7 @@ pub struct Example<'a> {
     pub history_of_filenames: Vec<&'a str>,
 
     blacklisted_filenames: Vec<String>,
+    module_name: String,
 }
 impl AnalysisModule for Example<'_> {
     fn get_data(&mut self) -> bool {
@@ -41,7 +42,7 @@ impl AnalysisModule for Example<'_> {
 
     fn perform_analysis(&mut self) -> Vec<crate::Log> {
         let mut results: Vec<CoreStruts::Log> = Vec::new();
-        println!("{}",&self.current_data.some_file_name);
+        println!("{}", &self.current_data.some_file_name);
         if (self
             .history_of_filenames
             .contains(&self.current_data.some_file_name))
@@ -51,7 +52,7 @@ impl AnalysisModule for Example<'_> {
             msg.push_str("' was opened twice recently");
             results.push(CoreStruts::Log::new(
                 CoreEnums::LogType::Serious,
-                "Example-TEST".to_string(),
+                self.module_name.clone(),
                 msg,
             ));
             self.history_of_filenames = Vec::new();
@@ -62,6 +63,9 @@ impl AnalysisModule for Example<'_> {
         self.last_string = self.current_data.some_file_name;
         return results;
     }
+    fn get_name(&self) -> String{
+        return self.module_name.clone();
+    }
 }
 impl Default for Example<'_> {
     fn default() -> Self {
@@ -69,6 +73,7 @@ impl Default for Example<'_> {
             last_string: "",
             history_of_filenames: vec![],
             blacklisted_filenames: vec![],
+            module_name: String::from("ExampleModule"),
             current_data: CurrentData {
                 some_file_name: "",
                 some_count_of_something: 0,
@@ -84,6 +89,7 @@ impl Clone for Example<'_> {
             last_string: self.last_string.clone(),
             history_of_filenames: self.history_of_filenames.clone(),
             blacklisted_filenames: self.blacklisted_filenames.clone(),
+            module_name: self.module_name.clone(),
         }
     }
 }
