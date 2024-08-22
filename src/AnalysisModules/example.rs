@@ -41,6 +41,7 @@ impl AnalysisModule for Example<'_> {
 
     fn perform_analysis(&mut self) -> Vec<crate::Log> {
         let mut results: Vec<CoreStruts::Log> = Vec::new();
+        println!("{}",&self.current_data.some_file_name);
         if (self
             .history_of_filenames
             .contains(&self.current_data.some_file_name))
