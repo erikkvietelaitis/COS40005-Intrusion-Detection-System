@@ -3,6 +3,7 @@ use rand::{seq::SliceRandom, Rng};
 use CoreTraits::AnalysisModule;
 #[derive(Debug, Copy, Clone)]
 
+// define the set of data that will be captured each tick, You can structure this however you like to fit your needs, Just call it this name
 struct CurrentData<'a> {
     some_file_name: &'a str,
     some_count_of_something: u8,
@@ -18,7 +19,10 @@ pub struct Example<'a> {
     blacklisted_filenames: Vec<String>,
     module_name: String,
 }
+
 impl AnalysisModule for Example<'_> {
+    // Use this to gather data from the host computer and store it in the current data strut,
+    // This is called at the start of a tick to gather the data into CurrentData strut. If there is an error return false
     fn get_data(&mut self) -> bool {
         let stringiest: Vec<&str> = vec![
             "randomName.txt",
@@ -35,14 +39,15 @@ impl AnalysisModule for Example<'_> {
         };
         return true;
     }
-
+    // Can leave this for todo until testing. It should do the same as get data, but return a consistent predictable 
+    // dataset to current data. It will be used for unit testing
     fn get_testing_data(&mut self) -> bool {
         todo!()
     }
-
+    // Take the current data gathered from one of the functions above, using this data, 
+    // plus the persistent data stored in the object to create logs (AKA alerts) 
     fn perform_analysis(&mut self) -> Vec<crate::Log> {
         let mut results: Vec<CoreStruts::Log> = Vec::new();
-        println!("{}", &self.current_data.some_file_name);
         if (self
             .history_of_filenames
             .contains(&self.current_data.some_file_name))
@@ -67,6 +72,8 @@ impl AnalysisModule for Example<'_> {
         return self.module_name.clone();
     }
 }
+// Must implement on your module, defines a default constructur. This is where any code that should run when IDS is FIRST LOADED. 
+// You should also initialise an empty current data strut like this
 impl Default for Example<'_> {
     fn default() -> Self {
         Self {
@@ -82,11 +89,13 @@ impl Default for Example<'_> {
         }
     }
 }
+// Must be implemented to allow copying
+// basically implement this function that creates a new version of itself with every parameter identical
 impl Clone for Example<'_> {
     fn clone(&self) -> Self {
         Self {
-            current_data: self.current_data.clone(),
-            last_string: self.last_string.clone(),
+            current_data: self.current_data,
+            last_string: self.last_string,
             history_of_filenames: self.history_of_filenames.clone(),
             blacklisted_filenames: self.blacklisted_filenames.clone(),
             module_name: self.module_name.clone(),
