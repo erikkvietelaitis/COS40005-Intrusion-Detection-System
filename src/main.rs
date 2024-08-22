@@ -6,7 +6,11 @@ use LaraCore::CoreTraits::AnalysisModule;
 
 use crate::LaraCore::CoreStruts::*;
 pub mod AnalysisModules;
+use crate::linux_bridge::*;
 pub mod LaraCore;
+pub mod linux_bridge;
+
+// Declare the linux_bridge module
 
 fn main() {
     println!("Chromia loading");
