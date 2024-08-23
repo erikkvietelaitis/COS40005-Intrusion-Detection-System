@@ -48,18 +48,12 @@ impl AnalysisModule for Example<'_> {
     // plus the persistent data stored in the object to create logs (AKA alerts) 
     fn perform_analysis(&mut self) -> Vec<crate::Log> {
         let mut results: Vec<CoreStruts::Log> = Vec::new();
-        if (self
-            .history_of_filenames
-            .contains(&self.current_data.some_file_name))
+        if (self.history_of_filenames.contains(&self.current_data.some_file_name))
         {
             let mut msg: String = String::from("File '");
             msg.push_str(&self.current_data.some_file_name);
             msg.push_str("' was opened twice recently");
-            results.push(CoreStruts::Log::new(
-                CoreEnums::LogType::Serious,
-                self.module_name.clone(),
-                msg,
-            ));
+            results.push(CoreStruts::Log::new(CoreEnums::LogType::Serious,self.module_name.clone(),msg,));
             self.history_of_filenames = Vec::new();
         } else {
             self.history_of_filenames
