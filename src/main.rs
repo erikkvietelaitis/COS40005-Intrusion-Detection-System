@@ -1,78 +1,46 @@
-use pnet::datalink;
-use pnet::packet::ipv4::Ipv4Packet;
-use std::collections::HashMap;
 use std::io::{self, Write};
-use std::sync::{Arc, Mutex};
-use std::thread;
+use std::net::{SocketAddr, TcpStream};
 use std::time::Duration;
+use std::collections::HashSet;
 
-const THRESHOLD: usize = 100; // Number of packets to consider as suspicious
-const MONITOR_INTERVAL: Duration = Duration::from_secs(10); // Monitoring interval
+fn scan_port(ip: &str, port: u16) -> bool {
+    let address = format!("{}:{}", ip, port);
+    let socket: SocketAddr = address.parse().unwrap();
 
-// Function to monitor traffic and raise alerts
-fn monitor_traffic(packet_counts: Arc<Mutex<HashMap<String, usize>>>) {
-    loop {
-        thread::sleep(MONITOR_INTERVAL);
-        let mut counts = packet_counts.lock().unwrap();
-
-        // Identify suspicious IP addresses
-        let suspicious: Vec<String> = counts.iter()
-            .filter(|&(_, &count)| count > THRESHOLD)
-            .map(|(ip, _)| ip.clone())
-            .collect();
-
-        if !suspicious.is_empty() {
-            println!("Potential DDoS attack detected. Suspicious IPs:");
-            for ip in &suspicious {
-                println!("IP: {}", ip);
-            }
-        }
-
-        // Clear counts for the next monitoring interval
-        counts.clear();
+    match TcpStream::connect_timeout(&socket, Duration::from_secs(1)) {
+        Ok(_) => true,
+        Err(_) => false,
     }
 }
 
-// Function to capture and process packets
-fn capture_packets(packet_counts: Arc<Mutex<HashMap<String, usize>>>) {
-    // Get the network interface to monitor
-    let interface = datalink::interfaces()
-        .into_iter()
-        .find(|iface| iface.is_up() && !iface.is_loopback() && iface.ips.iter().any(|ip| ip.is_ipv4()))
-        .expect("No suitable network interface found");
-
-    // Create the data link channel
-    let (_, mut rx) = match datalink::channel(&interface, Default::default()) {
-        Ok(datalink::Channel::Ethernet(_, rx)) => ((), rx),
-        Ok(_) => panic!("Unsupported channel type"),
-        Err(e) => panic!("Failed to create datalink channel: {:?}", e),
-    };
-
-    // Packet capturing loop
-    loop {
-        match rx.next() {
-            Ok(packet) => {
-                let packet = Ipv4Packet::new(packet);
-                if let Some(ip_packet) = packet {
-                    let src_ip = ip_packet.get_source().to_string();
-                    let mut counts = packet_counts.lock().unwrap();
-                    let entry = counts.entry(src_ip).or_insert(0);
-                    *entry += 1;
-                }
-            },
-            Err(e) => println!("Failed to read packet: {:?}", e),
-        }
-    }
+fn is_vulnerable_port(port: u16) -> bool {
+    let vulnerable_ports: HashSet<u16> = vec![21, 22, 23, 25, 80, 443, 3389].into_iter().collect();
+    vulnerable_ports.contains(&port)
 }
 
 fn main() {
-    // Create a shared, thread-safe hashmap to store packet counts
-    let packet_counts = Arc::new(Mutex::new(HashMap::<String, usize>::new()));
+    print!("Enter the IP address to scan: ");
+    io::stdout().flush().unwrap();
 
-    // Start monitoring traffic in a separate thread
-    let packet_counts_clone = packet_counts.clone();
-    thread::spawn(move || monitor_traffic(packet_counts_clone));
+    let mut ip = String::new();
+    io::stdin().read_line(&mut ip).unwrap();
+    let ip = ip.trim();  // Remove newline character
 
-    // Start capturing packets
-    capture_packets(packet_counts);
+    let start_port: u16 = 1;
+    let end_port: u16 = 1024;
+
+    println!("Scanning ports on {} from {} to {}...", ip, start_port, end_port);
+
+    for port in start_port..=end_port {
+        if scan_port(ip, port) {
+            println!("Port {} is open", port);
+            if is_vulnerable_port(port) {
+                println!("ALERT: Vulnerable port {} is open!", port);
+            }
+        } else {
+            println!("Port {} is closed", port);
+        }
+    }
+
+    println!("Port scan complete.");
 }

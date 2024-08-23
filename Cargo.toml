@@ -1,7 +1,6 @@
 [package]
-name = "ddos_alert"
+name = "port_scanner"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-pnet = "0.32.0"
