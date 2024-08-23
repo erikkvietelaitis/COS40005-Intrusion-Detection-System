@@ -1,6 +1,6 @@
 [package]
-name = "anomaly_detection_hids"
-version = "0.1.0"
+name = "Chromia"
+version = "0.2.0"
 edition = "2021"
 
 [dependencies]
@@ -14,4 +14,17 @@ dirs = "4.0"
 rand = "0.8"
 regex = "1.5"
 syslog = "6.1"
+#testing
+rand = "0.7.0"
+
+#System Info
+chrono = "0.4"
+sysinfo = "0.31.2"
+
+#Netowrking
+pnet = "0.35.0"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 
