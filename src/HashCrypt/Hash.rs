@@ -1,6 +1,7 @@
 use std::io::{self, Read, Write};
 use std::process::Command;
 use tempfile::NamedTempFile;
+use std::io::{self, Cursor};
 
  pub fn compute_hash<R: Read>(mut input: R) -> io::Result<String> {
     
@@ -17,4 +18,13 @@ use tempfile::NamedTempFile;
     }
     let hash = String::from_utf8(output.stdout).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
     Ok(hash.trim().to_string())
+}
+
+#[test]
+fn test_hash() {
+    let data = b"test";
+    let cursor = Cursor::new(data);
+    let result = compute_hash(cursor).expect("It broken...");
+    assert!(!result.is_empty(), "Why empty?");
+
 }
