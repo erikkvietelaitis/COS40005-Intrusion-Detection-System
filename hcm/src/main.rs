@@ -3,10 +3,11 @@ use std::fs;
 
 fn main() {
     let fpath = "Cargo.toml";
-    hashthis(fpath);
+    let koghfile = "kgh";
+    hashthis(fpath, koghfile);
 }
 
-fn hashthis(fpath: &str) {
+fn hashthis(fpath: &str, kogh: &str) {
     if !fs::metadata(fpath).is_ok() {
         eprintln!("File does not exist: {}", fpath);
         return;
