@@ -1,20 +1,20 @@
 use std::process::Command;
-use std::io::Write;
-use std::fs::File;
+use std::fs;
 
 fn main() {
-    hashthis();
+    let fpath = "Cargo.toml";
+    hashthis(fpath);
 }
 
-fn hashthis() {
-    // Create and write to a temporary file
-    let temp_file_path = "temp_file.txt";
-    let mut file = File::create(temp_file_path).expect("Failed to create file");
-    writeln!(file, "This is a2 test").expect("Failed to write to file");
+fn hashthis(fpath: &str) {
+    if !fs::metadata(fpath).is_ok() {
+        eprintln!("File does not exist: {}", fpath);
+        return;
+    }
 
     // Run the b3sum command
     let output = Command::new("b3sum")
-        .arg(temp_file_path)
+        .arg(fpath)
         .output()
         .expect("Failed to execute command");
 
