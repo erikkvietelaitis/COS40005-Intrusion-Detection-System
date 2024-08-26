@@ -144,8 +144,8 @@ impl Default for FIM {
             // Defining files to look 
             // that did exist is now deleted 
         let mut files = HashMap::new();
-        files.insert("README.md".to_string(), "".to_string());
-        files.insert("/etc/shadow".to_string(), "".to_string());
+        //files.insert("README.md".to_string(), "".to_string());
+        //files.insert("/etc/shadow".to_string(), "".to_string());
         files.insert("/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/test".to_string(), "".to_string());
 
         Self {
