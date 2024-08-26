@@ -1,7 +1,6 @@
 use crate::LaraCore::*;
 use rand::{seq::SliceRandom, Rng};
 use CoreTraits::AnalysisModule;
-#[derive(Debug, Copy, Clone)]
 
 // define the set of data that will be captured each tick, You can structure this however you like to fit your needs, Just call it this name
 struct CurrentData<'a> {
@@ -80,19 +79,6 @@ impl Default for Example<'_> {
                 some_count_of_something: 0,
                 something_else: 0.0,
             },
-        }
-    }
-}
-// Must be implemented to allow copying
-// basically implement this function that creates a new version of itself with every parameter identical
-impl Clone for Example<'_> {
-    fn clone(&self) -> Self {
-        Self {
-            current_data: self.current_data,
-            last_string: self.last_string,
-            history_of_filenames: self.history_of_filenames.clone(),
-            blacklisted_filenames: self.blacklisted_filenames.clone(),
-            module_name: self.module_name.clone(),
         }
     }
 }
