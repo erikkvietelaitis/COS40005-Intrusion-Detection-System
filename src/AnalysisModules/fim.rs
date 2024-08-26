@@ -21,6 +21,7 @@ fn genhash(key: &str) -> (bool, String) {
     let output = match Command::new("b3sum")
         .arg(key)
         .output() {
+        
         Ok(output) => output,
         Err(err) => {
             eprintln!("Failed to execute command for key '{}': {}", key, err);
@@ -30,6 +31,8 @@ fn genhash(key: &str) -> (bool, String) {
     // Convert output to string
     let stdout_str = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr_str = String::from_utf8_lossy(&output.stderr).into_owned();
+    
+    println!("{}", stdout_str);
 
     if !stderr_str.is_empty() {
         eprintln!("stderr for key '{}': {}", key, stderr_str);
@@ -41,23 +44,32 @@ fn genhash(key: &str) -> (bool, String) {
 // Update section function
 fn update_section(section: &mut HashMap<String, String>) -> bool {
     let mut updated_section = HashMap::new();
-    let mut success = true;
+    //println!("test");
+    let mut hash_operated = false;
 
     for key in section.keys().cloned() {
         // Generate hash using the key
         let (hash_success, hash) = genhash(&key);
+        println!("test");
+        hash_operated = true;
+        
 
         if hash_success {
             // Insert the key and hash into the updated HashMap
             updated_section.insert(key, hash);
+            println!("test");
         } else {
             eprintln!("Failed to generate hash for key '{}'", key);
-            success = false;
+            return false;
         }
+    }
+    if !hash_operated {
+        eprintln!("Failed to do anything with hashes.");
+        return false;
     }
 
     *section = updated_section;
-    success
+    return true
 }
 
 impl AnalysisModule for FIM {
@@ -68,6 +80,7 @@ impl AnalysisModule for FIM {
         section.insert("/etc/shadow".to_string(), "value1".to_string());
         section.insert("/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/test".to_string(), "value1".to_string());
 
+        //println!("test");
         // Update the section and handle the result
         if !update_section(&mut self.previous_hashes) {
             return false; // Return false if update_section fails
