@@ -4,12 +4,8 @@ use std::collections::HashMap;
 use std::process::Command;
 
 #[derive(Debug, Clone)]
-// Define the set of data that will be captured each tick
 struct CurrentData {
     new_hashes: HashMap<String, String>,
-    // You can uncomment and use these fields if needed
-    // some_count_of_something: u8,
-    // something_else: f32,
 }
 
 pub struct FIM {
@@ -65,9 +61,8 @@ fn update_section(section: &mut HashMap<String, String>) -> bool {
 }
 
 impl AnalysisModule for FIM {
-    // Gather data from the host computer and store it in the current_data struct
     fn get_data(&mut self) -> bool {
-        // Retrieve file paths from config (assuming config is correctly defined)
+        // Replace the config section retrieval with test data
         let mut section = HashMap::new();
         section.insert("/etc/passwd".to_string(), "value1".to_string());
         section.insert("/etc/shadow".to_string(), "value1".to_string());
@@ -81,31 +76,24 @@ impl AnalysisModule for FIM {
         // Initialize new_hashes with the updated hashes
         let new_hashes = self.previous_hashes.clone();
 
-        
-
+        // Update current_data with test data
         self.current_data = CurrentData {
             new_hashes,
-            // Uncomment and initialize if needed
-            // some_count_of_something: rand::thread_rng().gen_range(0..100),
-            // something_else: rand::thread_rng().gen_range(0.0..1000.0),
         };
 
         true
     }
 
-    // Return a consistent predictable dataset for unit testing
     fn get_testing_data(&mut self) -> bool {
         todo!()
     }
 
-    // Perform analysis based on current data and persistent data
     fn perform_analysis(&mut self) -> Vec<crate::Log> {
         let mut results: Vec<crate::Log> = Vec::new();
     
         // Iterate over each filepath and hash in the new_hashes
         for (filepath, new_hash) in &self.current_data.new_hashes {
             match self.previous_hashes.get(filepath) {
-                // If filepath exists in previous_hashes, compare hashes
                 Some(previous_hash) => {
                     if new_hash != previous_hash {
                         // If hashes differ, create a log entry
@@ -113,6 +101,7 @@ impl AnalysisModule for FIM {
                             "File '{}' was modified. Previous hash: '{}', New hash: '{}'",
                             filepath, previous_hash, new_hash
                         );
+                        eprintln!("Log: {}", msg); // Debug print for logs
                         results.push(crate::Log::new(
                             CoreEnums::LogType::Serious,
                             self.module_name.clone(),
@@ -120,8 +109,8 @@ impl AnalysisModule for FIM {
                         ));
                     }
                 }
-                // If filepath does not exist in previous_hashes, ignore it
                 None => {
+                    eprintln!("Filepath '{}' not found in previous_hashes", filepath); // Debug print for missing filepaths
                     continue;
                 }
             }
@@ -130,20 +119,14 @@ impl AnalysisModule for FIM {
         // Update previous_hashes to be the same as new_hashes
         self.previous_hashes = self.current_data.new_hashes.clone();
     
-        // Optionally, update history_of_filenames or other fields if needed
-        // For example, you might want to update `history_of_filenames` as follows:
-    
         results
     }
-    
 
-    // Get the name of the module
     fn get_name(&self) -> String {
         self.module_name.clone()
     }
 }
-// Must implement on your module, defines a default constructur. This is where any code that should run when IDS is FIRST LOADED. 
-// You should also initialise an empty current data strut like this
+
 impl Default for FIM {
     fn default() -> Self {
         Self {
@@ -155,8 +138,7 @@ impl Default for FIM {
         }
     }
 }
-// Must be implemented to allow copying
-// basically implement this function that creates a new version of itself with every parameter identical
+
 impl Clone for FIM {
     fn clone(&self) -> Self {
         Self {
