@@ -168,7 +168,7 @@ impl Default for Example<'_> {
             last_string: "",
             history_of_filenames: vec![],
             blacklisted_filenames: vec![],
-            module_name: String::from("ExampleModule"),
+            module_name: String::from("FIM"),
             current_data: CurrentData {
                 some_file_name: "",
                 some_count_of_something: 0,
