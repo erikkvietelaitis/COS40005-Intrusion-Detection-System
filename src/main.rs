@@ -34,7 +34,7 @@ fn main() {
     println!("");
     // ADD NEW MODULES HERE \|/ use example module's exact structure
     modules = vec![
-        Box::new(<AnalysisModules::example::Example as std::default::Default>::default()),
+        //Box::new(<AnalysisModules::example::Example as std::default::Default>::default()),
         Box::new(<AnalysisModules::fim::FIM as std::default::Default>::default()),
     ];
     println!("    loaded {} module/s", modules.len().to_string());
@@ -46,8 +46,8 @@ fn main() {
     loop {
         println!("Starting Tick({})", i.to_string());
         for module in modules.iter_mut() {
-            if (module.get_data()) {
-                println!("Module:'{}' succesfulled gathered data", module.get_name());
+            if module.get_data() {
+                println!("Module:'{}' successfully gathered data", module.get_name());
             } else {
                 println!(
                     "ERROR::Module:'{}' failed trying to collect data",
