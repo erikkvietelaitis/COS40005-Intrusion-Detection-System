@@ -163,10 +163,10 @@ impl Default for FIM<'_> {
     fn default() -> Self {
         Self {
             history_of_filenames: vec![],
-            previous_hashes: HashMap<String,String>,
+            previous_hashes: HashMap::new(),
             module_name: String::from("FIM"),
             current_data: CurrentData {
-                new_hashes: vec![],
+                new_hashes: HashMap::new(),
             },
         }
     }
