@@ -19,9 +19,7 @@ pub struct FIM<'a> {
     // Everything else is persistent memory. The data you set in these will be remembered between ticks
     pub previous_hashes: HashMap<String, String>,
     pub history_of_filenames: Vec<&'a str>,
-    blacklisted_filenames: Vec<String>,
     module_name: String,
-    last_string: &'a str,
 }
 
 // Function to generate hash using the key
@@ -165,12 +163,10 @@ impl Default for FIM<'_> {
     fn default() -> Self {
         Self {
             history_of_filenames: vec![],
-            blacklisted_filenames: vec![],
+            previous_hashes: HashMap<String,String>,
             module_name: String::from("FIM"),
             current_data: CurrentData {
-                some_file_name: "",
-                some_count_of_something: 0,
-                something_else: 0.0,
+                new_hashes: vec![],
             },
         }
     }
