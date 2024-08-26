@@ -35,7 +35,6 @@ fn genhash(key: &str) -> (bool, String) {
             return (false, String::new());
         }
     };
-    example
     // Convert output to string
     let stdout_str = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr_str = String::from_utf8_lossy(&output.stderr).into_owned();
@@ -69,7 +68,7 @@ fn update_section(section: &mut HashMap<String, String>) -> bool {
     success
 }
 
-impl AnalysisModule for Example<'_> {
+impl AnalysisModule for FIM<'_> {
     // Gather data from the host computer and store it in the current_data struct
     fn get_data(&mut self) -> bool {
         // Retrieve file paths from config (assuming config is correctly defined)
@@ -129,7 +128,7 @@ impl AnalysisModule for Example<'_> {
                             filepath, previous_hash, new_hash
                         );
                         results.push(crate::Log::new(
-                            crate::LogType::Serious,
+                            CoreEnums::LogType::Serious,
                             self.module_name.clone(),
                             msg,
                         ));
@@ -165,7 +164,6 @@ impl AnalysisModule for Example<'_> {
 impl Default for FIM<'_> {
     fn default() -> Self {
         Self {
-            last_string: "",
             history_of_filenames: vec![],
             blacklisted_filenames: vec![],
             module_name: String::from("FIM"),
