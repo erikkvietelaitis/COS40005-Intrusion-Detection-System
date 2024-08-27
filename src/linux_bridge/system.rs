@@ -2,10 +2,13 @@ use chrono::Local;
 use std::fs::File;
 use std::io;
 use std::io::*;
+use std::str;
 use std::thread; //I am aware this is currently not being used, but I am keeping it here for future reference.
 use std::thread::*;
 use std::time::Duration;
+use std::process::Command;
 use sysinfo::{Components, Disks, Networks, System};
+use nix::unistd::geteuid;
 
 // Function to get and print the current system time
 pub fn system_time() -> String {
@@ -13,22 +16,64 @@ pub fn system_time() -> String {
     let formatted_time = format!("Current system time: {}", now.format("%H:%M:%S"));
     return formatted_time;
 }
-// Function to get and print system name "Ubuntu"
+
+//Function to get and print system name "Ubuntu"
 pub fn system_name() -> String {
     return System::name().unwrap();
 }
+
 // Function to get and print system host name "eriklaptop"
 pub fn system_host_name() -> String {
     return System::host_name().unwrap();
 }
+
 // Function to get and print system kernel version "5.4.0-42-generic"
 pub fn system_kernel_version() -> String {
     return System::kernel_version().unwrap();
 }
+
 // Function to get and print system OS version "20.04.1"
 pub fn system_os_version() -> String {
+
     return System::os_version().unwrap();
 }
+
+//Function to get the current user of the system. Eg Erik
+pub fn system_user() -> String {
+   let output = Command::new("whoami")
+        .output()
+        .expect("Failed to execute command");
+    let user = String::from_utf8_lossy(&output.stdout);
+    return user.to_string();
+}
+//prints the current uptime of the system
+
+pub fn system_uptime() -> String {
+    let output = Command::new("uptime")
+        .output()
+        .expect("Failed to execute command");
+    let uptime = String::from_utf8_lossy(&output.stdout);
+    return uptime.to_string();
+}
+//prints all the current users on the system
+
+pub fn all_system_user() -> String {
+   let output = Command::new("who")
+        .output()
+        .expect("Failed to execute command");
+    let user = String::from_utf8_lossy(&output.stdout);
+    return user.to_string();
+}
+
+//prints the last system boot time
+pub fn all_system_user_boottime() -> String {
+   let output = Command::new("who -b")
+        .output()
+        .expect("Failed to execute command");
+    let user = String::from_utf8_lossy(&output.stdout);
+    return user.to_string();
+}
+
 /*
 Function to read the content of a file, with a path specified as a parameter, and return the content as a string (content), hence returns an io::Result<String> type.
 The file information is stored in the buffer, and the content is read line by line and stored in the content variable.
@@ -56,9 +101,9 @@ pub fn sys_file_read(filepath: &str) -> io::Result<String> {
 //This could be modifed to return a Result<String> type, if we wanted to pass through the OK(log_content), as to move the information to another function.
 //This could be Result<()> if we dont want to return anything, or you could remove the Result<> and return.
 //This file_read() in theory should be able to kept now where ever we want to read a file and off the main function.
-fn file_read() -> std::io::Result<String> {
+pub fn file_read() -> std::io::Result<String> {
     // Declare the path to the file
-    let path = "/home/erik/Documents/test.txt";
+    let path = "/proc/net/tcp";
     // Read the content of the file
     let log_content = sys_file_read(&path)?;
     // Print the log content
@@ -67,4 +112,76 @@ fn file_read() -> std::io::Result<String> {
     println!("{}", log_content);
     // Return Ok if the file is read successfully
     return Ok(log_content);
+}
+
+
+// Function to write to a file, with a path and content to a prespecified file path based on another functions declaration.
+pub fn sys_file_write(filepath: &str, content: &str) -> io::Result<()> {
+    let mut file = File::create(filepath)?;
+    file.write_all(content.as_bytes())?;
+    Ok(())
+}
+
+//Function to write to a file, with a path and content as parameters, and return a Result<()> type.
+pub fn file_write() {
+     let filepath = "/home/erik/Documents/test.txt";
+    let content = "Hello, world!";
+     sys_file_write(filepath, content);
+}
+
+
+
+
+
+
+
+
+
+
+
+//Function to determine root access
+use std::fs;
+use std::os::unix::fs::MetadataExt;
+
+pub fn validate_file(filepath: &str) -> bool {
+    println!("Validating file: {}", filepath);
+
+    
+    // Get the metadata of the file
+    let metadata = match fs::metadata(filepath) {
+        Ok(meta) => meta,
+        Err(_) => {
+            println!("Failed to get file metadata");
+            return false;
+        }
+    };
+
+    // Check if the file is owned by root (UID 0)
+    let is_owned_by_root = metadata.uid() == 0;
+
+    // Check if the file has execute permissions for the owner
+    let has_execute_permission = metadata.mode() & 0o100 != 0;
+
+    if is_owned_by_root && has_execute_permission {
+        println!("File needs to be run as root");
+        return true;
+    } else {
+        println!("File does not need to be run as root");
+        return false;
+    }
+}
+
+
+
+//Opening UTMP file to read the login information of the users.
+//This may work...
+//But takes the contents that is stored in the file and returns it as a string, which may not be hepful, as it is encoded in a way that is not human readable.
+//I will work to try and store it in the buffer so Simon can work with it.
+pub fn utmp_read() -> io::Result<String> {
+    let file = File::open("/var/log/btmp")?;
+    let mut reader = BufReader::new(file);
+    let mut content = Vec::new();
+    
+    reader.read_to_end(&mut content)?;
+    return Ok(String::from_utf8_lossy(&content).to_string());
 }
