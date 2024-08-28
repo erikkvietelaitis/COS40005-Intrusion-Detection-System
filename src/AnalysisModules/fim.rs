@@ -2,7 +2,7 @@ use crate::LaraCore::*;
 use CoreTraits::AnalysisModule;
 use std::collections::HashMap;
 use std::process::Command;
-
+use std::path::Path;
 #[derive(Debug, Clone)]
 struct CurrentData {
     new_hashes: HashMap<String, String>,
@@ -49,8 +49,14 @@ fn update_section(section: &mut HashMap<String, String>) -> bool {
 
     for key in section.keys().cloned() {
         // Generate hash using the key
+        if Path::new(&key).exists(){
+            println!("{} exists!",&key);
+        }else{
+            println!("{} DOESNT exists!",&key);
+            // you should have some method of making a seperate log if a file 
+            // that did exist is now deleted 
+        }
         let (hash_success, hash) = genhash(&key);
-        println!("test");
         hash_operated = true;
         
 
@@ -59,7 +65,7 @@ fn update_section(section: &mut HashMap<String, String>) -> bool {
             updated_section.insert(key, hash);
             println!("test");
         } else {
-            eprintln!("Failed to generate hash for key '{}'", key);
+            println!("Failed to generate hash for key '{}'", key);
             return false;
         }
     }
@@ -74,13 +80,6 @@ fn update_section(section: &mut HashMap<String, String>) -> bool {
 
 impl AnalysisModule for FIM {
     fn get_data(&mut self) -> bool {
-        // Replace the config section retrieval with test data
-        let mut section = HashMap::new();
-        section.insert("/etc/passwd".to_string(), "value1".to_string());
-        section.insert("/etc/shadow".to_string(), "value1".to_string());
-        section.insert("/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/test".to_string(), "value1".to_string());
-
-        //println!("test");
         // Update the section and handle the result
         if !update_section(&mut self.previous_hashes) {
             return false; // Return false if update_section fails
@@ -142,8 +141,15 @@ impl AnalysisModule for FIM {
 
 impl Default for FIM {
     fn default() -> Self {
+            // Defining files to look 
+            // that did exist is now deleted 
+        let mut files = HashMap::new();
+        files.insert("README.md".to_string(), "".to_string());
+        files.insert("/etc/shadow".to_string(), "".to_string());
+        files.insert("/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/test".to_string(), "".to_string());
+
         Self {
-            previous_hashes: HashMap::new(),
+            previous_hashes: files,
             module_name: String::from("FIM"),
             current_data: CurrentData {
                 new_hashes: HashMap::new(),
