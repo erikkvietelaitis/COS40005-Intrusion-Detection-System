@@ -42,13 +42,13 @@ pub fn last_login() -> String {
 //Funtion to view the plan text UTMP dump Eg this is a dump of the WTMP binary file
 //This file contains the history of all the logins and logouts and restarts of the system, this dump should not be need
 //as we are using the previous command calls
-pub fn utmp_dump() -> String {
+pub fn wtmp_dump() -> String {
     let output = Command::new("utmpdump")
         .arg("/var/log/wtmp")
         .output()
         .expect("Failed to execute command");
-    let utmpdump = String::from_utf8_lossy(&output.stdout);
-    return utmpdump.to_string();
+    let wtmpdump = String::from_utf8_lossy(&output.stdout);
+    return wtmpdump.to_string();
 }
 
 //Function to get the current user of the system. Eg Erik
