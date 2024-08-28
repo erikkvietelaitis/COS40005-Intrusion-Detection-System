@@ -97,29 +97,3 @@ pub fn file_write() {
 
 
 
-    println!("Validating file: {}", filepath);
-
-    
-    // Get the metadata of the file
-    let metadata = match fs::metadata(filepath) {
-        Ok(meta) => meta,
-        Err(_) => {
-            println!("Failed to get file metadata");
-            return false;
-        }
-    };
-
-    // Check if the file is owned by root (UID 0)
-    let is_owned_by_root = metadata.uid() == 0;
-
-    // Check if the file has execute permissions for the owner
-    let has_execute_permission = metadata.mode() & 0o100 != 0;
-
-    if is_owned_by_root && has_execute_permission {
-        println!("File needs to be run as root");
-        return true;
-    } else {
-        println!("File does not need to be run as root");
-        return false;
-    }
-}

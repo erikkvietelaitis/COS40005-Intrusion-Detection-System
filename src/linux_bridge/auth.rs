@@ -59,8 +59,8 @@ pub fn system_user() -> String {
     let user = String::from_utf8_lossy(&output.stdout);
     return user.to_string();
 }
-//prints the current uptime of the system
 
+//prints the current uptime of the system
 pub fn system_uptime() -> String {
     let output = Command::new("uptime")
         .output()
@@ -68,8 +68,8 @@ pub fn system_uptime() -> String {
     let uptime = String::from_utf8_lossy(&output.stdout);
     return uptime.to_string();
 }
-//prints all the current users on the system
 
+//prints all the current users on the system
 pub fn all_system_user() -> String {
    let output = Command::new("who")
         .output()
