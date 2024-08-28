@@ -127,18 +127,3 @@ pub fn validate_file(filepath: &str) -> bool {
         return false;
     }
 }
-
-
-
-//Opening UTMP file to read the login information of the users.
-//This may work...
-//But takes the contents that is stored in the file and returns it as a string, which may not be hepful, as it is encoded in a way that is not human readable.
-//I will work to try and store it in the buffer so Simon can work with it.
-pub fn utmp_read() -> io::Result<String> {
-    let file = File::open("/var/log/btmp")?;
-    let mut reader = BufReader::new(file);
-    let mut content = Vec::new();
-    
-    reader.read_to_end(&mut content)?;
-    return Ok(String::from_utf8_lossy(&content).to_string());
-}
