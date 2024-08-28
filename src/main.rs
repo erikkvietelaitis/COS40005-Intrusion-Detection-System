@@ -23,23 +23,24 @@ fn main() {
     println!("    Kernal version: {}", system::system_kernel_version());
     println!("    Current Time: {}", system::system_time());
     println!("");
-    println!("Initialising Core systems:");
+    println!("Initializing Core systems:");
     // Should be loaded by configuration. Higher number means lower performance impact of the IDS
     let tick_intervals = time::Duration::from_millis(1000);
     println!("    tick interval: {}ms", tick_intervals.as_millis());
     println!("");
 
-    println!("Initialising Analysis Modules:");
+    println!("Initializing Analysis Modules:");
     let mut modules: Vec<Box<dyn AnalysisModule>>;
     println!("");
     // ADD NEW MODULES HERE \|/ use example module's exact structure
     modules = vec![
         Box::new(<AnalysisModules::example::Example as std::default::Default>::default()),
+        Box::new(<AnalysisModules::network::Networking as std::default::Default>::default()),
     ];
     println!("    loaded {} module/s", modules.len().to_string());
     let mut logs: Vec<Log> = Vec::new();
     let mut i = 0;
-    println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT");
+    println!("STARTUP SUCCESSFUL CHROMIA IS NOW ON LOOKOUT");
     println!("------------------(Real Time alerts)------------------");
 
     loop {
