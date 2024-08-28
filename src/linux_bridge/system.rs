@@ -38,41 +38,6 @@ pub fn system_os_version() -> String {
     return System::os_version().unwrap();
 }
 
-//Function to get the current user of the system. Eg Erik
-pub fn system_user() -> String {
-   let output = Command::new("whoami")
-        .output()
-        .expect("Failed to execute command");
-    let user = String::from_utf8_lossy(&output.stdout);
-    return user.to_string();
-}
-//prints the current uptime of the system
-
-pub fn system_uptime() -> String {
-    let output = Command::new("uptime")
-        .output()
-        .expect("Failed to execute command");
-    let uptime = String::from_utf8_lossy(&output.stdout);
-    return uptime.to_string();
-}
-//prints all the current users on the system
-
-pub fn all_system_user() -> String {
-   let output = Command::new("who")
-        .output()
-        .expect("Failed to execute command");
-    let user = String::from_utf8_lossy(&output.stdout);
-    return user.to_string();
-}
-
-//prints the last system boot time
-pub fn all_system_user_boottime() -> String {
-   let output = Command::new("who -b")
-        .output()
-        .expect("Failed to execute command");
-    let user = String::from_utf8_lossy(&output.stdout);
-    return user.to_string();
-}
 
 /*
 Function to read the content of a file, with a path specified as a parameter, and return the content as a string (content), hence returns an io::Result<String> type.
@@ -128,14 +93,6 @@ pub fn file_write() {
     let content = "Hello, world!";
      sys_file_write(filepath, content);
 }
-
-
-
-
-
-
-
-
 
 
 

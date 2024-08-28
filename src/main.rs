@@ -8,6 +8,7 @@ use LaraCore::CoreTraits::AnalysisModule;
 use crate::LaraCore::CoreStruts::*;
 pub mod AnalysisModules;
 use crate::linux_bridge::system::*;
+use crate::linux_bridge::auth::*;
 pub mod LaraCore;
 pub mod linux_bridge;
 
@@ -66,6 +67,6 @@ fn main() {
     // }
     
     println!("Hello, world!");
-    let test =system_uptime();
+    let test = btmp_dump();
     println!("{}", test);
 }
