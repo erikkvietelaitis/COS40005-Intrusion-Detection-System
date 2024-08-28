@@ -96,11 +96,7 @@ pub fn file_write() {
 
 
 
-//Function to determine root access
-use std::fs;
-use std::os::unix::fs::MetadataExt;
 
-pub fn validate_file(filepath: &str) -> bool {
     println!("Validating file: {}", filepath);
 
     
