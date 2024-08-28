@@ -1,7 +1,10 @@
 use chrono::Local;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io;
 use std::io::*;
+use ini::Ini;
+
 use std::thread; //I am aware this is currently not being used, but I am keeping it here for future reference.
 use std::thread::*;
 use std::time::Duration;
@@ -67,4 +70,32 @@ fn file_read() -> std::io::Result<String> {
     println!("{}", log_content);
     // Return Ok if the file is read successfully
     return Ok(log_content);
+}
+pub fn read_csv(path: String) -> HashMap<String,HashMap<String,Vec<String>>>{
+    let conf = Ini::load_from_file(path).unwrap();
+    
+    let mut config_map: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
+    let mut sec: HashMap<String, Vec<String>>;
+    let mut arr_key:String;
+    for (section, properties) in conf.iter() {
+        let section_name = section.unwrap_or("default").to_string();
+        sec = HashMap::new();
+        
+        for (key, value) in properties.iter() {
+            
+            if key.ends_with("[]") {
+                arr_key = key.strip_suffix("[]").unwrap_or("undefined").to_owned();
+                if sec.contains_key(&arr_key){
+                    sec.get_mut(&arr_key).unwrap().push(value.to_owned());
+                }else{
+                    sec.insert(arr_key,vec![value.to_owned()]);
+                }
+            } else {
+                sec.insert(key.to_string(), vec![value.to_string()]);
+            }
+        }
+        config_map.insert(section_name, sec);
+
+    }
+    config_map
 }
