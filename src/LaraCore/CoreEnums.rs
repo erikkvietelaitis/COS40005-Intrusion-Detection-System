@@ -2,6 +2,11 @@ pub enum CoreTypes{
     Timed,
     Async
 }
+pub enum ConfigFieldType{
+    Float,
+    String,
+    Integer
+}
 pub enum LogType {
     Info,
     Warning,

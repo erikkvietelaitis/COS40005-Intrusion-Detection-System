@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::LaraCore::CoreStruts::*;
 
 pub trait AnalysisModule {
@@ -14,7 +16,10 @@ pub trait AnalysisModule {
      */
     fn perform_analysis(&mut self) -> Vec<Log>;
     /**
-     * 
+     *
      */
     fn get_name(&self) -> String;
+
+    fn build_config_fields(&self) -> Vec<ConfigField>;
+    fn retrieve_config_data(&mut self, data: HashMap<String, Vec<String>>) -> bool;
 }

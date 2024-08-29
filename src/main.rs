@@ -1,12 +1,15 @@
-use std::any::type_name;
-use std::vec;
+
+use std::collections::HashMap;
+use std::path::Path;
+use std::{vec};
 
 use std::{thread, time};
+//use system::{system_uptime, system_user};
 use LaraCore::CoreTraits::AnalysisModule;
 
 use crate::LaraCore::CoreStruts::*;
 pub mod AnalysisModules;
-use crate::linux_bridge::*;
+use crate::linux_bridge::system;
 pub mod LaraCore;
 pub mod linux_bridge;
 
@@ -23,7 +26,12 @@ fn main() {
     println!("    Kernal version: {}", system::system_kernel_version());
     println!("    Current Time: {}", system::system_time());
     println!("");
+<<<<<<< HEAD
     println!("Initializing Core systems:");
+=======
+    println!("Initialising Core systems:");
+
+>>>>>>> main
     // Should be loaded by configuration. Higher number means lower performance impact of the IDS
     let tick_intervals = time::Duration::from_millis(1000);
     println!("    tick interval: {}ms", tick_intervals.as_millis());
@@ -33,20 +41,57 @@ fn main() {
     let mut modules: Vec<Box<dyn AnalysisModule>>;
     println!("");
     // ADD NEW MODULES HERE \|/ use example module's exact structure
+<<<<<<< HEAD
     modules = vec![
         Box::new(<AnalysisModules::example::Example as std::default::Default>::default()),
         Box::new(<AnalysisModules::network::Networking as std::default::Default>::default()),
     ];
+=======
+    modules = vec![Box::new(
+        <AnalysisModules::example::Example as std::default::Default>::default(),
+    )];
+>>>>>>> main
     println!("    loaded {} module/s", modules.len().to_string());
+
+    if !Path::new("config.ini").exists() {
+        create_config(modules);
+        return;
+    }
+    let config_result = system::read_csv("config.ini".to_owned());
+    let config = match config_result {
+        Ok(file) => file,
+        Err(error) => panic!("Problem opening the file: {error:?}"),
+    };
+    println!("Successfully found config file!");
+    let mut section: HashMap<String, Vec<String>>;
+    let mut _errors:Vec<&str>;
+    for module in modules.iter_mut() {
+        section = match config.get(&module.get_name()){
+            Some(s) => s.clone(),
+            None => section_not_found(module.get_name()),
+        };
+        // for field in module.build_config_fields().into_iter(){
+        //     let vals = section.get(&field.name).unwrap_or(&field.default_values);
+        //     if(vals.len() == 0){
+        //         panic!("Chromia failed to launch: config field {} for {} was not provided a value",&field.name,module.get_name());
+        //     }
+            
+        //     vals.get(0).unwrap();
+
+        // }
+        module.retrieve_config_data(section);
+    }
+    
+    // println!("{:?}", serde_json::to_string(&t).unwrap());
+
     let mut logs: Vec<Log> = Vec::new();
     let mut i = 0;
     println!("STARTUP SUCCESSFUL CHROMIA IS NOW ON LOOKOUT");
     println!("------------------(Real Time alerts)------------------");
-
     loop {
         println!("Starting Tick({})", i.to_string());
         for module in modules.iter_mut() {
-            if (module.get_data()) {
+            if module.get_data() {
                 println!("Module:'{}' succesfulled gathered data", module.get_name());
             } else {
                 println!(
@@ -64,4 +109,30 @@ fn main() {
         i += 1;
         thread::sleep(tick_intervals)
     }
+}
+fn section_not_found(name: String)->HashMap<String,Vec<String>>{
+    println!("Config for {} module was not found! Chromia will attempt to use default values", name);    
+    return HashMap::new();
+}
+fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
+    println!("Could not find config file; Creating configuration file now");
+    let mut config_file_contents: String = String::new();
+    let mut fields: Vec<ConfigField>;
+    for module in modules.iter_mut() {
+        config_file_contents.push_str("[");
+        config_file_contents.push_str(&module.get_name());
+        config_file_contents.push_str("]");
+
+        fields = module.build_config_fields();
+        for field in fields.into_iter() {
+            config_file_contents.push_str(&field.build_field());
+        }
+        config_file_contents.push_str("\n");
+    }
+    let file_result = system::sys_file_write("config.ini", &config_file_contents);
+    match file_result{
+        Ok(_) => println!("Successfully created Config file.\n Please fill out file and re-run Chromia to activate"),
+        Err(_e) => panic!("Could not create file in current directory!"),
+    }
+    return;
 }
