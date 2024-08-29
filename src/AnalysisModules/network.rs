@@ -13,6 +13,7 @@ pub struct Networking {
     pub last_scanned_port: u16, // Track the last scanned port
     pub max_ports: u16, // Maximum number of ports in the range
     pub alerted_ports: HashSet<u16>, // Keep track of ports that have generated alerts
+    pub previously_closed_ports: HashSet<u16>, // Track ports that were previously closed
 }
 
 #[derive(Debug, Clone)]
@@ -39,6 +40,16 @@ impl Networking {
                 let msg = format!("Alert: Expected open port {} is closed.", port);
                 results.push(CoreStruts::Log::new(CoreEnums::LogType::Serious, self.module_name.clone(), msg));
                 self.alerted_ports.insert(port);
+                self.previously_closed_ports.insert(port);
+            }
+        }
+
+        // Check for previously closed ports that are now open
+        for &port in open_ports.iter() {
+            if self.previously_closed_ports.contains(&port) {
+                let msg = format!("Alert: Previously closed port {} is now open.", port);
+                results.push(CoreStruts::Log::new(CoreEnums::LogType::Serious, self.module_name.clone(), msg));
+                self.previously_closed_ports.remove(&port); // Remove from previously closed set
             }
         }
 
@@ -53,6 +64,21 @@ impl Networking {
 
         results
     }
+
+    // Log the current port range and generated alerts to the terminal
+    fn log_scan_results(&self) {
+        println!("Scanning ports from {} to {}", self.current_data.start_port, self.current_data.end_port);
+    }
+
+    fn log_generated_alerts(&self, alerts: &[CoreStruts::Log]) {
+        if alerts.is_empty() {
+            println!("No new alerts generated.");
+        } else {
+            for alert in alerts {
+                println!("{}", alert.build_alert());
+            }
+        }
+    }
 }
 
 impl AnalysisModule for Networking {
@@ -60,7 +86,7 @@ impl AnalysisModule for Networking {
     fn get_data(&mut self) -> bool {
         // Calculate the next range of ports to scan
         let start_port = self.last_scanned_port + 1;
-        let end_port = (start_port + 500).min(self.max_ports); // Scan 100 (changed to 500 for testing) ports, or fewer if at the end
+        let end_port = start_port.saturating_add(500).min(self.max_ports); // Safe addition with overflow handling
 
         // Scan the local ports
         let open_ports = scan_ports_range(start_port..end_port);
@@ -70,6 +96,9 @@ impl AnalysisModule for Networking {
             end_port,
             open_ports: open_ports.clone(),
         };
+
+        // Log the current port range being scanned
+        self.log_scan_results();
 
         // Update the last scanned port
         self.last_scanned_port = if end_port == self.max_ports {
@@ -94,7 +123,12 @@ impl AnalysisModule for Networking {
         let blocked_ports = Networking::calculate_blocked_ports(&self.expected_open_ports, self.max_ports);
 
         // Generate unique alerts based on the current open ports and expected blocked ports
-        results.extend(self.generate_unique_alerts(&open_ports, &blocked_ports));
+        let alerts = self.generate_unique_alerts(&open_ports, &blocked_ports);
+
+        // Log the generated alerts
+        self.log_generated_alerts(&alerts);
+
+        results.extend(alerts);
 
         results
     }
@@ -122,6 +156,7 @@ impl Default for Networking {
             last_scanned_port: 0,
             max_ports: 65535, // Define the total number of ports to scan
             alerted_ports: HashSet::new(), // Initialize the set of alerted ports
+            previously_closed_ports: HashSet::new(), // Initialize the set of previously closed ports
         }
     }
 }
@@ -137,6 +172,7 @@ impl Clone for Networking {
             last_scanned_port: self.last_scanned_port,
             max_ports: self.max_ports,
             alerted_ports: self.alerted_ports.clone(),
+            previously_closed_ports: self.previously_closed_ports.clone(),
         }
     }
 }
