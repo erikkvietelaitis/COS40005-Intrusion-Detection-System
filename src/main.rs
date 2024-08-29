@@ -3,11 +3,13 @@ use std::vec;
 use std::path::Path;
 
 use std::{thread, time};
+//use system::{system_uptime, system_user};
 use LaraCore::CoreTraits::AnalysisModule;
 
 use crate::LaraCore::CoreStruts::*;
 pub mod AnalysisModules;
-use crate::linux_bridge::*;
+use crate::linux_bridge::system;
+use crate::linux_bridge::auth::*;
 pub mod LaraCore;
 pub mod linux_bridge;
 
@@ -34,38 +36,42 @@ fn main() {
     println!("    tick interval: {}ms", tick_intervals.as_millis());
     println!("");
 
-    println!("Initialising Analysis Modules:");
-    let mut modules: Vec<Box<dyn AnalysisModule>>;
-    println!("");
-    // ADD NEW MODULES HERE \|/ use example module's exact structure
-    modules = vec![
-        Box::new(<AnalysisModules::example::Example as std::default::Default>::default()),
-    ];
-    println!("    loaded {} module/s", modules.len().to_string());
-    let mut logs: Vec<Log> = Vec::new();
-    let mut i = 0;
-    println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT");
-    println!("------------------(Real Time alerts)------------------");
+    // println!("Initialising Analysis Modules:");
+    // let mut modules: Vec<Box<dyn AnalysisModule>>;
+    // println!("");
+    // // ADD NEW MODULES HERE \|/ use example module's exact structure
+    // modules = vec![
+    //     Box::new(<AnalysisModules::example::Example as std::default::Default>::default()),
+    // ];
+    // println!("    loaded {} module/s", modules.len().to_string());
+    // let mut logs: Vec<Log> = Vec::new();
+    // let mut i = 0;
+    // println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT");
+    // println!("------------------(Real Time alerts)------------------");
 
-    loop {
-        println!("Starting Tick({})", i.to_string());
-        for module in modules.iter_mut() {
-            if (module.get_data()) {
-                println!("Module:'{}' succesfulled gathered data", module.get_name());
-            } else {
-                println!(
-                    "ERROR::Module:'{}' failed trying to collect data",
-                    module.get_name()
-                );
-            }
-            logs.append(&mut module.perform_analysis());
-        }
-        println!("Following logs were generated this tick:");
-        for log in logs.iter() {
-            println!("    {}", log.build_alert());
-        }
-        logs = Vec::new();
-        i += 1;
-        thread::sleep(tick_intervals)
-    }
+    // loop {
+    //     println!("Starting Tick({})", i.to_string());
+    //     for module in modules.iter_mut() {
+    //         if (module.get_data()) {
+    //             println!("Module:'{}' succesfulled gathered data", module.get_name());
+    //         } else {
+    //             println!(
+    //                 "ERROR::Module:'{}' failed trying to collect data",
+    //                 module.get_name()
+    //             );
+    //         }
+    //         logs.append(&mut module.perform_analysis());
+    //     }
+    //     println!("Following logs were generated this tick:");
+    //     for log in logs.iter() {
+    //         println!("    {}", log.build_alert());
+    //     }
+    //     logs = Vec::new();
+    //     i += 1;
+    //     thread::sleep(tick_intervals)
+    // }
+    
+    println!("Hello, world!");
+    let test = btmp_dump();
+    println!("{}", test);
 }
