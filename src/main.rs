@@ -1,7 +1,7 @@
-use std::any::type_name;
+
 use std::collections::HashMap;
 use std::path::Path;
-use std::{string, vec};
+use std::{vec};
 
 use std::{thread, time};
 //use system::{system_uptime, system_user};
@@ -9,7 +9,6 @@ use LaraCore::CoreTraits::AnalysisModule;
 
 use crate::LaraCore::CoreStruts::*;
 pub mod AnalysisModules;
-use crate::linux_bridge::auth::*;
 use crate::linux_bridge::system;
 pub mod LaraCore;
 pub mod linux_bridge;
@@ -54,11 +53,21 @@ fn main() {
     };
     println!("Successfully found config file!");
     let mut section: HashMap<String, Vec<String>>;
+    let mut errors:Vec<&str>;
     for module in modules.iter_mut() {
         section = match config.get(&module.get_name()){
             Some(s) => s.clone(),
             None => section_not_found(module.get_name()),
         };
+        // for field in module.build_config_fields().into_iter(){
+        //     let vals = section.get(&field.name).unwrap_or(&field.default_values);
+        //     if(vals.len() == 0){
+        //         panic!("Chromia failed to launch: config field {} for {} was not provided a value",&field.name,module.get_name());
+        //     }
+            
+        //     vals.get(0).unwrap();
+
+        // }
         module.insert_config_data(section);
     }
     
@@ -71,7 +80,7 @@ fn main() {
     loop {
         println!("Starting Tick({})", i.to_string());
         for module in modules.iter_mut() {
-            if (module.get_data()) {
+            if module.get_data() {
                 println!("Module:'{}' succesfulled gathered data", module.get_name());
             } else {
                 println!(
@@ -112,7 +121,7 @@ fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
     let file_result = system::sys_file_write("config.ini", &config_file_contents);
     match file_result{
         Ok(_) => println!("Successfully created Config file.\n Please fill out file and re-run Chromia to activate"),
-        Err(e) => panic!("Could not create file in current directory!"),
+        Err(_e) => panic!("Could not create file in current directory!"),
     }
     return;
 }

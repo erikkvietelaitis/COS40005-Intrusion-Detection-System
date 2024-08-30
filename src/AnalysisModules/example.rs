@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use crate::{ConfigField, LaraCore::*};
-use rand::{seq::SliceRandom, Rng};
-use serde_json::value;
+use rand::{Rng};
+
 use CoreTraits::AnalysisModule;
 #[derive(Debug, Copy, Clone)]
 
@@ -51,7 +51,7 @@ impl AnalysisModule for Example<'_> {
     // plus the persistent data stored in the object to create logs (AKA alerts) 
     fn perform_analysis(&mut self) -> Vec<crate::Log> {
         let mut results: Vec<CoreStruts::Log> = Vec::new();
-        if (self.history_of_filenames.contains(&self.current_data.some_file_name))
+        if self.history_of_filenames.contains(&self.current_data.some_file_name)
         {
             let mut msg: String = String::from("File '");
             msg.push_str(&self.current_data.some_file_name);
@@ -79,6 +79,7 @@ impl AnalysisModule for Example<'_> {
     }
     fn insert_config_data(&self, data: HashMap<String,Vec<String>>) -> bool{
         for (field, vals) in data.into_iter(){
+            
             for val in vals{
                 println!("{}->{}", field, val);
             }

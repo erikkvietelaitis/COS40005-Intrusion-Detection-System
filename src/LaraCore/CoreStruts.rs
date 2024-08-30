@@ -30,11 +30,11 @@ impl Log {
 }
 
 pub struct ConfigField{
-    name: String,
+    pub name: String,
     description: String,
-    field_type: ConfigFieldType,
-    is_array: bool,
-    default_values: Vec<String>
+    pub field_type: ConfigFieldType,
+    pub is_array: bool,
+    pub default_values: Vec<String>
 }
 impl ConfigField {
     pub fn new(name: String, description: String, field_type: ConfigFieldType, default_values: Vec<String>, is_array:bool) -> Self {

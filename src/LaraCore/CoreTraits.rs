@@ -16,10 +16,10 @@ pub trait AnalysisModule {
      */
     fn perform_analysis(&mut self) -> Vec<Log>;
     /**
-     * 
+     *
      */
     fn get_name(&self) -> String;
-    
+
     fn build_config_fields(&self) -> Vec<ConfigField>;
-    fn insert_config_data(&self, data: HashMap<String,Vec<String>>) -> bool;
+    fn insert_config_data(&self, data: HashMap<String, Vec<String>>) -> bool;
 }

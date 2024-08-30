@@ -6,11 +6,11 @@ use std::io::*;
 use ini::Ini;
 
 use std::str;
-use std::thread; //I am aware this is currently not being used, but I am keeping it here for future reference.
-use std::thread::*;
-use std::time::Duration;
-use std::process::Command;
-use sysinfo::{Components, Disks, Networks, System};
+ //I am aware this is currently not being used, but I am keeping it here for future reference.
+
+
+
+use sysinfo::{System};
 
 // Function to get and print the current system time
 pub fn system_time() -> String {
