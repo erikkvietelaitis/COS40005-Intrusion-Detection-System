@@ -11,7 +11,6 @@ use std::thread::*;
 use std::time::Duration;
 use std::process::Command;
 use sysinfo::{Components, Disks, Networks, System};
-use nix::unistd::geteuid;
 
 // Function to get and print the current system time
 pub fn system_time() -> String {
@@ -81,8 +80,12 @@ pub fn file_read() -> std::io::Result<String> {
     // Return Ok if the file is read successfully
     return Ok(log_content);
 }
-pub fn read_csv(path: String) -> HashMap<String,HashMap<String,Vec<String>>>{
-    let conf = Ini::load_from_file(path).unwrap();
+pub fn read_csv(path: String) -> io::Result<HashMap<String,HashMap<String,Vec<String>>>>{
+    let conf_res = Ini::load_from_file(path);
+    let conf = match conf_res{
+        Ok(conf) => conf,
+        Err(_e) =>  panic!("Malformed config.ini file. Please update document to follow correct formatting"),
+    };
     
     let mut config_map: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
     let mut sec: HashMap<String, Vec<String>>;
@@ -107,7 +110,7 @@ pub fn read_csv(path: String) -> HashMap<String,HashMap<String,Vec<String>>>{
         config_map.insert(section_name, sec);
 
     }
-    config_map
+    Ok(config_map)
 }
 
 

@@ -1,5 +1,8 @@
-use crate::LaraCore::*;
+use std::collections::HashMap;
+
+use crate::{ConfigField, LaraCore::*};
 use rand::{seq::SliceRandom, Rng};
+use serde_json::value;
 use CoreTraits::AnalysisModule;
 #[derive(Debug, Copy, Clone)]
 
@@ -65,9 +68,26 @@ impl AnalysisModule for Example<'_> {
     fn get_name(&self) -> String{
         return self.module_name.clone();
     }
+    fn build_config_fields(&self) -> Vec<crate::ConfigField> {
+        let fields:Vec<ConfigField> = vec![
+            ConfigField::new("fileName".to_owned(),"The name of your favorite file, must be single string".to_owned(),CoreEnums::ConfigFieldType::String,vec!["config.ini".to_owned()], false),
+            ConfigField::new("CoolestFileTypes".to_owned(),"The coolest file types".to_owned(),CoreEnums::ConfigFieldType::String,vec![".ini".to_owned(),".csv".to_owned(),".webp".to_owned(),".rs".to_owned()], true),
+            ConfigField::new("Cool Number".to_owned(),"The coolest number".to_owned(),CoreEnums::ConfigFieldType::Integer,vec!["1".to_owned(),"299792458".to_owned(),"69".to_owned(),"329".to_owned()], true)
+        ];
+        
+        return fields;
+    }
+    fn insert_config_data(&self, data: HashMap<String,Vec<String>>) -> bool{
+        for (field, vals) in data.into_iter(){
+            for val in vals{
+                println!("{}->{}", field, val);
+            }
+        }
+        return true;
+    }
 }
-// Must implement on your module, defines a default constructur. This is where any code that should run when IDS is FIRST LOADED. 
-// You should also initialise an empty current data strut like this
+// Must implement on your module, defines a default constructor. This is where any code that should run when IDS is FIRST LOADED. 
+// You should also initialize an empty current data strut like this
 impl Default for Example<'_> {
     fn default() -> Self {
         Self {
