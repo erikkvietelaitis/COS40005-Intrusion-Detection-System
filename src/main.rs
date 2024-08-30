@@ -53,7 +53,7 @@ fn main() {
     };
     println!("Successfully found config file!");
     let mut section: HashMap<String, Vec<String>>;
-    let mut errors:Vec<&str>;
+    let mut _errors:Vec<&str>;
     for module in modules.iter_mut() {
         section = match config.get(&module.get_name()){
             Some(s) => s.clone(),
