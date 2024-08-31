@@ -37,10 +37,10 @@ fn main() {
     let mut modules: Vec<Box<dyn AnalysisModule>>;
     println!("");
     // ADD NEW MODULES HERE \|/ use example module's exact structure
-    modules = vec![Box::new(
-        <analysis_modules::example::Example as std::default::Default>::default(),
-        //<analysis_modules::fim::FIM as std::default::Default>::default()
-    )];
+    modules = vec![
+        Box::new(<analysis_modules::example::Example as std::default::Default>::default()),
+        Box::new(<analysis_modules::fim::FIM as std::default::Default>::default())
+        ];
     println!("    loaded {} module/s", modules.len().to_string());
 
     if !Path::new("config.ini").exists() {
