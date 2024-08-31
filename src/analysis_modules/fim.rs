@@ -45,7 +45,10 @@ fn genhash(key: &str) -> (bool, String) {
 
 // Update section function
 fn update_section(previous_hashes: &HashMap<String, String>, new_hashes: &mut HashMap<String, String>) -> bool {
-    
+    println!("previous_hashes:");
+    for (key, hash) in previous_hashes.iter() {
+        println!("Key: '{}', Hash: '{}'", key, hash);
+    }
 
     let mut updated_section = HashMap::new();
 
@@ -83,7 +86,7 @@ fn update_section(previous_hashes: &HashMap<String, String>, new_hashes: &mut Ha
 impl AnalysisModule for FIM {
     fn get_data(&mut self) -> bool {
         // Update the section and handle the result
-        if !update_section(&mut self.current_data.new_hashes, &mut self.previous_hashes) {
+        if !update_section(&mut self.previous_hashes, &mut self.current_data.new_hashes) {
             return false; // Return false if update_section fails
         }
 
