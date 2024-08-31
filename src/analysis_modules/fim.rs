@@ -44,12 +44,12 @@ fn genhash(key: &str) -> (bool, String) {
 }
 
 // Update section function
-fn update_section(section: &mut HashMap<String, String>) -> bool {
+fn update_section(new_hashes: &mut HashMap<String, String>) -> bool {
     let mut updated_section = HashMap::new();
     //println!("test");
     let mut hash_operated = false;
 
-    for key in section.keys().cloned() {
+    for key in new_hashes.keys().cloned() {
         // Generate hash using the key
         if Path::new(&key).exists(){
             println!("{} exists!",&key);
@@ -82,23 +82,23 @@ fn update_section(section: &mut HashMap<String, String>) -> bool {
         println!("Key: '{}', Hash: '{}'", key, hash);
     }
 
-    *section = updated_section;
+    *new_hashes = updated_section;
     return true
 }
 
 impl AnalysisModule for FIM {
     fn get_data(&mut self) -> bool {
         // Update the section and handle the result
-        if !update_section(&mut self.previous_hashes) {
+        if !update_section(&mut self.current_data.new_hashes) {
             return false; // Return false if update_section fails
         }
 
         // Initialize new_hashes with the updated hashes
-        let new_hashes = self.previous_hashes.clone();
+        //let new_hashes = self.previous_hashes.clone();
 
         // Update current_data with test data
         self.current_data = CurrentData {
-            new_hashes,
+            new_hashes: self.current_data.new_hashes.clone(),
         };
 
         true
