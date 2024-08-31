@@ -1,16 +1,16 @@
 
 use std::collections::HashMap;
 use std::path::Path;
-use std::{vec};
+use std::vec;
 
 use std::{thread, time};
 //use system::{system_uptime, system_user};
-use LaraCore::CoreTraits::AnalysisModule;
+use lara_core::core_traits::AnalysisModule;
 
-use crate::LaraCore::CoreStruts::*;
-pub mod AnalysisModules;
+use crate::lara_core::core_struts::*;
+pub mod analysis_modules;
 use crate::linux_bridge::system;
-pub mod LaraCore;
+pub mod lara_core;
 pub mod linux_bridge;
 
 // Declare the linux_bridge module
@@ -39,7 +39,7 @@ fn main() {
     // ADD NEW MODULES HERE \|/ use example module's exact structure
     modules = vec![Box::new(
         //<AnalysisModules::example::Example as std::default::Default>::default(),
-        <AnalysisModules::fim::FIM as std::default::Default>::default(),
+        <analysis_modules::fim::FIM as std::default::Default>::default(),
     )];
     println!("    loaded {} module/s", modules.len().to_string());
 
@@ -69,7 +69,7 @@ fn main() {
         //     vals.get(0).unwrap();
 
         // }
-        module.insert_config_data(section);
+        module.retrieve_config_data(section);
     }
     
     // println!("{:?}", serde_json::to_string(&t).unwrap());

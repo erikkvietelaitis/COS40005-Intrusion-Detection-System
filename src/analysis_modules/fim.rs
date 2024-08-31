@@ -1,5 +1,5 @@
-use crate::LaraCore::*;
-use CoreTraits::AnalysisModule;
+use crate::lara_core::*;
+use core_traits::AnalysisModule;
 use std::collections::HashMap;
 use std::process::Command;
 use std::path::Path;
@@ -15,7 +15,6 @@ pub struct FIM {
     // Everything else is persistent memory. The data you set in these will be remembered between ticks
     pub previous_hashes: HashMap<String, String>,
     module_name: String,
-    pub files: HashMap<String, String>
 }
 
 // Function to generate hash using the key
@@ -117,7 +116,7 @@ impl AnalysisModule for FIM {
                         );
                         eprintln!("Log: {}", msg); // Debug print for logs
                         results.push(crate::Log::new(
-                            CoreEnums::LogType::Serious,
+                            core_enums::LogType::Serious,
                             self.module_name.clone(),
                             msg,
                         ));
@@ -141,21 +140,26 @@ impl AnalysisModule for FIM {
     }
     fn build_config_fields(&self) -> Vec<crate::ConfigField> {
         let fields:Vec<ConfigField> = vec![
-            ConfigField::new("fileName".to_owned(),"The name of your favorite file, must be single string".to_owned(),CoreEnums::ConfigFieldType::String,vec!["config.ini".to_owned()], false),
+            ConfigField::new("fileName".to_owned(),"The name of your favorite file, must be single string".to_owned(),core_enums::ConfigFieldType::String,vec!["config.ini".to_owned()], false),
             //ConfigField::new("CoolestFileTypes".to_owned(),"The coolest file types".to_owned(),CoreEnums::ConfigFieldType::String,vec![".ini".to_owned(),".csv".to_owned(),".webp".to_owned(),".rs".to_owned()], true),
             //ConfigField::new("Cool Number".to_owned(),"The coolest number".to_owned(),CoreEnums::ConfigFieldType::Integer,vec!["1".to_owned(),"299792458".to_owned(),"69".to_owned(),"329".to_owned()], true),
-            ConfigField::new("files".to_owned(),"Files to be monitored for integrity violations, must be an absolute path".to_owned(),CoreEnums::ConfigFieldType::Integer,vec!["/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/test".to_owned()], true)
+            ConfigField::new("files".to_owned(),"Files to be monitored for integrity violations, must be an absolute path".to_owned(),core_enums::ConfigFieldType::Integer,vec!["/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/test".to_owned()], true)
         ];
         
         return fields;
     }
-    fn insert_config_data(&self, data: HashMap<String,Vec<String>>) -> bool{
-        for (field, vals) in data.into_iter(){
-            
-            for val in vals{
-                println!("{}->{}", field, val);
+    fn retrieve_config_data(&self, data: HashMap<String,Vec<String>>) -> bool{
+        let mut files = HashMap::new();
+
+        for (field, vals) in data.into_iter() {
+            if field == "files" {
+                for val in vals {
+                    files.insert(val, String::new()); // Insert file paths with empty hashes initially
+                }
             }
         }
+        self.previous_hashes = files;
+
         return true;
     }
 }
@@ -164,7 +168,6 @@ impl Default for FIM {
     fn default() -> Self {
 
         Self {
-            files: HashMap::new(),
             previous_hashes: HashMap::new(),
             module_name: String::from("FIM"),
             current_data: CurrentData {
@@ -177,7 +180,6 @@ impl Default for FIM {
 impl Clone for FIM {
     fn clone(&self) -> Self {
         Self {
-            files: self.files.clone(),
             current_data: self.current_data.clone(),
             previous_hashes: self.previous_hashes.clone(),
             module_name: self.module_name.clone(),
