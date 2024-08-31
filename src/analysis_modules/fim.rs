@@ -148,7 +148,7 @@ impl AnalysisModule for FIM {
         
         return fields;
     }
-    fn retrieve_config_data(&self, data: HashMap<String,Vec<String>>) -> bool{
+    fn retrieve_config_data(&mut self, data: HashMap<String,Vec<String>>) -> bool{
         let mut files = HashMap::new();
 
         for (field, vals) in data.into_iter() {
