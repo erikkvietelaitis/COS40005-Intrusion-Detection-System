@@ -15,6 +15,7 @@ pub struct FIM {
     // Everything else is persistent memory. The data you set in these will be remembered between ticks
     pub previous_hashes: HashMap<String, String>,
     module_name: String,
+    pub files: HashMap<String, String>
 }
 
 // Function to generate hash using the key
@@ -141,8 +142,9 @@ impl AnalysisModule for FIM {
     fn build_config_fields(&self) -> Vec<crate::ConfigField> {
         let fields:Vec<ConfigField> = vec![
             ConfigField::new("fileName".to_owned(),"The name of your favorite file, must be single string".to_owned(),CoreEnums::ConfigFieldType::String,vec!["config.ini".to_owned()], false),
-            ConfigField::new("CoolestFileTypes".to_owned(),"The coolest file types".to_owned(),CoreEnums::ConfigFieldType::String,vec![".ini".to_owned(),".csv".to_owned(),".webp".to_owned(),".rs".to_owned()], true),
-            ConfigField::new("Cool Number".to_owned(),"The coolest number".to_owned(),CoreEnums::ConfigFieldType::Integer,vec!["1".to_owned(),"299792458".to_owned(),"69".to_owned(),"329".to_owned()], true)
+            //ConfigField::new("CoolestFileTypes".to_owned(),"The coolest file types".to_owned(),CoreEnums::ConfigFieldType::String,vec![".ini".to_owned(),".csv".to_owned(),".webp".to_owned(),".rs".to_owned()], true),
+            //ConfigField::new("Cool Number".to_owned(),"The coolest number".to_owned(),CoreEnums::ConfigFieldType::Integer,vec!["1".to_owned(),"299792458".to_owned(),"69".to_owned(),"329".to_owned()], true),
+            ConfigField::new("files".to_owned(),"Files to be monitored for integrity violations, must be an absolute path".to_owned(),CoreEnums::ConfigFieldType::Integer,vec!["/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/test".to_owned()], true)
         ];
         
         return fields;
@@ -160,15 +162,10 @@ impl AnalysisModule for FIM {
 
 impl Default for FIM {
     fn default() -> Self {
-            // Defining files to look 
-            // that did exist is now deleted 
-        let mut files = HashMap::new();
-        //files.insert("README.md".to_string(), "".to_string());
-        //files.insert("/etc/shadow".to_string(), "".to_string());
-        files.insert("/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/test".to_string(), "".to_string());
 
         Self {
-            previous_hashes: files,
+            files: HashMap::new(),
+            previous_hashes: HashMap::new(),
             module_name: String::from("FIM"),
             current_data: CurrentData {
                 new_hashes: HashMap::new(),
@@ -180,6 +177,7 @@ impl Default for FIM {
 impl Clone for FIM {
     fn clone(&self) -> Self {
         Self {
+            files: self.files.clone(),
             current_data: self.current_data.clone(),
             previous_hashes: self.previous_hashes.clone(),
             module_name: self.module_name.clone(),
