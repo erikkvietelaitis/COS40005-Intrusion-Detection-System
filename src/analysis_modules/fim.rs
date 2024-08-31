@@ -45,6 +45,11 @@ fn genhash(key: &str) -> (bool, String) {
 
 // Update section function
 fn update_section(new_hashes: &mut HashMap<String, String>) -> bool {
+    println!("new_hashes before update:");
+    for (key, hash) in new_hashes.iter() { // Use `.iter()` to avoid moving values
+        println!("Key: '{}', Hash: '{}'", key, hash);
+    }
+    
     let mut updated_section = HashMap::new();
     //println!("test");
     let mut hash_operated = false;
@@ -67,7 +72,7 @@ fn update_section(new_hashes: &mut HashMap<String, String>) -> bool {
             updated_section.insert(key, hash);
             //println!("test");
         } else {
-            println!("Failed to generate hash for key '{}'", key);
+            eprintln!("Failed to generate hash for key '{}'", key);
             return false;
         }
     }
