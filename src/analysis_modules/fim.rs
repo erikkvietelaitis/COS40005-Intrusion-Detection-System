@@ -45,10 +45,7 @@ fn genhash(key: &str) -> (bool, String) {
 
 // Update section function
 fn update_section(previous_hashes: &HashMap<String, String>, new_hashes: &mut HashMap<String, String>) -> bool {
-    println!("previous_hashes:");
-    for (key, hash) in previous_hashes.iter() {
-        println!("Key: '{}', Hash: '{}'", key, hash);
-    }
+    
 
     let mut updated_section = HashMap::new();
 
@@ -154,7 +151,7 @@ impl AnalysisModule for FIM {
     }
     fn retrieve_config_data(&mut self, data: HashMap<String,Vec<String>>) -> bool{
         let mut files = HashMap::new();
-        println!("{}",self.module_name);
+        //println!("{}",self.module_name);
 
         for (field, vals) in data.into_iter() {
             if field == "files" {
@@ -164,6 +161,11 @@ impl AnalysisModule for FIM {
             }
         }
         self.previous_hashes = files;
+
+        println!("previous_hashes:");
+        for (key, hash) in self.previous_hashes.iter() {
+            println!("Key: '{}', Hash: '{}'", key, hash);
+        }
 
         return true;
     }
