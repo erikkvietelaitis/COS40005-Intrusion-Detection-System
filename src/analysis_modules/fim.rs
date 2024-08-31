@@ -44,41 +44,32 @@ fn genhash(key: &str) -> (bool, String) {
 }
 
 // Update section function
-fn update_section(new_hashes: &mut HashMap<String, String>) -> bool {
-    println!("new_hashes before update:");
-    for (key, hash) in new_hashes.iter() { // Use `.iter()` to avoid moving values
+fn update_section(previous_hashes: &HashMap<String, String>, new_hashes: &mut HashMap<String, String>) -> bool {
+    println!("previous_hashes:");
+    for (key, hash) in previous_hashes.iter() {
         println!("Key: '{}', Hash: '{}'", key, hash);
     }
-    
-    let mut updated_section = HashMap::new();
-    //println!("test");
-    let mut hash_operated = false;
 
-    for key in new_hashes.keys().cloned() {
-        // Generate hash using the key
-        if Path::new(&key).exists(){
-            println!("{} exists!",&key);
-        }else{
-            println!("{} DOESNT exists!",&key);
-            // you should have some method of making a seperate log if a file 
-            // that did exist is now deleted 
+    let mut updated_section = HashMap::new();
+
+    // Iterate over each file path in previous_hashes
+    for (key, _) in previous_hashes {
+        if Path::new(key).exists() {
+            println!("{} exists!", key);
+        } else {
+            println!("{} DOES NOT exist!", key);
+            // Optionally handle files that existed before but are now missing
         }
-        let (hash_success, hash) = genhash(&key);
-        hash_operated = true;
-        
+
+        let (hash_success, hash) = genhash(key);
 
         if hash_success {
             // Insert the key and hash into the updated HashMap
-            updated_section.insert(key, hash);
-            //println!("test");
+            updated_section.insert(key.clone(), hash);
         } else {
             eprintln!("Failed to generate hash for key '{}'", key);
             return false;
         }
-    }
-    if !hash_operated {
-        eprintln!("Failed to do anything with hashes.");
-        return false;
     }
 
     // Print the contents of updated_section
@@ -87,14 +78,15 @@ fn update_section(new_hashes: &mut HashMap<String, String>) -> bool {
         println!("Key: '{}', Hash: '{}'", key, hash);
     }
 
+    // Update new_hashes with the new hashes
     *new_hashes = updated_section;
-    return true
+    true
 }
 
 impl AnalysisModule for FIM {
     fn get_data(&mut self) -> bool {
         // Update the section and handle the result
-        if !update_section(&mut self.current_data.new_hashes) {
+        if !update_section(&mut self.current_data.new_hashes, &mut self.previous_hashes) {
             return false; // Return false if update_section fails
         }
 
