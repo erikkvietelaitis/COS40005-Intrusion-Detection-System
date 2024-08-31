@@ -45,10 +45,10 @@ fn genhash(key: &str) -> (bool, String) {
 
 // Update section function
 fn update_section(previous_hashes: &HashMap<String, String>, new_hashes: &mut HashMap<String, String>) -> bool {
-    println!("previous_hashes:");
+    /*println!("previous_hashes:");
     for (key, hash) in previous_hashes.iter() {
         println!("Key: '{}', Hash: '{}'", key, hash);
-    }
+    }*/
 
     let mut updated_section = HashMap::new();
 
@@ -73,10 +73,10 @@ fn update_section(previous_hashes: &HashMap<String, String>, new_hashes: &mut Ha
     }
 
     // Print the contents of updated_section
-    println!("Updated section contents:");
+    /*println!("Updated section contents:");
     for (key, hash) in &updated_section {
         println!("Key: '{}', Hash: '{}'", key, hash);
-    }
+    }*/
 
     // Update new_hashes with the new hashes
     *new_hashes = updated_section;
