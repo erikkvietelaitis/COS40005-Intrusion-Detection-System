@@ -38,7 +38,8 @@ fn main() {
     println!("");
     // ADD NEW MODULES HERE \|/ use example module's exact structure
     modules = vec![Box::new(
-        <AnalysisModules::example::Example as std::default::Default>::default(),
+        //<AnalysisModules::example::Example as std::default::Default>::default(),
+        <AnalysisModules::fim::FIM as std::default::Default>::default(),
     )];
     println!("    loaded {} module/s", modules.len().to_string());
 
