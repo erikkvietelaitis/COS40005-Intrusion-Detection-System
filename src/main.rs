@@ -82,7 +82,7 @@ fn main() {
         println!("Starting Tick({})", i.to_string());
         for module in modules.iter_mut() {
             if module.get_data() {
-                println!("Module:'{}' succesfulled gathered data", module.get_name());
+                println!("Module:'{}' successfully gathered data", module.get_name());
             } else {
                 println!(
                     "ERROR::Module:'{}' failed trying to collect data",

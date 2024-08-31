@@ -21,6 +21,7 @@ pub struct FIM {
 fn genhash(key: &str) -> (bool, String) {
     let output = match Command::new("b3sum")
         .arg(key)
+        .arg("--no-names")
         .output() {
         
         Ok(output) => output,
@@ -33,7 +34,7 @@ fn genhash(key: &str) -> (bool, String) {
     let stdout_str = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr_str = String::from_utf8_lossy(&output.stderr).into_owned();
     
-    println!("{}", stdout_str);
+    //println!("{}", stdout_str);
 
     if !stderr_str.is_empty() {
         eprintln!("stderr for key '{}': {}", key, stderr_str);
@@ -64,7 +65,7 @@ fn update_section(section: &mut HashMap<String, String>) -> bool {
         if hash_success {
             // Insert the key and hash into the updated HashMap
             updated_section.insert(key, hash);
-            println!("test");
+            //println!("test");
         } else {
             println!("Failed to generate hash for key '{}'", key);
             return false;
@@ -73,6 +74,12 @@ fn update_section(section: &mut HashMap<String, String>) -> bool {
     if !hash_operated {
         eprintln!("Failed to do anything with hashes.");
         return false;
+    }
+
+    // Print the contents of updated_section
+    println!("Updated section contents:");
+    for (key, hash) in &updated_section {
+        println!("Key: '{}', Hash: '{}'", key, hash);
     }
 
     *section = updated_section;
@@ -140,7 +147,7 @@ impl AnalysisModule for FIM {
     }
     fn build_config_fields(&self) -> Vec<crate::ConfigField> {
         let fields:Vec<ConfigField> = vec![
-            ConfigField::new("fileName".to_owned(),"The name of your favorite file, must be single string".to_owned(),core_enums::ConfigFieldType::String,vec!["config.ini".to_owned()], false),
+            //ConfigField::new("fileName".to_owned(),"The name of your favorite file, must be single string".to_owned(),core_enums::ConfigFieldType::String,vec!["config.ini".to_owned()], false),
             //ConfigField::new("CoolestFileTypes".to_owned(),"The coolest file types".to_owned(),CoreEnums::ConfigFieldType::String,vec![".ini".to_owned(),".csv".to_owned(),".webp".to_owned(),".rs".to_owned()], true),
             //ConfigField::new("Cool Number".to_owned(),"The coolest number".to_owned(),CoreEnums::ConfigFieldType::Integer,vec!["1".to_owned(),"299792458".to_owned(),"69".to_owned(),"329".to_owned()], true),
             ConfigField::new("files".to_owned(),"Files to be monitored for integrity violations, must be an absolute path".to_owned(),core_enums::ConfigFieldType::Integer,vec!["/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/test".to_owned()], true)
