@@ -9,9 +9,9 @@ This document details the features added to Chromia between major releases. This
 ### Additions:
 - Added config file system 
     - you can now add inputs for your module with function `fn build_config_fields(&self) -> Vec<ConfigField>`
-    - User inputs will be gathered by your module in the new function `fn insert_config_data(&self, data: HashMap<String, Vec<String>>) -> bool`
+    - User inputs will be gathered by your module in the new function `fn retrieve_config_data(&self, data: HashMap<String, Vec<String>>) -> bool`
         - While datatype validation will occur, you should validate the inputs further yourself in this function. (eg: if a user is entering a filetype you should ensure that the file exists and is accessible). If validation fails; use `panic!()` to kill the system. 
-    - System execution order for modules is now like so: `default()->build_config_fields()->insert_config_data-> CORE LOOP{get_data-> perform_analysis()}*infinity`
+    - System execution order for modules is now like so: `default()->build_config_fields()->retrieve_config_data-> CORE LOOP{get_data-> perform_analysis()}*infinity`
     - **THESE FUNCTIONS MUST BE IMPLEMENTED FOR YOUR CODE TO RUN**
     - Following features will be coming in future updates to the config file system:
         - Checking data types of values entered by user

@@ -68,7 +68,7 @@ fn main() {
         //     vals.get(0).unwrap();
 
         // }
-        module.insert_config_data(section);
+        module.retrieve_config_data(section);
     }
     
     // println!("{:?}", serde_json::to_string(&t).unwrap());
