@@ -17,10 +17,9 @@ byteorder = "1.4"
 
 
 #Netowrking
-<<<<<<< HEAD
 port_scanner = "0.1.5"
-=======
 pnet = "0.35.0"
 rust-ini = "0.21.1"
 serde_json = "1.0.127"
->>>>>>> main
+
+
