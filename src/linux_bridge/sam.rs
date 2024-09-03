@@ -79,3 +79,32 @@ pub fn network_packet_dropped_errors() -> String {
     return last.to_string();
 }
 
+//Function to pull all the CPU information from the /proc/cpuinfo file, and return the CPU information as a string.
+pub fn cpu_info() -> String {
+    let output = Command::new("cat")
+        .arg("/proc/cpuinfo")
+        .output()
+        .expect("Failed to execute command");
+    let last = str::from_utf8(&output.stdout).unwrap();
+    return last.to_string();
+}
+//Function to pull the memory usage
+pub fn memory_usage() -> String {
+    let output = Command::new("free")
+        .output()
+        .expect("Failed to execute command");
+    let last = str::from_utf8(&output.stdout).unwrap();
+    return last.to_string();
+}
+
+
+//Function to pull the CPU usage  from the top command, store the result in a buffer and return the CPU usage as a string.
+// pub fn cpu_usage() -> String {
+//     let output = Command::new("top")
+//         .output()
+//         .expect("Failed to execute command");
+//     let last = str::from_utf8(&output.stdout).unwrap();
+//     return last.to_string();
+// }
+
+

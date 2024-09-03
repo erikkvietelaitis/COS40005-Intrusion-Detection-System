@@ -1,7 +1,7 @@
 
 use std::collections::HashMap;
 use std::path::Path;
-use std::vec;
+use std::{mem, vec};
 
 use std::{thread, time};
 //use system::{system_uptime, system_user};
@@ -139,7 +139,12 @@ println!("{}", read);
 remove_read_write_file();
 let usage = disk_usage();
 println!("{}", usage);
-let ping = packet_loss();
+let ping = network_packet_dropped_errors();
 println!("{}", ping);
-
+let cpu = cpu_info();
+println!("{}", cpu);
+let cpu_usage_value = cpu_usage(); // Renamed variable to avoid shadowing
+println!("{}", cpu_usage_value);
+let memory = memory_usage();
+println!("{}", memory);
 }
