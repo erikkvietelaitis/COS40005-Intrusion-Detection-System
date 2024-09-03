@@ -9,6 +9,7 @@ dependencies = [
  "chrono",
  "pnet",
  "rand",
+ "regex",
  "sysinfo",
 ]
 
