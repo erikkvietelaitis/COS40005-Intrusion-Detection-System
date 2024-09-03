@@ -69,7 +69,7 @@ pub fn disk_usage() -> String {
 
 //Fucntion to check for packet loss using the ping command, and return the packet loss as a string.
 //Displays statistics for all network interfaces.
-pub fn packet_loss() -> String {
+pub fn network_packet_dropped_errors() -> String {
     let output = Command::new("ip")
         .arg("-s")
         .arg("link")
