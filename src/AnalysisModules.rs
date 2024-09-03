@@ -1,2 +1,2 @@
 pub mod example;
-mod anomaly_dection;
+pub mod anomaly_dection;

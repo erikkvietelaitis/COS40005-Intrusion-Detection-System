@@ -33,9 +33,10 @@ fn main() {
     let mut modules: Vec<Box<dyn AnalysisModule>>;
     println!("");
     // ADD NEW MODULES HERE \|/ use example module's exact structure
-    modules = vec![Box::new(
-        <AnalysisModules::example::Example as std::default::Default>::default(),
-    )];
+    modules = vec![
+        Box::new(<AnalysisModules::example::Example as std::default::Default>::default()),
+        Box::new(<AnalysisModules::anomaly_dection::AnomalyDetector as std::default::Default>::default())
+        ];
     println!("    loaded {} module/s", modules.len().to_string());
     let mut logs: Vec<Log> = Vec::new();
     let mut i = 0;
