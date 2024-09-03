@@ -10,7 +10,7 @@ use std::str;
 
 
 
-use sysinfo::{System};
+use sysinfo::System;
 
 // Function to get and print the current system time
 pub fn system_time() -> String {
@@ -123,9 +123,19 @@ pub fn sys_file_write(filepath: &str, content: &str) -> io::Result<()> {
 
 //Function to write to a file, with a path and content as parameters, and return a Result<()> type.
 pub fn file_write() {
-     let filepath = "/home/erik/Documents/test.txt";
+    let filepath = "/home/erik/Documents/test.txt";
     let content = "Hello, world!";
-     sys_file_write(filepath, content);
+
+    match sys_file_write(filepath, content) {
+        Ok(()) => {
+            // Optionally, you can print a success message or log the success
+            println!("File written successfully.");
+        }
+        Err(e) => {
+            // Handle the error case, e.g., by logging or printing an error message
+            eprintln!("Failed to write file: {}", e);
+        }
+    }
 }
 
 

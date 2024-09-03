@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use crate::{ConfigField, LaraCore::*};
-use rand::{Rng};
+use crate::{ConfigField, lara_core::*};
+use rand::Rng;
 
-use CoreTraits::AnalysisModule;
+use core_traits::AnalysisModule;
 #[derive(Debug, Copy, Clone)]
 
 // define the set of data that will be captured each tick, You can structure this however you like to fit your needs, Just call it this name
@@ -35,6 +35,9 @@ impl AnalysisModule for Example<'_> {
             "testing.png",
         ];
 
+        println!("{}", self.current_data.something_else);
+        println!("{}", self.current_data.some_count_of_something);
+
         self.current_data = CurrentData {
             some_file_name: stringiest[rand::thread_rng().gen_range(0, 4)],
             some_count_of_something: rand::thread_rng().gen_range(0, 100),
@@ -50,13 +53,13 @@ impl AnalysisModule for Example<'_> {
     // Take the current data gathered from one of the functions above, using this data, 
     // plus the persistent data stored in the object to create logs (AKA alerts) 
     fn perform_analysis(&mut self) -> Vec<crate::Log> {
-        let mut results: Vec<CoreStruts::Log> = Vec::new();
+        let mut results: Vec<core_struts::Log> = Vec::new();
         if self.history_of_filenames.contains(&self.current_data.some_file_name)
         {
             let mut msg: String = String::from("File '");
             msg.push_str(&self.current_data.some_file_name);
             msg.push_str("' was opened twice recently");
-            results.push(CoreStruts::Log::new(CoreEnums::LogType::Serious,self.module_name.clone(),msg,));
+            results.push(core_struts::Log::new(core_enums::LogType::Serious,self.module_name.clone(),msg,));
             self.history_of_filenames = Vec::new();
         } else {
             self.history_of_filenames
@@ -70,9 +73,9 @@ impl AnalysisModule for Example<'_> {
     }
     fn build_config_fields(&self) -> Vec<crate::ConfigField> {
         let fields:Vec<ConfigField> = vec![
-            ConfigField::new("fileName".to_owned(),"The name of your favorite file, must be single string".to_owned(),CoreEnums::ConfigFieldType::String,vec!["config.ini".to_owned()], false),
-            ConfigField::new("CoolestFileTypes".to_owned(),"The coolest file types".to_owned(),CoreEnums::ConfigFieldType::String,vec![".ini".to_owned(),".csv".to_owned(),".webp".to_owned(),".rs".to_owned()], true),
-            ConfigField::new("Cool Number".to_owned(),"The coolest number".to_owned(),CoreEnums::ConfigFieldType::Integer,vec!["1".to_owned(),"299792458".to_owned(),"69".to_owned(),"329".to_owned()], true)
+            ConfigField::new("fileName".to_owned(),"The name of your favorite file, must be single string".to_owned(),core_enums::ConfigFieldType::String,vec!["config.ini".to_owned()], false),
+            ConfigField::new("CoolestFileTypes".to_owned(),"The coolest file types".to_owned(),core_enums::ConfigFieldType::String,vec![".ini".to_owned(),".csv".to_owned(),".webp".to_owned(),".rs".to_owned()], true),
+            ConfigField::new("Cool Number".to_owned(),"The coolest number".to_owned(),core_enums::ConfigFieldType::Integer,vec!["1".to_owned(),"299792458".to_owned(),"69".to_owned(),"329".to_owned()], true)
         ];
         
         return fields;

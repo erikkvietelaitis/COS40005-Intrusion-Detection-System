@@ -1,16 +1,16 @@
 
 use std::collections::HashMap;
 use std::path::Path;
-use std::{vec};
+use std::vec;
 
 use std::{thread, time};
 //use system::{system_uptime, system_user};
-use LaraCore::CoreTraits::AnalysisModule;
+use lara_core::core_traits::AnalysisModule;
 
-use crate::LaraCore::CoreStruts::*;
-pub mod AnalysisModules;
+use crate::lara_core::core_struts::*;
+pub mod analysis_modules;
 use crate::linux_bridge::system;
-pub mod LaraCore;
+pub mod lara_core;
 pub mod linux_bridge;
 
 // Declare the linux_bridge module
@@ -37,9 +37,10 @@ fn main() {
     let mut modules: Vec<Box<dyn AnalysisModule>>;
     println!("");
     // ADD NEW MODULES HERE \|/ use example module's exact structure
-    modules = vec![Box::new(
-        <AnalysisModules::example::Example as std::default::Default>::default(),
-    )];
+    modules = vec![
+        //Box::new(<analysis_modules::example::Example as std::default::Default>::default()),
+        Box::new(<analysis_modules::fim::FIM as std::default::Default>::default())
+        ];
     println!("    loaded {} module/s", modules.len().to_string());
 
     if !Path::new("config.ini").exists() {
@@ -81,7 +82,7 @@ fn main() {
         println!("Starting Tick({})", i.to_string());
         for module in modules.iter_mut() {
             if module.get_data() {
-                println!("Module:'{}' succesfulled gathered data", module.get_name());
+                println!("Module:'{}' successfully gathered data", module.get_name());
             } else {
                 println!(
                     "ERROR::Module:'{}' failed trying to collect data",
