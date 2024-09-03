@@ -139,4 +139,7 @@ println!("{}", read);
 remove_read_write_file();
 let usage = disk_usage();
 println!("{}", usage);
+let ping = packet_loss();
+println!("{}", ping);
+
 }

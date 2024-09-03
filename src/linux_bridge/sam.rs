@@ -67,3 +67,15 @@ pub fn disk_usage() -> String {
     return last.to_string();
 }
 
+//Fucntion to check for packet loss using the ping command, and return the packet loss as a string.
+//Displays statistics for all network interfaces.
+pub fn packet_loss() -> String {
+    let output = Command::new("ip")
+        .arg("-s")
+        .arg("link")
+        .output()
+        .expect("Failed to execute command");
+    let last = str::from_utf8(&output.stdout).unwrap();
+    return last.to_string();
+}
+
