@@ -7,124 +7,136 @@ use std::{thread, time};
 //use system::{system_uptime, system_user};
 use lara_core::core_traits::AnalysisModule;
 
+use linux_bridge::system::cpu_usage;
+
 use crate::lara_core::core_struts::*;
 pub mod analysis_modules;
 use crate::linux_bridge::system;
+use crate::linux_bridge::sam;
 pub mod lara_core;
 pub mod linux_bridge;
 
 // Declare the linux_bridge module
 
 fn main() {
-    // TODO: Put startup info in seperate function
-    println!("Chromia({}) is starting", env!("CARGO_PKG_VERSION"));
-    println!("------------------");
-    println!("Host System Info:");
-    println!("    Host Name :{}", system::system_host_name());
-    println!("    OS: {}", system::system_name());
-    println!("    OS version: {}", system::system_os_version());
-    println!("    Kernal version: {}", system::system_kernel_version());
-    println!("    Current Time: {}", system::system_time());
-    println!("");
-    println!("Initialising Core systems:");
+//     // TODO: Put startup info in seperate function
+//     println!("Chromia({}) is starting", env!("CARGO_PKG_VERSION"));
+//     println!("------------------");
+//     println!("Host System Info:");
+//     println!("    Host Name :{}", system::system_host_name());
+//     println!("    OS: {}", system::system_name());
+//     println!("    OS version: {}", system::system_os_version());
+//     println!("    Kernal version: {}", system::system_kernel_version());
+//     println!("    Current Time: {}", system::system_time());
+//     println!("");
+//     println!("Initialising Core systems:");
 
-    // Should be loaded by configuration. Higher number means lower performance impact of the IDS
-    let tick_intervals = time::Duration::from_millis(1000);
-    println!("    tick interval: {}ms", tick_intervals.as_millis());
-    println!("");
+//     // Should be loaded by configuration. Higher number means lower performance impact of the IDS
+//     let tick_intervals = time::Duration::from_millis(1000);
+//     println!("    tick interval: {}ms", tick_intervals.as_millis());
+//     println!("");
 
-    println!("Initializing Analysis Modules:");
-    let mut modules: Vec<Box<dyn AnalysisModule>>;
-    println!("");
-    // ADD NEW MODULES HERE \|/ use example module's exact structure
-    modules = vec![
-        //Box::new(<analysis_modules::example::Example as std::default::Default>::default()),
-        Box::new(<analysis_modules::fim::FIM as std::default::Default>::default())
-        ];
-    println!("    loaded {} module/s", modules.len().to_string());
+//     println!("Initializing Analysis Modules:");
+//     let mut modules: Vec<Box<dyn AnalysisModule>>;
+//     println!("");
+//     // ADD NEW MODULES HERE \|/ use example module's exact structure
+//     modules = vec![
+//         //Box::new(<analysis_modules::example::Example as std::default::Default>::default()),
+//         Box::new(<analysis_modules::fim::FIM as std::default::Default>::default())
+//         ];
+//     println!("    loaded {} module/s", modules.len().to_string());
 
-    if !Path::new("config.ini").exists() {
-        create_config(modules);
-        return;
-    }
-    let config_result = system::read_csv("config.ini".to_owned());
-    let config = match config_result {
-        Ok(file) => file,
-        Err(error) => panic!("Problem opening the file: {error:?}"),
-    };
-    println!("Successfully found config file!");
-    let mut section: HashMap<String, Vec<String>>;
-    let mut _errors:Vec<&str>;
-    for module in modules.iter_mut() {
-        section = match config.get(&module.get_name()){
-            Some(s) => s.clone(),
-            None => section_not_found(module.get_name()),
-        };
-        // for field in module.build_config_fields().into_iter(){
-        //     let vals = section.get(&field.name).unwrap_or(&field.default_values);
-        //     if(vals.len() == 0){
-        //         panic!("Chromia failed to launch: config field {} for {} was not provided a value",&field.name,module.get_name());
-        //     }
+//     if !Path::new("config.ini").exists() {
+//         create_config(modules);
+//         return;
+//     }
+//     let config_result = system::read_csv("config.ini".to_owned());
+//     let config = match config_result {
+//         Ok(file) => file,
+//         Err(error) => panic!("Problem opening the file: {error:?}"),
+//     };
+//     println!("Successfully found config file!");
+//     let mut section: HashMap<String, Vec<String>>;
+//     let mut _errors:Vec<&str>;
+//     for module in modules.iter_mut() {
+//         section = match config.get(&module.get_name()){
+//             Some(s) => s.clone(),
+//             None => section_not_found(module.get_name()),
+//         };
+//         // for field in module.build_config_fields().into_iter(){
+//         //     let vals = section.get(&field.name).unwrap_or(&field.default_values);
+//         //     if(vals.len() == 0){
+//         //         panic!("Chromia failed to launch: config field {} for {} was not provided a value",&field.name,module.get_name());
+//         //     }
             
-        //     vals.get(0).unwrap();
+//         //     vals.get(0).unwrap();
 
-        // }
-        module.retrieve_config_data(section);
-    }
+//         // }
+//         module.retrieve_config_data(section);
+//     }
     
-    // println!("{:?}", serde_json::to_string(&t).unwrap());
+//     // println!("{:?}", serde_json::to_string(&t).unwrap());
 
-    let mut logs: Vec<Log> = Vec::new();
-    let mut i = 0;
-    println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT");
-    println!("------------------(Real Time alerts)------------------");
-    loop {
-        println!("Starting Tick({})", i.to_string());
-        for module in modules.iter_mut() {
-            if module.get_data() {
-                println!("Module:'{}' successfully gathered data", module.get_name());
-            } else {
-                println!(
-                    "ERROR::Module:'{}' failed trying to collect data",
-                    module.get_name()
-                );
-            }
-            logs.append(&mut module.perform_analysis());
-        }
-        println!("Following logs were generated this tick:");
-        for log in logs.iter() {
-            println!("    {}", log.build_alert());
-        }
-        logs = Vec::new();
-        i += 1;
-        thread::sleep(tick_intervals)
-    }
-}
-fn section_not_found(name: String)->HashMap<String,Vec<String>>{
-    println!("Config for {} module was not found! Chromia will attempt to use default values", name);    
-    return HashMap::new();
-}
-fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
-    println!("Could not find config file; Creating configuration file now");
-    let mut config_file_contents: String = String::new();
-    let mut fields: Vec<ConfigField>;
-    //Define core system fields
-    config_file_contents.push_str("[CoreSystem]\n;The time in milliseconds that the systems waits between checks \n;Higher numbers reduce performance impact and timeliness of alerts\ntickInterval=1000\n");
-    for module in modules.iter_mut() {
-        config_file_contents.push_str("[");
-        config_file_contents.push_str(&module.get_name());
-        config_file_contents.push_str("]");
+//     let mut logs: Vec<Log> = Vec::new();
+//     let mut i = 0;
+//     println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT");
+//     println!("------------------(Real Time alerts)------------------");
+//     loop {
+//         println!("Starting Tick({})", i.to_string());
+//         for module in modules.iter_mut() {
+//             if module.get_data() {
+//                 println!("Module:'{}' successfully gathered data", module.get_name());
+//             } else {
+//                 println!(
+//                     "ERROR::Module:'{}' failed trying to collect data",
+//                     module.get_name()
+//                 );
+//             }
+//             logs.append(&mut module.perform_analysis());
+//         }
+//         println!("Following logs were generated this tick:");
+//         for log in logs.iter() {
+//             println!("    {}", log.build_alert());
+//         }
+//         logs = Vec::new();
+//         i += 1;
+//         thread::sleep(tick_intervals)
+//     }
+// }
+// fn section_not_found(name: String)->HashMap<String,Vec<String>>{
+//     println!("Config for {} module was not found! Chromia will attempt to use default values", name);    
+//     return HashMap::new();
+// }
+// fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
+//     println!("Could not find config file; Creating configuration file now");
+//     let mut config_file_contents: String = String::new();
+//     let mut fields: Vec<ConfigField>;
+//     //Define core system fields
+//     config_file_contents.push_str("[CoreSystem]\n;The time in milliseconds that the systems waits between checks \n;Higher numbers reduce performance impact and timeliness of alerts\ntickInterval=1000\n");
+//     for module in modules.iter_mut() {
+//         config_file_contents.push_str("[");
+//         config_file_contents.push_str(&module.get_name());
+//         config_file_contents.push_str("]");
 
-        fields = module.build_config_fields();
-        for field in fields.into_iter() {
-            config_file_contents.push_str(&field.build_field());
-        }
-        config_file_contents.push_str("\n");
-    }
-    let file_result = system::sys_file_write("config.ini", &config_file_contents);
-    match file_result{
-        Ok(_) => println!("Successfully created Config file.\n Please fill out file and re-run Chromia to activate"),
-        Err(_e) => panic!("Could not create file in current directory!"),
-    }
-    return;
+//         fields = module.build_config_fields();
+//         for field in fields.into_iter() {
+//             config_file_contents.push_str(&field.build_field());
+//         }
+//         config_file_contents.push_str("\n");
+//     }
+//     let file_result = system::sys_file_write("config.ini", &config_file_contents);
+//     match file_result{
+//         Ok(_) => println!("Successfully created Config file.\n Please fill out file and re-run Chromia to activate"),
+//         Err(_e) => panic!("Could not create file in current directory!"),
+//     }
+//     return;
+
+use linux_bridge::sam::*;
+let write = disk_write_speed();
+println!("{}", write);
+let read = disk_read_speed();
+println!("{}", read);
+remove_read_write_file();
+let usage = disk_usage();
+println!("{}", usage);
 }
