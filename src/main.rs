@@ -2,12 +2,12 @@ use std::any::type_name;
 use std::vec;
 
 use std::{thread, time};
-use LaraCore::CoreTraits::AnalysisModule;
+use lara_core::core_traits::AnalysisModule;
 
-use crate::LaraCore::CoreStruts::*;
-pub mod AnalysisModules;
+use crate::lara_core::core_struts::*;
+pub mod analysis_modules;
 use crate::linux_bridge::*;
-pub mod LaraCore;
+pub mod lara_core;
 pub mod linux_bridge;
 
 // Declare the linux_bridge module
@@ -34,8 +34,8 @@ fn main() {
     println!("");
     // ADD NEW MODULES HERE \|/ use example module's exact structure
     modules = vec![
-        Box::new(<AnalysisModules::example::Example as std::default::Default>::default()),
-        Box::new(<AnalysisModules::anomaly_dection::AnomalyDetector as std::default::Default>::default())
+        Box::new(<analysis_modules::example::Example as std::default::Default>::default()),
+        Box::new(<analysis_modules::anomaly_dection::AnomalyDetector as std::default::Default>::default())
         ];
     println!("    loaded {} module/s", modules.len().to_string());
     let mut logs: Vec<Log> = Vec::new();

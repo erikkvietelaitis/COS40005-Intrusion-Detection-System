@@ -1,6 +1,6 @@
-use crate::LaraCore::*;               // Importing core components of the LaraCore module
+use crate::lara_core::*;               // Importing core components of the LaraCore module
 use rand::prelude::*;                // Importing useful traits for random number generation and selection
-use CoreTraits::AnalysisModule;     // Bringing in the AnalysisModule trait for implementation
+use core_traits::AnalysisModule;     // Bringing in the AnalysisModule trait for implementation
 use regex::Regex;                  // Importing Regex for pattern matching on strings
 
 // This is a struct to store system data for the current tick
@@ -41,8 +41,8 @@ impl AnalysisModule for AnomalyDetector<'_> {
     }
 
     // This Function analysis the gathered data and generate logs if anomalies are detected
-    fn perform_analysis(&mut self) -> Vec<CoreStruts::Log> {
-        let mut results: Vec<CoreStruts::Log> = Vec::new();              // Initialise an empty vector to store logs
+    fn perform_analysis(&mut self) -> Vec<core_struts::Log> {
+        let mut results: Vec<core_struts::Log> = Vec::new();              // Initialise an empty vector to store logs
 
         let suspicious_pattern = Regex::new(r"rm").unwrap(); // Define a pattern to detect suspicious commands
 
@@ -56,8 +56,8 @@ impl AnalysisModule for AnomalyDetector<'_> {
                 self.current_data.command_executed
             );
             // Add the log to the results
-            results.push(CoreStruts::Log::new(
-                CoreEnums::LogType::Serious,
+            results.push(core_struts::Log::new(
+                core_enums::LogType::Serious,
                 self.module_name.clone(),
                 msg,
             ));
@@ -71,8 +71,8 @@ impl AnalysisModule for AnomalyDetector<'_> {
                 self.current_data.file_name
             );
             // Add the log to the results
-            results.push(CoreStruts::Log::new(
-                CoreEnums::LogType::Serious,
+            results.push(core_struts::Log::new(
+                core_enums::LogType::Serious,
                 self.module_name.clone(),
                 msg,
             ));
@@ -86,6 +86,14 @@ impl AnalysisModule for AnomalyDetector<'_> {
     // This function gets the name of the module
     fn get_name(&self) -> String {
         self.module_name.clone() // Return the name of the module
+    }
+    
+    fn build_config_fields(&self) -> Vec<crate::ConfigField> {
+        return Vec::new();
+    }
+    
+    fn retrieve_config_data(&mut self, data: std::collections::HashMap<String, Vec<String>>) -> bool {
+        return true;
     }
 }
 
