@@ -1,7 +1,7 @@
 use std::collections::{HashSet, HashMap};
 use crate::{ConfigField, LaraCore::*};
 use CoreTraits::AnalysisModule;
-use port_scanner::scan_ports_range; // Ensure this is correctly imported
+use port_scanner::scan_ports_range; 
 
 // Define the Networking struct which will handle the scanning of ports
 pub struct Networking {
