@@ -97,14 +97,42 @@ pub fn memory_usage() -> String {
     return last.to_string();
 }
 
+use std::process::{Stdio};
+use std::io::Read;
 
 //Function to pull the CPU usage  from the top command, store the result in a buffer and return the CPU usage as a string.
-// pub fn cpu_usage() -> String {
-//     let output = Command::new("top")
-//         .output()
-//         .expect("Failed to execute command");
-//     let last = str::from_utf8(&output.stdout).unwrap();
-//     return last.to_string();
-// }
+  // Run the `top` command and capture its output
+    //Running this commnad will print a static output of the top command at the time of execution
+    //The output will be in the following format:
+//         PID USER      PR  NI    VIRT    RES    SHR S
+//   21645 erik      20   0 1138.2g 353900 102828 S
+//   21721 erik      20   0 1140.2g 693148  79892 S
+//     950 erik      -2   0 2639104 342420 243220 R
+//   21624 erik      20   0   32.7g 146748 103584 S
+//Where the first column is the PID, the second column is the user, the third column is the priority,
+// the fourth column is the nice value, the fifth column is the virtual memory, the sixth column is the resident memory, 
+//the seventh column is the shared memory, and the eighth column is the status.
+
+//Where PID is the process ID,
+// USER is the user who started the process, 
+//PR is the priority of the process, 
+//NI is the nice value of the process which is used to set the priority of the process,
+// VIRT is the virtual memory used by the process which is the total memory used by the process,
+// RES is the resident memory used by the process which is the physical memory used by the process,
+// SHR is the shared memory used by the process which is the memory shared by the process,
+// S is the status of the process which can be S (sleeping), R (running), D (uninterruptible sleep), Z (zombie), or T (stopped).
+pub fn cpu_usage() -> String {
+    let output = Command::new("top")
+        .arg("-b")   // Run in batch mode, this is necessary to prevent the program from hanging this allows for a capture of the output at the time of execution
+        .arg("-n")   
+        .arg("1")    
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("Failed to start `top` command");
+    let output = output
+        .wait_with_output() // Wait for the command to finish and capture its output
+        .expect("Failed to read `top` output");
+    String::from_utf8_lossy(&output.stdout).to_string()
+}
 
 
