@@ -11,6 +11,7 @@ dependencies = [
  "nix",
  "pnet",
  "rand",
+ "regex",
  "rust-ini",
  "serde_json",
  "sysinfo",

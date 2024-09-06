@@ -137,14 +137,14 @@ println!("{}", write);
 let read = disk_read_speed();
 println!("{}", read);
 remove_read_write_file();
-let usage = disk_usage();
+let usage = disk_usage("/home");
 println!("{}", usage);
-let ping = network_packet_dropped_errors();
-println!("{}", ping);
-let cpu = cpu_info();
-println!("{}", cpu);
-let cpu_usage_value = cpu_usage(); // Renamed variable to avoid shadowing
-println!("{}", cpu_usage_value);
-let memory = memory_usage();
-println!("{}", memory);
+// let ping = network_packet_dropped_errors();
+// println!("{}", ping);
+// let cpu = cpu_info();
+// println!("{}", cpu);
+// let cpu_usage_value = cpu_usage(); // Renamed variable to avoid shadowing
+// println!("{}", cpu_usage_value);
+// let memory = memory_usage();
+// println!("{}", memory);
 }

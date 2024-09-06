@@ -1,5 +1,6 @@
 use std::process::Command;
 use std::str;
+use regex::Regex;
 //Function call to check the read speed of a disk using the dd command, and return the read speed as a string.
 //1024+0 records in
 //1024+0 records out
@@ -10,12 +11,20 @@ pub fn disk_write_speed() -> String {
     let output = Command::new("dd")
         .arg("if=/dev/zero")
         .arg("of=/tmp/test")
-        .arg("bs=1M")
-        .arg("count=1024")
+        .arg("bs=1G")
+        .arg("count=1")
+        .arg("oflag=direct")
         .output()
         .expect("Failed to execute command");
     let last = str::from_utf8(&output.stderr).unwrap();
-    return last.to_string();
+    let re = Regex::new(r"([0-9.]+ s), ([0-9.]+ [A-Z]+/s)").unwrap();
+
+    // Apply the regex to find the time and speed
+    if let Some(caps) = re.captures(&last) {
+        format!("Time: {}, Speed: {}", &caps[1], &caps[2])
+    } else {
+        "No match found".to_string()
+    }
 }
 
 //1024+0 records in
@@ -26,12 +35,18 @@ pub fn disk_read_speed() -> String {
     let output = Command::new("dd")
         .arg("if=/tmp/test")
         .arg("of=/dev/null")
-        .arg("bs=1M")
-        .arg("count=1024")
+        .arg("bs=1G")
+        .arg("count=1")
+        .arg("iflag=direct")
         .output()
         .expect("Failed to execute command");
     let last = str::from_utf8(&output.stderr).unwrap();
-    return last.to_string();
+    let re = Regex::new(r"([0-9.]+ s), ([0-9.]+ [A-Z]+/s)").unwrap();
+    if let Some(caps) = re.captures(&last) {
+        format!("Time: {}, Speed: {}", &caps[1], &caps[2])
+    } else {
+        "No match found".to_string()
+    }
 }
 
 //This function is called after the disk read speed function is called, as it requires the test file to be present, and removes the test file.
@@ -58,9 +73,24 @@ pub fn remove_read_write_file() {
 // tmpfs           2.4G   22M  2.4G   1% /run/user/1000
 //The first column is the filesystem, the second column is the size of the filesystem, the third column is the amount of space used,
 // the fourth column is the amount of space available, the fifth column is the percentage of space used, and the sixth column is the mount point.
-pub fn disk_usage() -> String {
+//The code below has been modified to take a file path as a parameter, and return the disk usage as a string.
+// In the example of /home, the output would be: 
+// Filesystem      Size  Used Avail Use% Mounted on
+// /dev/nvme0n1p5  1.8T   24G  1.7T   2% /
+//Where it still calls the root direcotry... If though /home directory is located on another drive or in a sepreate location then it would display that location
+
+//however we can call directories including
+// /run or tmpfs : where temp files are stored for runtime, usally stored in RAM
+// /dev/shm  or tmpfs: used for shared memory, process to communicate with each other 
+// /run/lock : location for lock files, prevent multipul processes from accessing the same resources 
+// /tmp : temporary filesystem storage
+// /boot/efi : Mounting the EFI system used by the UEFI BIOS to boot the OS
+// run/user/1000 : Temp file for storing runtumes specific to a user - 1000
+// /sys/firmware/efi/efivars : Virtual files system used to interact with EFI  variables   
+pub fn disk_usage(file_path: &str) -> String {
     let output = Command::new("df")
-        .arg("-h")
+          .arg("-h")
+        .arg(file_path)
         .output()
         .expect("Failed to execute command");
     let last = str::from_utf8(&output.stdout).unwrap();
