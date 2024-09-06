@@ -151,18 +151,30 @@ use std::io::Read;
 // RES is the resident memory used by the process which is the physical memory used by the process,
 // SHR is the shared memory used by the process which is the memory shared by the process,
 // S is the status of the process which can be S (sleeping), R (running), D (uninterruptible sleep), Z (zombie), or T (stopped).
-pub fn cpu_usage() -> String {
-    let output = Command::new("top")
-        .arg("-b")   // Run in batch mode, this is necessary to prevent the program from hanging this allows for a capture of the output at the time of execution
-        .arg("-n")   
-        .arg("1")    
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("Failed to start `top` command");
-    let output = output
-        .wait_with_output() // Wait for the command to finish and capture its output
-        .expect("Failed to read `top` output");
-    String::from_utf8_lossy(&output.stdout).to_string()
+pub fn cpu_usage() -> String{
+        let output = Command::new("top")
+        .arg("-b")
+        .arg("-n")
+        .arg("1")
+        .output()
+        .expect("Failed to execute command");
+
+    let last = str::from_utf8(&output.stdout).unwrap();
+    return last.to_string();
+} 
+
+
+//This Function that opens a shell and runs the top command to get the CPU usage percentage, and return the CPU usage percentage as a string.
+//The issue with this function is that it will only return the CPU usage percentage at the time of execution.
+pub fn cpu_usage_percentage() -> String {
+            let output = Command::new("sh")
+        .arg("-c")
+        .arg("top -bn1 | grep '%Cpu(s)' | awk '{print $2 + $4}'")
+        .output()
+        .expect("Failed to execute command");
+
+    let last = str::from_utf8(&output.stdout).unwrap().trim();
+    format!("{}%", last)
 }
 
 

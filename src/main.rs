@@ -143,8 +143,8 @@ println!("{}", usage);
 // println!("{}", ping);
 // let cpu = cpu_info();
 // println!("{}", cpu);
-// let cpu_usage_value = cpu_usage(); // Renamed variable to avoid shadowing
-// println!("{}", cpu_usage_value);
+let cpu_usage_value = cpu_usage(); // Renamed variable to avoid shadowing
+println!("{}", cpu_usage_value);
 // let memory = memory_usage();
 // println!("{}", memory);
 }
