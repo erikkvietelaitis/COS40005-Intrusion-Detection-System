@@ -39,11 +39,15 @@ impl AnalysisModule for Authentication {
         //a failedloginip object to use when placing objects into the vector 
         let mut nlflip: FailedLogInIp;
         //the actual data will be pulled by the linux bridge
-        //let failtestdata: &str = "May 21 04:40:25 centos.2daygeek.com sshd[1282]: Failed password for root from 202.91.66.210 port 51566 ssh2\nMay 21 04:40:25 centos.2daygeek.com sshd[1282]: pam_unix(sshd:session): session not opened for user root by (uid=0)\nMay 21 07:05:31 centos.2daygeek.com sshd[19383]: pam_unix(sshd:session): session closed for user nagios\nMay 21 07:09:14 centos.2daygeek.com sshd[4632]: Accepted password for root from 202.91.66.210 port 34457 ssh2\nMay 21 07:09:14 centos.2daygeek.com sshd[4632]: pam_unix(sshd:session): session opened for user root by (uid=0)\nMay 21 11:21:03 centos.2daygeek.com sshd[11179]: Failed password for nagios from 202.91.66.210 port 58244 ssh2\nMay 21 11:21:03 centos.2daygeek.com sshd[11179]: pam_unix(sshd:session): session not opened for user nagios by (uid=0)\nMay 21 04:40:25 centos.2daygeek.com sshd[1282]: Failed password for root from 202.91.66.210 port 51566 ssh2\nMay 21 04:40:25 centos.2daygeek.com sshd[1282]: pam_unix(sshd:session): session not opened for user root by (uid=0)\nMay 21 07:05:31 centos.2daygeek.com sshd[19383]: pam_unix(sshd:session): session closed for user nagios\nMay 21 07:09:14 centos.2daygeek.com sshd[4632]: Accepted password for root from 202.91.66.210 port 34457 ssh2\nMay 21 07:09:14 centos.2daygeek.com sshd[4632]: pam_unix(sshd:session): session opened for user root by (uid=0)\nMay 21 11:21:03 centos.2daygeek.com sshd[11179]: Failed password for nagios from 202.91.66.211 port 58244 ssh2\nMay 21 11:21:03 centos.2daygeek.com sshd[11179]: pam_unix(sshd:session): session not opened for user nagios by (uid=0)";
-        //let successtestdata: &str = "May 21 04:40:25 centos.2daygeek.com sshd[1282]: Failed password for root from 202.91.66.210 port 51566 ssh2\nMay 21 04:40:25 centos.2daygeek.com sshd[1282]: pam_unix(sshd:session): session not opened for user root by (uid=0)\nMay 21 07:05:31 centos.2daygeek.com sshd[19383]: pam_unix(sshd:session): session closed for user nagios\nMay 21 07:09:14 centos.2daygeek.com sshd[4632]: Accepted password for root from 202.91.66.210 port 34457 ssh2\nMay 21 07:09:14 centos.2daygeek.com sshd[4632]: pam_unix(sshd:session): session opened for user root by (uid=0)\nMay 21 11:21:03 centos.2daygeek.com sshd[11179]: Failed password for nagios from 202.91.66.210 port 58244 ssh2\nMay 21 11:21:03 centos.2daygeek.com sshd[11179]: pam_unix(sshd:session): session not opened for user nagios by (uid=0)\nMay 21 04:40:25 centos.2daygeek.com sshd[1282]: Failed password for root from 202.91.66.210 port 51566 ssh2\nMay 21 04:40:25 centos.2daygeek.com sshd[1282]: pam_unix(sshd:session): session not opened for user root by (uid=0)\nMay 21 07:05:31 centos.2daygeek.com sshd[19383]: pam_unix(sshd:session): session closed for user nagios\nMay 21 07:09:14 centos.2daygeek.com sshd[4632]: Accepted password for root from 202.91.66.210 port 34457 ssh2\nMay 21 07:09:14 centos.2daygeek.com sshd[4632]: pam_unix(sshd:session): session opened for user root by (uid=0)\nMay 21 11:21:03 centos.2daygeek.com sshd[11179]: Failed password for nagios from 202.91.66.211 port 58244 ssh2\nMay 21 11:21:03 centos.2daygeek.com sshd[11179]: pam_unix(sshd:session): session not opened for user nagios by (uid=0)";
+        let failtestdata: &str = "root     ssh:notty    218.92.0.158     Wed Mar 13 14:34 - 14:34  (00:00)\nsindesi  ssh:notty    59.164.69.10     Wed Mar 13 14:34 - 14:34  (00:00)/nroot     ssh:notty    218.92.0.158     Wed Mar 13 14:34 - 14:34  (00:00)\nsindesi  ssh:notty    59.164.69.10     Wed Mar 13 14:34 - 14:34  (00:00)\nroot     ssh:notty    218.92.0.158     Wed Mar 13 14:34 - 14:34  (00:00)";
+        //let successtestdata: &str = "ids      tty2         tty2             Sun Sep  8 09:28   still logged in\nids      seat0        login screen     Sun Sep  8 09:28   still logged in\nreboot   system boot  6.8.0-41-generic Sun Sep  8 09:27   still running\nids      tty2         tty2             Sun Sep  8 08:24 - crash  (01:03)\nids      seat0        login screen     Sun Sep  8 08:24 - crash  (01:03)\nreboot   system boot  6.8.0-41-generic Sun Sep  8 08:23   still running\nreboot   system boot  6.8.0-41-generic Fri Sep  6 14:24   still running\nids      tty2         tty2             Tue Sep  3 11:13 - crash (3+03:10)\nids      seat0        login screen     Tue Sep  3 11:13 - crash (3+03:10)\nreboot   system boot  6.8.0-41-generic Tue Sep  3 11:13   still running\nids      tty2         tty2             Mon Sep  2 12:16 - crash  (22:57)\nids      seat0        login screen     Mon Sep  2 12:16 - crash  (22:57)\nreboot   system boot  6.8.0-41-generic Mon Sep  2 12:15   still running\nreboot   system boot  6.8.0-41-generic Mon Sep  2 12:11   still running\nids      tty2         tty2             Tue Aug 27 17:59 - crash (5+18:12)\nids      seat0        login screen     Tue Aug 27 17:59 - crash (5+18:12)\nreboot   system boot  6.8.0-40-generic Tue Aug 27 17:58   still running\nids      tty2         tty2             Mon Aug 26 23:02 - crash  (18:55)\nids      seat0        login screen     Mon Aug 26 23:02 - crash  (18:55)\nreboot   system boot  6.8.0-40-generic Mon Aug 26 23:02   still running\nids      tty2         tty2             Mon Aug 26 22:54 - crash  (00:08)\nids      seat0        login screen     Mon Aug 26 22:54 - crash  (00:08)\nreboot   system boot  6.8.0-40-generic Mon Aug 26 22:53   still running\nreboot   system boot  6.8.0-40-generic Mon Aug 26 22:51   still running\nreboot   system boot  6.8.0-40-generic Mon Aug 26 22:45   still running\nreboot   system boot  6.8.0-40-generic Thu Aug 22 14:01   still running\nids      tty2         tty2             Wed Aug 21 16:13 - down   (00:29)\nids      seat0        login screen     Wed Aug 21 16:13 - down   (00:29)\nreboot   system boot  6.8.0-40-generic Wed Aug 21 16:11 - 16:43  (00:31)\nids      tty2         tty2             Tue Aug 20 20:29 - down   (19:42)\nids      seat0        login screen     Tue Aug 20 20:29 - down   (19:42)\nreboot   system boot  6.8.0-31-generic Tue Aug 20 20:28 - 16:11  (19:43)\nids      tty2         tty2             Tue Aug 20 20:27 - down   (00:00)\nids      seat0        login screen     Tue Aug 20 20:27 - down   (00:00)\nreboot   system boot  6.8.0-31-generic Tue Aug 20 20:24 - 20:27  (00:03)";
         //seperates the file into lines
-        let btmpdump: &str = &auth::btmp_dump();
+        //let btmpdump: &str = &auth::btmp_dump();
+        let btmpdump: &str = failtestdata;
+        //print!("{}",btmpdump);
         let wtmpdump: &str = &auth::wtmp_dump();
+        //let wtmpdump: &str = successtestdata;
+        //print!("{}",wtmpdump);
         let btmplines: Vec<&str> = btmpdump.lines().collect();
         let wtmplines: Vec<&str> = wtmpdump.lines().collect();
         let wtmplineslen: usize = wtmplines.len();
@@ -53,13 +57,15 @@ impl AnalysisModule for Authentication {
         if wtmplineslen > 0{
             let mut newslinecount:usize = wtmplineslen - self.lastwtmplen;
             while newslinecount > 0{
-                slines.push(wtmplines[wtmplineslen - newslinecount])
+                slines.push(wtmplines[wtmplineslen - newslinecount]);
+                newslinecount = newslinecount - 1; 
             }
         }
         if btmplineslen > 0{
             let mut newflinecount:usize = btmplineslen - self.lastbtmplen;
             while newflinecount > 0{
-                flines.push(btmplines[btmplineslen - newflinecount])
+                flines.push(btmplines[btmplineslen - newflinecount]);
+                newflinecount = newflinecount - 1;
             }
         }
         //nl stands for new line. and will have the seperate lines placed into it for analysis
@@ -73,7 +79,7 @@ impl AnalysisModule for Authentication {
             //nls stands for new line split. this part of the code splits the line based on white spaces
             let nls: Vec<&str> = nl.split_whitespace().collect();
             //nlip stands for new line ip. the ip adderess should always be the 11th string in the line
-            let nlip:&str =nls[1];
+            let nlip:&str =nls[2];
             //checks to see if the vector is empty
             if fips.len() != 0{
                 let mut i2: usize = 0;
@@ -104,22 +110,24 @@ impl AnalysisModule for Authentication {
         while i3 < slines.len(){
             nl = slines[i3];
             //nls stands for new line split. this part of the code splits the line based on white spaces
-            let nls: Vec<&str> = nl.split_whitespace().collect();
+            let nls: Vec<&str> = nl.split("[").collect();
             //nlip stands for new line ip. the ip adderess should always be the 11th string in the line
             //checks to see if the vector is empty
-            if nls[1] != "system" && nls[1] != "tty2" && nls[1] != "seat0"{
-                let nlip:&str =nls[2];
+            if !nls[3].contains("reboot") && !nls[3].contains("runlevel") && !nls[3].contains("shutdown") && !nls[4].contains("tty2"){
+                let nlip:&str =nls[7];
                 if sips.len() != 0{
                     let mut i4: usize = 0;
                     //this is used to see if the ip has been handeled within the vector
                     done = false;
                     //this while loop checks to see if the new line ip is within the vector and if it is will increase the num by 1
-                    while i4 < fips.len() {
+                    while i4 < sips.len() {
                         if sips[i4].ip == nlip {
                             sips[i4].num = sips[i4].num + 1;
                             done = true; 
                         }
                         i4 = i4 + 1;
+                        //print!("{}",i4);
+                        //print!("{}\n",nl);
                     }
                     //if the ip is not in the vector it will be added here
                     if !done{
@@ -133,7 +141,7 @@ impl AnalysisModule for Authentication {
                     sips.push(nlflip);
                 }
             }
-            i1 = i1 + 1;
+            i3 = i3 + 1;
         }
         self.lastbtmplen =  btmplineslen;
         self.lastwtmplen = wtmplineslen;
