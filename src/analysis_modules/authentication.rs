@@ -42,8 +42,8 @@ impl AnalysisModule for Authentication {
         let failtestdata: &str = "root     ssh:notty    218.92.0.158     Wed Mar 13 14:34 - 14:34  (00:00)\nsindesi  ssh:notty    59.164.69.10     Wed Mar 13 14:34 - 14:34  (00:00)/nroot     ssh:notty    218.92.0.158     Wed Mar 13 14:34 - 14:34  (00:00)\nsindesi  ssh:notty    59.164.69.10     Wed Mar 13 14:34 - 14:34  (00:00)\nroot     ssh:notty    218.92.0.158     Wed Mar 13 14:34 - 14:34  (00:00)";
         //let successtestdata: &str = "ids      tty2         tty2             Sun Sep  8 09:28   still logged in\nids      seat0        login screen     Sun Sep  8 09:28   still logged in\nreboot   system boot  6.8.0-41-generic Sun Sep  8 09:27   still running\nids      tty2         tty2             Sun Sep  8 08:24 - crash  (01:03)\nids      seat0        login screen     Sun Sep  8 08:24 - crash  (01:03)\nreboot   system boot  6.8.0-41-generic Sun Sep  8 08:23   still running\nreboot   system boot  6.8.0-41-generic Fri Sep  6 14:24   still running\nids      tty2         tty2             Tue Sep  3 11:13 - crash (3+03:10)\nids      seat0        login screen     Tue Sep  3 11:13 - crash (3+03:10)\nreboot   system boot  6.8.0-41-generic Tue Sep  3 11:13   still running\nids      tty2         tty2             Mon Sep  2 12:16 - crash  (22:57)\nids      seat0        login screen     Mon Sep  2 12:16 - crash  (22:57)\nreboot   system boot  6.8.0-41-generic Mon Sep  2 12:15   still running\nreboot   system boot  6.8.0-41-generic Mon Sep  2 12:11   still running\nids      tty2         tty2             Tue Aug 27 17:59 - crash (5+18:12)\nids      seat0        login screen     Tue Aug 27 17:59 - crash (5+18:12)\nreboot   system boot  6.8.0-40-generic Tue Aug 27 17:58   still running\nids      tty2         tty2             Mon Aug 26 23:02 - crash  (18:55)\nids      seat0        login screen     Mon Aug 26 23:02 - crash  (18:55)\nreboot   system boot  6.8.0-40-generic Mon Aug 26 23:02   still running\nids      tty2         tty2             Mon Aug 26 22:54 - crash  (00:08)\nids      seat0        login screen     Mon Aug 26 22:54 - crash  (00:08)\nreboot   system boot  6.8.0-40-generic Mon Aug 26 22:53   still running\nreboot   system boot  6.8.0-40-generic Mon Aug 26 22:51   still running\nreboot   system boot  6.8.0-40-generic Mon Aug 26 22:45   still running\nreboot   system boot  6.8.0-40-generic Thu Aug 22 14:01   still running\nids      tty2         tty2             Wed Aug 21 16:13 - down   (00:29)\nids      seat0        login screen     Wed Aug 21 16:13 - down   (00:29)\nreboot   system boot  6.8.0-40-generic Wed Aug 21 16:11 - 16:43  (00:31)\nids      tty2         tty2             Tue Aug 20 20:29 - down   (19:42)\nids      seat0        login screen     Tue Aug 20 20:29 - down   (19:42)\nreboot   system boot  6.8.0-31-generic Tue Aug 20 20:28 - 16:11  (19:43)\nids      tty2         tty2             Tue Aug 20 20:27 - down   (00:00)\nids      seat0        login screen     Tue Aug 20 20:27 - down   (00:00)\nreboot   system boot  6.8.0-31-generic Tue Aug 20 20:24 - 20:27  (00:03)";
         //seperates the file into lines
-        //let btmpdump: &str = &auth::btmp_dump();
-        let btmpdump: &str = failtestdata;
+        let btmpdump: &str = &auth::btmp_dump();
+        //let btmpdump: &str = failtestdata;
         //print!("{}",btmpdump);
         let wtmpdump: &str = &auth::wtmp_dump();
         //let wtmpdump: &str = successtestdata;
@@ -77,9 +77,9 @@ impl AnalysisModule for Authentication {
         while i1 < flines.len(){
             nl = flines[i1];
             //nls stands for new line split. this part of the code splits the line based on white spaces
-            let nls: Vec<&str> = nl.split_whitespace().collect();
+            let nls: Vec<&str> = nl.split("[").collect();
             //nlip stands for new line ip. the ip adderess should always be the 11th string in the line
-            let nlip:&str =nls[2];
+            let nlip:&str =nls[7];
             //checks to see if the vector is empty
             if fips.len() != 0{
                 let mut i2: usize = 0;
@@ -113,7 +113,10 @@ impl AnalysisModule for Authentication {
             let nls: Vec<&str> = nl.split("[").collect();
             //nlip stands for new line ip. the ip adderess should always be the 11th string in the line
             //checks to see if the vector is empty
-            if !nls[3].contains("reboot") && !nls[3].contains("runlevel") && !nls[3].contains("shutdown") && !nls[4].contains("tty2"){
+            //print!("{}",nls[3]);
+            if !nls[4].contains("reboot") && !nls[4].contains("runlevel") && !nls[4].contains("shutdown") && !nls[5].contains("tty2"){
+                //print!("{}",nls[3]);
+                //print!("{}",nls[4]);
                 let nlip:&str =nls[7];
                 if sips.len() != 0{
                     let mut i4: usize = 0;
@@ -221,7 +224,7 @@ impl AnalysisModule for Authentication {
                     if self.current_data.csips[i1].ip == self.pfips[i2].ip {
                         let mut msg: String = String::from("ip address '");
                         msg.push_str(&self.current_data.csips[i1].ip.as_str());
-                        msg.push_str("' has successfully logged in after");
+                        msg.push_str("' has successfully logged in after ");
                         msg.push_str(&self.pfips[i2].num.to_string().as_str());
                         msg.push_str("' failed attempts");
                         if self.pfips[i2].num < 3{
