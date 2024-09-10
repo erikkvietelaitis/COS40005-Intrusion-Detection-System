@@ -24,8 +24,8 @@ pub struct Example<'a> {
 }
 
 impl AnalysisModule for Example<'_> {
-    // Use this to gather data from the host computer and store it in the current data strut,
-    // This is called at the start of a tick to gather the data into CurrentData strut. If there is an error return false
+    // Use this to gather data from the host computer and store it in the current data struct,
+    // This is called at the start of a tick to gather the data into CurrentData struct. If there is an error return false
     fn get_data(&mut self) -> bool {
         let stringiest: Vec<&str> = vec![
             "randomName.txt",
@@ -53,13 +53,13 @@ impl AnalysisModule for Example<'_> {
     // Take the current data gathered from one of the functions above, using this data, 
     // plus the persistent data stored in the object to create logs (AKA alerts) 
     fn perform_analysis(&mut self) -> Vec<crate::Log> {
-        let mut results: Vec<core_struts::Log> = Vec::new();
+        let mut results: Vec<core_structs::Log> = Vec::new();
         if self.history_of_filenames.contains(&self.current_data.some_file_name)
         {
             let mut msg: String = String::from("File '");
             msg.push_str(&self.current_data.some_file_name);
             msg.push_str("' was opened twice recently");
-            results.push(core_struts::Log::new(core_enums::LogType::Serious,self.module_name.clone(),msg,));
+            results.push(core_structs::Log::new(core_enums::LogType::Serious,self.module_name.clone(),msg,));
             self.history_of_filenames = Vec::new();
         } else {
             self.history_of_filenames
@@ -91,7 +91,7 @@ impl AnalysisModule for Example<'_> {
     }
 }
 // Must implement on your module, defines a default constructor. This is where any code that should run when IDS is FIRST LOADED. 
-// You should also initialize an empty current data strut like this
+// You should also initialize an empty current data struct like this
 impl Default for Example<'_> {
     fn default() -> Self {
         Self {

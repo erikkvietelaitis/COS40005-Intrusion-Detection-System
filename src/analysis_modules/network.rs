@@ -30,14 +30,14 @@ impl Networking {
         all_ports.difference(expected_open_ports).cloned().collect()
     }
 
-    fn generate_unique_alerts(&mut self, open_ports: &HashSet<u16>, blocked_ports: &HashSet<u16>) -> Vec<core_struts::Log> {
+    fn generate_unique_alerts(&mut self, open_ports: &HashSet<u16>, blocked_ports: &HashSet<u16>) -> Vec<core_structs::Log> {
         let mut results = Vec::new();
     
         // Alert for ports that are now open which were previously closed
         for &port in open_ports.iter() {
             if self.previously_closed_ports.contains(&port) {
                 let msg = format!("Alert: Previously closed port {} is now open.", port);
-                results.push(core_struts::Log::new(core_enums::LogType::Serious, self.module_name.clone(), msg));
+                results.push(core_structs::Log::new(core_enums::LogType::Serious, self.module_name.clone(), msg));
                 self.previously_closed_ports.remove(&port);
             }
         }
@@ -46,7 +46,7 @@ impl Networking {
         for &port in blocked_ports.iter() {
             if open_ports.contains(&port) && !self.alerted_ports.contains(&port) {
                 let msg = format!("Alert: Expected blocked port {} is open.", port);
-                results.push(core_struts::Log::new(core_enums::LogType::Serious, self.module_name.clone(), msg));
+                results.push(core_structs::Log::new(core_enums::LogType::Serious, self.module_name.clone(), msg));
                 self.alerted_ports.insert(port);
             }
         }
@@ -63,7 +63,7 @@ impl Networking {
         // println!("Open ports: {}", open_ports_str);
     }
 
-    fn log_generated_alerts(&self, alerts: &[core_struts::Log]) {
+    fn log_generated_alerts(&self, alerts: &[core_structs::Log]) {
         if alerts.is_empty() {
             println!("No new alerts generated.");
         } else {

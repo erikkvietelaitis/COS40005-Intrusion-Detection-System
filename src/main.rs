@@ -7,7 +7,7 @@ use std::{thread, time};
 //use system::{system_uptime, system_user};
 use lara_core::core_traits::AnalysisModule;
 
-use crate::lara_core::core_struts::*;
+use crate::lara_core::core_structs::*;
 pub mod analysis_modules;
 use crate::linux_bridge::system;
 pub mod lara_core;
