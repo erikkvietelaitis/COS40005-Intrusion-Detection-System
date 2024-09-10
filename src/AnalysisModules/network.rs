@@ -11,6 +11,7 @@ pub struct Networking {
     pub expected_blocked_ports: HashSet<u16>,
     pub last_scanned_port: u16,
     pub max_ports: u16,
+    pub ports_per_tick: u16, // New field for ports to scan per tick
     pub alerted_ports: HashSet<u16>,
     pub previously_open_ports: HashSet<u16>,
     pub previously_closed_ports: HashSet<u16>,
@@ -52,15 +53,14 @@ impl Networking {
     
         results
     }
-    
 
     fn log_scan_results(&self) {
-       // println!("Scanning ports from {} to {}", self.current_data.start_port, self.current_data.end_port);
+        // println!("Scanning ports from {} to {}", self.current_data.start_port, self.current_data.end_port);
         let open_ports_str = self.current_data.open_ports.iter()
             .map(ToString::to_string)
             .collect::<Vec<String>>()
             .join(", ");
-       // println!("Open ports: {}", open_ports_str);
+        // println!("Open ports: {}", open_ports_str);
     }
 
     fn log_generated_alerts(&self, alerts: &[CoreStruts::Log]) {
@@ -73,7 +73,7 @@ impl Networking {
         }
     }
 
-     fn debug_open_ports(&self) {
+    fn debug_open_ports(&self) {
         // println!("Debug: Currently detected open ports: {:?}", self.current_data.open_ports);
     }
 }
@@ -81,7 +81,7 @@ impl Networking {
 impl AnalysisModule for Networking {
     fn get_data(&mut self) -> bool {
         let start_port = self.last_scanned_port + 1;
-        let end_port = start_port.saturating_add(500).min(self.max_ports); // change value 500 to desired amount of ports to scan
+        let end_port = start_port.saturating_add(self.ports_per_tick).min(self.max_ports);
 
         let open_ports = scan_ports_range(start_port..end_port);
 
@@ -133,6 +133,7 @@ impl AnalysisModule for Networking {
         vec![
             ConfigField::new("ExpectedOpenPorts".to_owned(), "List of ports that should be open".to_owned(), CoreEnums::ConfigFieldType::Integer, vec!["80".to_owned(), "443".to_owned(), "22".to_owned()], true),
             ConfigField::new("MaxPorts".to_owned(), "Maximum number of ports to scan".to_owned(), CoreEnums::ConfigFieldType::Integer, vec!["65535".to_owned()], false),
+            ConfigField::new("PortsPerTick".to_owned(), "Number of ports to scan per tick".to_owned(), CoreEnums::ConfigFieldType::Integer, vec!["500".to_owned()], false),
         ]
     }
 
@@ -144,6 +145,9 @@ impl AnalysisModule for Networking {
                 }
                 "MaxPorts" => {
                     self.max_ports = vals.get(0).and_then(|v| v.parse().ok()).unwrap_or(65535);
+                }
+                "PortsPerTick" => {
+                    self.ports_per_tick = vals.get(0).and_then(|v| v.parse().ok()).unwrap_or(500); // Default to 500 if not specified
                 }
                 _ => {}
             }
@@ -168,6 +172,7 @@ impl Default for Networking {
             expected_blocked_ports,
             last_scanned_port: 0,
             max_ports: 65535,
+            ports_per_tick: 500, // Default number of ports to scan per tick
             alerted_ports: HashSet::new(),
             previously_open_ports: HashSet::new(),
             previously_closed_ports: HashSet::new(),
@@ -184,6 +189,7 @@ impl Clone for Networking {
             expected_blocked_ports: self.expected_blocked_ports.clone(),
             last_scanned_port: self.last_scanned_port,
             max_ports: self.max_ports,
+            ports_per_tick: self.ports_per_tick,
             alerted_ports: self.alerted_ports.clone(),
             previously_open_ports: self.previously_open_ports.clone(),
             previously_closed_ports: self.previously_closed_ports.clone(),
