@@ -31,16 +31,7 @@ impl Networking {
 
     fn generate_unique_alerts(&mut self, open_ports: &HashSet<u16>, blocked_ports: &HashSet<u16>) -> Vec<CoreStruts::Log> {
         let mut results = Vec::new();
-
-        // Alert for expected open ports that are now closed
-        for &port in self.expected_open_ports.iter() {
-            if !open_ports.contains(&port) && !self.alerted_ports.contains(&port) {
-                let msg = format!("Alert: Expected open port {} is closed.", port);
-                results.push(CoreStruts::Log::new(CoreEnums::LogType::Serious, self.module_name.clone(), msg));
-                self.alerted_ports.insert(port);
-            }
-        }
-
+    
         // Alert for ports that are now open which were previously closed
         for &port in open_ports.iter() {
             if self.previously_closed_ports.contains(&port) {
@@ -49,7 +40,7 @@ impl Networking {
                 self.previously_closed_ports.remove(&port);
             }
         }
-
+    
         // Alert for ports that are expected to be blocked but are now open
         for &port in blocked_ports.iter() {
             if open_ports.contains(&port) && !self.alerted_ports.contains(&port) {
@@ -58,17 +49,18 @@ impl Networking {
                 self.alerted_ports.insert(port);
             }
         }
-
+    
         results
     }
+    
 
     fn log_scan_results(&self) {
-        println!("Scanning ports from {} to {}", self.current_data.start_port, self.current_data.end_port);
+       // println!("Scanning ports from {} to {}", self.current_data.start_port, self.current_data.end_port);
         let open_ports_str = self.current_data.open_ports.iter()
             .map(ToString::to_string)
             .collect::<Vec<String>>()
             .join(", ");
-        println!("Open ports: {}", open_ports_str);
+       // println!("Open ports: {}", open_ports_str);
     }
 
     fn log_generated_alerts(&self, alerts: &[CoreStruts::Log]) {
@@ -81,15 +73,15 @@ impl Networking {
         }
     }
 
-    fn debug_open_ports(&self) {
-        println!("Debug: Currently detected open ports: {:?}", self.current_data.open_ports);
+     fn debug_open_ports(&self) {
+        // println!("Debug: Currently detected open ports: {:?}", self.current_data.open_ports);
     }
 }
 
 impl AnalysisModule for Networking {
     fn get_data(&mut self) -> bool {
         let start_port = self.last_scanned_port + 1;
-        let end_port = start_port.saturating_add(500).min(self.max_ports);
+        let end_port = start_port.saturating_add(500).min(self.max_ports); // change value 500 to desired amount of ports to scan
 
         let open_ports = scan_ports_range(start_port..end_port);
 
@@ -100,7 +92,7 @@ impl AnalysisModule for Networking {
         };
 
         self.log_scan_results();
-        self.debug_open_ports(); // Print open ports for debugging
+        // self.debug_open_ports(); // Print open ports for debugging
 
         self.last_scanned_port = if end_port == self.max_ports {
             0
@@ -162,7 +154,7 @@ impl AnalysisModule for Networking {
 
 impl Default for Networking {
     fn default() -> Self {
-        let expected_open_ports: HashSet<u16> = [80, 443, 22].iter().cloned().collect();
+        let expected_open_ports: HashSet<u16> = [443, 22].iter().cloned().collect(); // change port values 
         let expected_blocked_ports = Networking::calculate_blocked_ports(&expected_open_ports, 65535);
 
         Self {
