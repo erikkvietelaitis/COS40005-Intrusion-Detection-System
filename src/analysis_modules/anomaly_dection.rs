@@ -211,7 +211,7 @@ impl AnomalyDetector<'_> {
         for line in output.lines().skip(1) {  // Skip the header row
             let disk_info: Vec<&str> = line.split_whitespace().collect();
             if disk_info.len() < 6 {
-                continue; // Invalid row
+                continue; // Invalid row -- check later
             }
 
             let use_percent = disk_info[4].trim_end_matches('%').parse::<f32>().unwrap_or(0.0);
