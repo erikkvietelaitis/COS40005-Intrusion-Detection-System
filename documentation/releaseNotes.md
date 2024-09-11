@@ -4,6 +4,9 @@ This document details the features added to Chromia between major releases. This
 **Bold text is information that you MUST read to keep your code up to date and running on that version**.
 ----
 
+## ALPHA - 0.4.1 - September 11th 2024
+### Additions:
+- Added authentication Module
 ## ALPHA - 0.4.0 - September 10th 2024
 ### Additions:
 - Added Network Analysis Module (V1)
