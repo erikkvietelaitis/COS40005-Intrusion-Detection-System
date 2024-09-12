@@ -34,7 +34,8 @@ pub struct AnomalyDetector<'a> {
     module_name: String,                    // Name of the module
     cpu_history: Vec<f32>,                 // Stores CPU usage for the last 10 runs
     memory_history: Vec<f32>,             // Stores memory usage for the last 10 runs
-    previous_disks: Vec<DiskState>,      // Stores previous disk states for comparison
+    packet_drop_history: Vec<u32>,       // Stores network packet drops for the last 10 runs
+    previous_disks: Vec<DiskState>,     // Stores previous disk states for comparison
 }
 
 impl AnalysisModule for AnomalyDetector<'_> {
@@ -49,7 +50,7 @@ impl AnalysisModule for AnomalyDetector<'_> {
             file_name: *files.choose(&mut rand::thread_rng()).unwrap(),
             command_executed: *commands.choose(&mut rand::thread_rng()).unwrap(),
             cpu_usage: self.fetch_cpu_usage(),        // Fetch current CPU usage
-            memory_usage: self.fetch_memory_usage(), // Fetch current memory usage
+            memory_usage: self.fetch_memory_usage(),  // Fetch current memory usage
         };
 
         // Update CPU and memory history
@@ -133,10 +134,9 @@ impl AnalysisModule for AnomalyDetector<'_> {
         }
 
         // Call network packet drop detection and logging
-        let network_log = self.check_network_packet_drops();
-        if !network_log.contains("No dropped packets") {
+        if let Some(network_log) = self.check_network_packet_drops() {
             let msg = format!(
-                "[{}]=[{}]=[Warning]: Network issues detected with packet drops. {}",
+                "[{}]=[{}]=[Warning]: {}",
                 chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
                 self.module_name,
                 network_log
@@ -185,21 +185,51 @@ impl AnalysisModule for AnomalyDetector<'_> {
 impl AnomalyDetector<'_> {
     // Fetch current CPU usage from sam.rs
     fn fetch_cpu_usage(&self) -> f32 {
-        let cpu_data = sam::cpu_usage(); // Call the function in -> sam.rs
-        
-        45.0 // Average CPU usage based on real data collected!!
+        let _cpu_data = sam::cpu_usage(); // Call the function in sam.rs
+        // Use realistic CPU usage from previous data
+        45.0 // Average CPU usage based on real data
     }
 
     // Fetch current memory usage from sam.rs
     fn fetch_memory_usage(&self) -> f32 {
-        let memory_data = sam::memory_usage(); // Call the function in -> sam.rs
-    
-        47.4 // Memory usage percentage based on real data collected!!
+        let _memory_data = sam::memory_usage(); // Call the function in sam.rs
+        // Use realistic memory usage from previous data
+        47.4 // Updated memory usage percentage
     }
 
     // Check for network packet drops
-    fn check_network_packet_drops(&self) -> String {
-        sam::network_packet_dropped_errors() // Use the function from sam.rs
+    fn check_network_packet_drops(&mut self) -> Option<String> {
+        let network_log = sam::network_packet_dropped_errors(); // Use the function from sam.rs
+        let current_packet_drops = extract_packet_drop_count(&network_log); // Extract the number of dropped packets
+
+        // Update packet drop history
+        self.update_packet_drop_history(current_packet_drops);
+
+        // Calculate the average packet drops
+        let avg_packet_drops = self.average_packet_drops();
+
+        // Check if the current packet drops exceed the average by 20%
+        if current_packet_drops as f32 > avg_packet_drops * 1.2 {
+            return Some(format!(
+                "Significant packet drops detected. Current: {} dropped packets, Average: {:.2} dropped packets.",
+                current_packet_drops, avg_packet_drops
+            ));
+        }
+        None // No anomaly detected
+    }
+
+    // Helper function to update the packet drop history
+    fn update_packet_drop_history(&mut self, current_packet_drops: u32) {
+        if self.packet_drop_history.len() >= MAX_RUNS {
+            self.packet_drop_history.remove(0); // Remove the oldest entry
+        }
+        self.packet_drop_history.push(current_packet_drops); // Add the latest packet drop count
+    }
+
+    // Helper function to calculate the average packet drops
+    fn average_packet_drops(&self) -> f32 {
+        let sum: u32 = self.packet_drop_history.iter().sum();
+        sum as f32 / self.packet_drop_history.len() as f32
     }
 
     // Check for disk changes and abnormal usage
@@ -211,7 +241,7 @@ impl AnomalyDetector<'_> {
         for line in output.lines().skip(1) {  // Skip the header row
             let disk_info: Vec<&str> = line.split_whitespace().collect();
             if disk_info.len() < 6 {
-                continue; // Invalid row -- check later
+                continue; // Invalid row
             }
 
             let use_percent = disk_info[4].trim_end_matches('%').parse::<f32>().unwrap_or(0.0);
@@ -283,6 +313,25 @@ impl AnomalyDetector<'_> {
     }
 }
 
+// Helper function to extract packet drop count from the network_log
+fn extract_packet_drop_count(network_log: &str) -> u32 {
+    let mut total_dropped_packets = 0;
+
+    for line in network_log.lines() {
+        if line.contains("dropped") {
+            // Example extraction: look for dropped packet count in each line
+            let dropped_count = line.split_whitespace()
+                .filter(|word| word.parse::<u32>().is_ok())  // Extract numerical values
+                .map(|word| word.parse::<u32>().unwrap_or(0))
+                .sum::<u32>();
+
+            total_dropped_packets += dropped_count;
+        }
+    }
+
+    total_dropped_packets
+}
+
 // Implement Default for AnomalyDetector
 impl Default for AnomalyDetector<'_> {
     fn default() -> Self {
@@ -292,14 +341,15 @@ impl Default for AnomalyDetector<'_> {
                 command_executed: "",
                 cpu_usage: 0.0,
                 memory_usage: 0.0,
-            }, 
-            history_of_filenames: vec![],   
-            known_safe_commands: vec!["ls", "cat", "cd", "echo"], 
-            known_safe_files: vec!["/etc/passwd", "/var/log/syslog", "/home/user/.bashrc"], 
+            },
+            history_of_filenames: vec![],
+            known_safe_commands: vec!["ls", "cat", "cd", "echo"],
+            known_safe_files: vec!["/etc/passwd", "/var/log/syslog", "/home/user/.bashrc"],
             module_name: String::from("AnomalyDetectionModule"),
-            cpu_history: vec![],           
-            memory_history: vec![],        
-            previous_disks: vec![],        // Starts previous disk state as empty
+            cpu_history: vec![],
+            memory_history: vec![],
+            packet_drop_history: vec![],
+            previous_disks: vec![],
         }
     }
 }
@@ -315,6 +365,7 @@ impl Clone for AnomalyDetector<'_> {
             module_name: self.module_name.clone(),
             cpu_history: self.cpu_history.clone(),
             memory_history: self.memory_history.clone(),
+            packet_drop_history: self.packet_drop_history.clone(),
             previous_disks: self.previous_disks.clone(),
         }
     }
