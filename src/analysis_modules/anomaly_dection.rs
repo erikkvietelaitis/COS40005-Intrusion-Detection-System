@@ -3,6 +3,7 @@ use rand::prelude::*;                    // Importing useful traits for random n
 use core_traits::AnalysisModule;        // Bringing in the AnalysisModule trait for implementation
 use regex::Regex;                      // Importing Regex for pattern matching on strings
 use crate::linux_bridge::sam;         // Importing functions from sam.rs
+use std::process::Command;            // For executing system commands
 use chrono;
 
 const MAX_RUNS: usize = 10;         // The number of runs we keep track of for averaging
@@ -58,9 +59,9 @@ impl AnalysisModule for AnomalyDetector<'_> {
         true // Tells us that the data collection was successful
     }
 
-    // Function to gather predictable, testable data
+    // Function to gather predictable data
     fn get_testing_data(&mut self) -> bool {
-        todo!() // Placeholder for future implementation of testing data
+        todo!() 
     }
 
     // Function to analyse the gathered data and generate logs if anomalies are detected
@@ -74,7 +75,6 @@ impl AnalysisModule for AnomalyDetector<'_> {
         if !self.known_safe_commands.contains(&self.current_data.command_executed)
             || suspicious_pattern.is_match(self.current_data.command_executed)
         {
-            // If an anomaly is detected, create a log message
             let msg = format!(
                 "[{}]=[{}]=[Serious]: A suspicious command '{}' was executed.",
                 chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
@@ -90,7 +90,6 @@ impl AnalysisModule for AnomalyDetector<'_> {
 
         // Check if the accessed file is not in the safe list
         if !self.known_safe_files.contains(&self.current_data.file_name) {
-            // If an anomaly is detected, create a log message
             let msg = format!(
                 "[{}]=[{}]=[Serious]: An unrecognized file '{}' was accessed.",
                 chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
@@ -184,34 +183,66 @@ impl AnalysisModule for AnomalyDetector<'_> {
 }
 
 impl AnomalyDetector<'_> {
-    // Fetch current CPU usage from macOS
+    // Fetch current CPU usage from `top` command
     fn fetch_cpu_usage(&self) -> f32 {
-        let cpu_data = sam::cpu_usage_macos(); // Call the function in sam.rs (macOS-specific)
-        parse_cpu_usage(&cpu_data) // Parse the actual CPU usage
+        let output = Command::new("top")
+            .arg("-bn1")
+            .output()
+            .expect("Failed to execute command");
+        let data = String::from_utf8_lossy(&output.stdout);
+
+        // Process and extract the CPU usage information from the command output.
+        let cpu_usage = data.lines()
+            .filter(|line| line.contains("%Cpu(s)"))
+            .next()
+            .and_then(|line| {
+                line.split_whitespace()
+                    .nth(1)
+                    .and_then(|usage| usage.trim_end_matches('%').parse::<f32>().ok())
+            })
+            .unwrap_or(0.0);
+
+        cpu_usage
     }
 
-    // Fetch current memory usage from macOS
+    // Fetch current memory usage from `free` command
     fn fetch_memory_usage(&self) -> f32 {
-        let memory_data = sam::memory_usage_macos(); // Call the function in sam.rs (macOS-specific)
-        parse_memory_usage(&memory_data) // Parse the actual memory usage
+        let output = Command::new("free")
+            .arg("-m")
+            .output()
+            .expect("Failed to execute command");
+        let data = String::from_utf8_lossy(&output.stdout);
+
+        // Process and extract memory usage information from the free command
+        let memory_usage = data.lines()
+            .filter(|line| line.starts_with("Mem:"))
+            .next()
+            .and_then(|line| {
+                let parts: Vec<&str> = line.split_whitespace().collect();
+                let used_mem: f32 = parts[2].parse().unwrap_or(0.0);  // Used memory
+                let total_mem: f32 = parts[1].parse().unwrap_or(1.0); // Total memory
+                Some((used_mem / total_mem) * 100.0)
+            })
+            .unwrap_or(0.0);
+
+        memory_usage
     }
 
-    // Check for network packet drops
-    fn check_network_packet_drops(&self) -> String {
-        let network_data = sam::network_packet_dropped_errors(); // macOS-specific function in sam.rs
-        parse_network_packet_drops(&network_data) // Parse the network data
-    }
-
-    // Check for disk changes and abnormal usage
+    // Fetch disk usage from `df` command and filter `/dev` drives
     fn check_disk_changes_and_usage(&mut self) -> Vec<String> {
-        let output = sam::disk_usage_macos(); // Get disk usage data from macOS using `df`
-        let mut logs: Vec<String> = Vec::new();
+        let output = Command::new("df")
+            .arg("-h")
+            .output()
+            .expect("Failed to execute df command");
+        let data = String::from_utf8_lossy(&output.stdout);
 
+        let mut logs: Vec<String> = Vec::new();
         let mut current_disks: Vec<DiskState> = Vec::new();
-        for line in output.lines().skip(1) {  // Skip the header row
+
+        for line in data.lines().skip(1) {  // Skipping the header row
             let disk_info: Vec<&str> = line.split_whitespace().collect();
             if disk_info.len() < 6 || !disk_info[0].starts_with("/dev") {
-                continue; // Invalid row or non-/dev disk
+                continue; // We are only interested in /dev drives
             }
 
             let use_percent = disk_info[4].trim_end_matches('%').parse::<f32>().unwrap_or(0.0);
@@ -227,7 +258,7 @@ impl AnomalyDetector<'_> {
             // Compare with previous disk states to detect new or missing disks
             let found_in_previous = self.previous_disks.iter().any(|d| d.filesystem == disk.filesystem);
             if !found_in_previous {
-                logs.push(format!("A new disk '{}' was detected.", disk.filesystem));
+                logs.push(format!("A new disk was detected: {}", disk.filesystem));
             }
 
             // Check for abnormal usage (>20% increase in use)
@@ -250,6 +281,34 @@ impl AnomalyDetector<'_> {
 
         self.previous_disks = current_disks; // Update previous disk state
         logs
+    }
+
+    // Check for network packet drops
+    fn check_network_packet_drops(&self) -> String {
+        let output = Command::new("ifconfig")
+            .output()
+            .expect("Failed to execute ifconfig command");
+        let data = String::from_utf8_lossy(&output.stdout);
+
+        // Simplified network drop processing
+        let packet_drop_data = data.lines()
+            .filter(|line| line.contains("RX packets"))
+            .collect::<Vec<&str>>();
+
+        let drop_count: u32 = packet_drop_data.iter()
+            .filter_map(|line| {
+                line.split_whitespace()
+                    .find(|word| word.starts_with("dropped"))
+                    .and_then(|word| word.split(':').nth(1))
+                    .and_then(|drops| drops.parse::<u32>().ok())
+            })
+            .sum();
+
+        if drop_count > 0 {
+            format!("{} dropped packets", drop_count)
+        } else {
+            String::new() // No dropped packets, return empty string to avoid logging
+        }
     }
 
     // Updates the CPU and memory history, keeping track of the last 10 runs
@@ -299,7 +358,7 @@ impl Default for AnomalyDetector<'_> {
             module_name: String::from("AnomalyDetectionModule"),
             cpu_history: vec![],           
             memory_history: vec![],        
-            previous_disks: vec![],        // Initialize previous disk state as empty
+            previous_disks: vec![],        // Starts the previous disk state as empty
         }
     }
 }
@@ -320,18 +379,34 @@ impl Clone for AnomalyDetector<'_> {
     }
 }
 
-// Helper functions to parse system data dynamically (macOS versions)
-fn parse_cpu_usage(cpu_data: &str) -> f32 {
-    // Logic to parse and return dynamic CPU usage for macOS
-    45.0 // Placeholder, replace with actual parsed value
+// FORMATTING -
+
+fn print_tick_info(tick_num: usize, cpu_usage: f32, memory_usage: f32) {
+    println!("\n===== Tick #{} =====", tick_num);
+    println!("-----------------------------------");
+    println!("CPU Usage: {:.2}%", cpu_usage);
+    println!("Memory Usage: {:.2}%", memory_usage);
+    println!("");
 }
 
-fn parse_memory_usage(memory_data: &str) -> f32 {
-    // Logic to parse and return dynamic memory usage for macOS
-    47.4 // Placeholder, replace with actual parsed value
+fn print_module_success(module_name: &str) {
+    println!("Module: '{}' - Successfully gathered data", module_name);
 }
 
-fn parse_network_packet_drops(network_data: &str) -> String {
-    // Logic to parse and return human-readable network packet drop info for macOS
-    "No packet drops detected".to_string() // Placeholder, replace with actual logic
+fn print_generated_logs(tick_num: usize, logs: Vec<core_struts::Log>) {
+    if logs.is_empty() {
+        println!("No anomalies detected during Tick({})", tick_num);
+    } else {
+        println!("\nGenerated Logs for Tick({}):", tick_num);
+        println!("-----------------------------------");
+        
+        for log in logs {
+            println!("{}", log.build_alert());
+        }
+    }
+    println!("-----------------------------------\n");
+}
+
+fn print_tick_separator() {
+    println!("-----------------------------------");
 }
