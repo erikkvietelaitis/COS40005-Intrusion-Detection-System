@@ -4,6 +4,7 @@ use core_traits::AnalysisModule;        // Bringing in the AnalysisModule trait 
 use regex::Regex;                      // Importing Regex for pattern matching on strings
 use crate::linux_bridge::sam;         // Importing functions from sam.rs
 use std::process::Command;
+use std::str;
 
 const MAX_RUNS: usize = 10;         // The number of runs we keep track of for averaging
 
@@ -17,7 +18,7 @@ struct DiskState {
     use_percent: f32,
 }
 
-// This is a struct to store system data for the current tick
+// Struct to store system data for the current tick
 #[derive(Debug, Copy, Clone)]
 struct SystemData<'a> {
     file_name: &'a str,              // Name of the file being accessed
@@ -26,7 +27,7 @@ struct SystemData<'a> {
     memory_usage: f32,            // Current memory usage
 }
 
-// This is the main structure for the AnomalyDetector module
+// The main structure for the AnomalyDetector module
 pub struct AnomalyDetector<'a> {
     current_data: SystemData<'a>,               // Holds the data collected in the current tick
     history_of_filenames: Vec<&'a str>,        // Keeps a history of filenames accessed
@@ -56,11 +57,6 @@ impl AnalysisModule for AnomalyDetector<'_> {
         // Update CPU and memory history
         self.update_cpu_memory_history(self.current_data.cpu_usage, self.current_data.memory_usage);
         true // Tells us that the data collection was successful
-    }
-
-    // Function to gather predictable, testable data
-    fn get_testing_data(&mut self) -> bool {
-        todo!() // Placeholder for future implementation of testing data
     }
 
     // Function to analyse the gathered data and generate logs if anomalies are detected
@@ -135,7 +131,7 @@ impl AnalysisModule for AnomalyDetector<'_> {
 
         // Call network packet drop detection and logging
         let network_log = self.check_network_packet_drops();
-        if !network_log.contains("No dropped packets") {
+        if !network_log.is_empty() {
             let msg = format!(
                 "[{}]=[{}]=[Warning]: Network issues detected with packet drops. {}",
                 chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
@@ -184,99 +180,112 @@ impl AnalysisModule for AnomalyDetector<'_> {
 }
 
 impl AnomalyDetector<'_> {
-    // Fetch current CPU usage from sam.rs
+    // Fetch current CPU usage dynamically from the system
     fn fetch_cpu_usage(&self) -> f32 {
         let output = Command::new("top")
-            .arg("-b")
-            .arg("-n")
-            .arg("1")
+            .arg("-bn1")
             .output()
-            .expect("Failed to fetch CPU usage");
+            .expect("Failed to execute command");
+        let result = str::from_utf8(&output.stdout).unwrap();
+        
+        // Parse the output to find CPU usage (modify this to fit the actual output of 'top' on your system)
+        let cpu_usage = result.lines()
+            .filter(|line| line.contains("Cpu(s)"))
+            .next()
+            .and_then(|line| line.split_whitespace().nth(1))
+            .unwrap_or("0.0")
+            .parse::<f32>()
+            .unwrap_or(0.0);
 
-        let result = String::from_utf8_lossy(&output.stdout);
-        let cpu_line = result.lines().find(|line| line.contains("Cpu(s)")).unwrap_or("Cpu(s): 0.0 us");
-
-        let usage_data: Vec<&str> = cpu_line.split_whitespace().collect();
-        let cpu_usage: f32 = usage_data.get(1).unwrap_or(&"0.0").parse().unwrap_or(0.0);
-
-        cpu_usage
+        cpu_usage // Return the parsed CPU usage
     }
 
-    // Fetch current memory usage from sam.rs
+    // Fetch current memory usage dynamically from the system
     fn fetch_memory_usage(&self) -> f32 {
         let output = Command::new("free")
             .arg("-m")
             .output()
-            .expect("Failed to fetch memory usage");
+            .expect("Failed to execute command");
+        let result = str::from_utf8(&output.stdout).unwrap();
+        
+        // Parse the output to find memory usage (modify this to fit the actual output of 'free' on your system)
+        let memory_data = result.lines()
+            .filter(|line| line.starts_with("Mem:"))
+            .next()
+            .unwrap()
+            .split_whitespace()
+            .collect::<Vec<&str>>();
 
-        let result = String::from_utf8_lossy(&output.stdout);
-        let memory_line = result.lines().nth(1).unwrap_or("");
+        let total_memory = memory_data[1].parse::<f32>().unwrap_or(1.0);
+        let used_memory = memory_data[2].parse::<f32>().unwrap_or(0.0);
+        let memory_usage = (used_memory / total_memory) * 100.0;
 
-        let memory_data: Vec<&str> = memory_line.split_whitespace().collect();
-        let used_memory: f32 = memory_data.get(2).unwrap_or(&"0.0").parse().unwrap_or(0.0);
-        let total_memory: f32 = memory_data.get(1).unwrap_or(&"1.0").parse().unwrap_or(1.0);
-
-        (used_memory / total_memory) * 100.0
+        memory_usage // Return the calculated memory usage percentage
     }
 
-    // Check for network packet drops
+    // Check for network packet drops dynamically
     fn check_network_packet_drops(&self) -> String {
         let output = Command::new("ip")
             .arg("-s")
             .arg("link")
             .output()
-            .expect("Failed to fetch network data");
+            .expect("Failed to execute command");
+        let result = str::from_utf8(&output.stdout).unwrap();
 
-        let result = String::from_utf8_lossy(&output.stdout);
-        let dropped_packets: u32 = result
-            .lines()
-            .filter(|line| line.contains("RX"))
-            .map(|line| {
-                let data: Vec<&str> = line.split_whitespace().collect();
-                data.get(3).unwrap_or(&"0").parse().unwrap_or(0)
-            })
+        let dropped_packets: u32 = result.lines()
+            .filter(|line| line.contains("dropped"))
+            .map(|line| line.split_whitespace().nth(3).unwrap_or("0").parse::<u32>().unwrap_or(0))
             .sum();
 
-        let avg_dropped_packets = dropped_packets as f32 / MAX_RUNS as f32;
-
-        format!("{} dropped packets, average: {:.2}", dropped_packets, avg_dropped_packets)
+        // Only log if there's a significant number of dropped packets
+        if dropped_packets > 0 {
+            format!("{} dropped packets", dropped_packets)
+        } else {
+            String::new() // Don't log anything if there are no dropped packets
+        }
     }
 
     // Check for disk changes and abnormal usage
     fn check_disk_changes_and_usage(&mut self) -> Vec<String> {
-        let output = sam::disk_usage(); // Get disk usage data from sam.rs
+        let output = Command::new("df")
+            .arg("-h")
+            .output()
+            .expect("Failed to execute command");
+        let result = str::from_utf8(&output.stdout).unwrap();
         let mut logs: Vec<String> = Vec::new();
 
         let mut current_disks: Vec<DiskState> = Vec::new();
-        for line in output.lines().skip(1) {  // Skip the header row
-            let disk_info: Vec<&str> = line.split_whitespace().collect();
-            if disk_info.len() < 6 || !disk_info[0].starts_with("/dev") {
-                continue; // Ignore invalid rows or non-dev drives
-            }
+        for line in result.lines().skip(1) {  // Skip the header row
+            if line.starts_with("/dev") {  // Only monitor /dev drives
+                let disk_info: Vec<&str> = line.split_whitespace().collect();
+                if disk_info.len() < 6 {
+                    continue; // Invalid row
+                }
 
-            let use_percent = disk_info[4].trim_end_matches('%').parse::<f32>().unwrap_or(0.0);
-            let disk = DiskState {
-                filesystem: disk_info[0].to_string(),
-                size: disk_info[1].to_string(),
-                used: disk_info[2].to_string(),
-                avail: disk_info[3].to_string(),
-                use_percent,
-            };
-            current_disks.push(disk.clone());
+                let use_percent = disk_info[4].trim_end_matches('%').parse::<f32>().unwrap_or(0.0);
+                let disk = DiskState {
+                    filesystem: disk_info[0].to_string(),
+                    size: disk_info[1].to_string(),
+                    used: disk_info[2].to_string(),
+                    avail: disk_info[3].to_string(),
+                    use_percent,
+                };
+                current_disks.push(disk.clone());
 
-            // Compare with previous disk states to detect new or missing disks
-            let found_in_previous = self.previous_disks.iter().any(|d| d.filesystem == disk.filesystem);
-            if !found_in_previous {
-                logs.push(format!("A new disk was detected: {}", disk.filesystem));
-            }
+                // Compare with previous disk states to detect new or missing disks
+                let found_in_previous = self.previous_disks.iter().any(|d| d.filesystem == disk.filesystem);
+                if !found_in_previous {
+                    logs.push(format!("A new disk was detected: {}", disk.filesystem));
+                }
 
-            // Check for abnormal usage (>20% increase in use)
-            if let Some(prev_disk) = self.previous_disks.iter().find(|d| d.filesystem == disk.filesystem) {
-                if disk.use_percent > prev_disk.use_percent * 1.2 {
-                    logs.push(format!(
-                        "An abnormal increase in disk usage was detected on '{}'. Usage increased by more than 20%.",
-                        disk.filesystem
-                    ));
+                // Check for abnormal usage (>20% increase in use)
+                if let Some(prev_disk) = self.previous_disks.iter().find(|d| d.filesystem == disk.filesystem) {
+                    if disk.use_percent > prev_disk.use_percent * 1.2 {
+                        logs.push(format!(
+                            "An abnormal increase in disk usage was detected on '{}'. Usage increased by more than 20%.",
+                            disk.filesystem
+                        ));
+                    }
                 }
             }
         }
