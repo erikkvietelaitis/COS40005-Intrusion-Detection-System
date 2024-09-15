@@ -19,9 +19,9 @@ else
     echo "Creating user $USER_NAME..."
     sudo useradd -m $USER_NAME
     echo "User $USER_NAME created."
-    # echo $USERNAME:$PASSWORD | sudo chpasswd
-    # sudo chage -d 0 "$USERNAME"
-    # echo "User $USERNAME created and password set."
+    echo $USER_NAME:$PASSWORD | sudo chpasswd
+    sudo chage -d 0 "$USER_NAME"
+    echo "User $USER_NAME created and password set."
 fi
 
 # Chromia user access to /var/log/btmp as so the user does not need  sudo access to view the logs
