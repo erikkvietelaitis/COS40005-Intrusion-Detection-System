@@ -1,4 +1,5 @@
-
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::collections::HashMap;
 use std::path::Path;
 use std::vec;
@@ -86,6 +87,7 @@ fn main() {
         println!("Following logs were generated this tick:");
         for log in logs.iter() {
             println!("    {}", log.build_alert());
+            let _ = append_to_log(&log.build_alert());
         }
         logs = Vec::new();
         i += 1;
@@ -119,4 +121,14 @@ fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
         Err(_e) => panic!("Could not create file in current directory! (Does Chromia have write permissions?)"),
     }
     return;
+}
+fn append_to_log(message: &str) -> std::io::Result<()> {
+    let mut file = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .create(true)  // This will create the file if it doesn't exist
+        .open("Chormia.log")?;
+
+    writeln!(file, "{}", message)?;  // Write the message and append a newline
+    Ok(())
 }
