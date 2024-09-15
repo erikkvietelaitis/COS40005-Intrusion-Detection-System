@@ -1,12 +1,12 @@
-use crate::lara_core::*;                  // Importing core components of the LaraCore module
-use rand::prelude::*;                    // Importing useful traits for random number generation and selection
-use core_traits::AnalysisModule;        // Bringing in the AnalysisModule trait for implementation
-use regex::Regex;                      // Importing Regex for pattern matching on strings
-use crate::linux_bridge::sam;         // Importing functions from sam.rs
-use std::process::Command;           // For executing system commands
+use crate::lara_core::*;                    // Importing core components of the LaraCore module
+use rand::prelude::*;                      // Importing useful traits for random number generation and selection
+use core_traits::AnalysisModule;          // Bringing in the AnalysisModule trait for implementation
+use regex::Regex;                        // Importing Regex for pattern matching on strings
+use crate::linux_bridge::sam;           // Importing functions from sam.rs
+use std::process::Command;             // For executing system commands
 use chrono;
 
-const MAX_RUNS: usize = 10;               // The number of runs we keep track of for averaging
+const MAX_RUNS: usize = 10;                 // The number of runs we keep track of for averaging
 
 // Struct to store disk state
 #[derive(Clone, Debug)]
@@ -21,37 +21,39 @@ struct DiskState {
 // This is a struct to store system data for the current tick
 #[derive(Debug, Clone)]
 struct SystemData {
-    file_name: String,                   // Name of the file being accessed
-    command_executed: String,           // Command that was executed
-    cpu_usage: f32,                    // Current CPU usage
-    memory_usage: f32,                // Current memory usage
+    file_name: String,                     // Name of the file being accessed
+    command_executed: String,             // Command that was executed
+    user: String,                        // User who ran the command
+    cpu_usage: f32,                     // Current CPU usage
+    memory_usage: f32,                 // Current memory usage
 }
 
 // This is the main structure for the AnomalyDetector module
 pub struct AnomalyDetector {
-    current_data: SystemData,                // Holds the data collected in the current tick
-    history_of_filenames: Vec<String>,      // Keeps a history of filenames accessed
-    known_safe_commands: Vec<String>,      // List of commands considered safe
-    known_safe_files: Vec<String>,        // List of files considered safe
-    module_name: String,                 // Name of the module
-    cpu_history: Vec<f32>,              // Stores CPU usage for the last 10 runs
-    memory_history: Vec<f32>,          // Stores memory usage for the last 10 runs
-    previous_disks: Vec<DiskState>,   // Stores previous disk states for comparison
+    current_data: SystemData,              // Holds the data collected in the current tick
+    history_of_filenames: Vec<String>,    // Keeps a history of filenames accessed
+    known_safe_commands: Vec<String>,    // List of commands considered safe
+    known_safe_files: Vec<String>,      // List of files considered safe
+    module_name: String,               // Name of the module
+    cpu_history: Vec<f32>,            // Stores CPU usage for the last 10 runs
+    memory_history: Vec<f32>,        // Stores memory usage for the last 10 runs
+    previous_disks: Vec<DiskState>  // Stores previous disk states for comparison
 }
 
 impl AnalysisModule for AnomalyDetector {
     // This function gathers system data
     fn get_data(&mut self) -> bool {
         // Fetch real running commands from the system using `ps`
-        let command_executed = self.fetch_running_command();
+        let (user, command_executed) = self.fetch_running_command();
         let files: Vec<&str> = vec!["/etc/passwd", "/var/log/syslog", "/home/user/.bashrc"];
 
         // Randomly select a file to simulate system activity
         self.current_data = SystemData {
             file_name: files.choose(&mut rand::thread_rng()).unwrap().to_string(),
             command_executed,
-            cpu_usage: self.fetch_cpu_usage(),         // Fetch current CPU usage
-            memory_usage: self.fetch_memory_usage(),  // Fetch current memory usage
+            user,
+            cpu_usage: self.fetch_cpu_usage(),        // Fetch current CPU usage
+            memory_usage: self.fetch_memory_usage(), // Fetch current memory usage
         };
 
         // Update CPU and memory history
@@ -68,17 +70,18 @@ impl AnalysisModule for AnomalyDetector {
     fn perform_analysis(&mut self) -> Vec<core_struts::Log> {
         let mut results: Vec<core_struts::Log> = Vec::new(); // Start an empty vector to store logs
 
-        // Define a pattern to detect suspicious commands
-        let suspicious_pattern = Regex::new(r"rm").unwrap();
+        // Define multiple patterns to detect suspicious commands
+        let suspicious_pattern = Regex::new(r"rm|chmod|chown|dd|nc|netcat|telnet|wget|curl|kill|sudo").unwrap();
 
         // Check if the executed command is not in the safe list or matches a suspicious pattern
         if !self.known_safe_commands.contains(&self.current_data.command_executed)
             || suspicious_pattern.is_match(&self.current_data.command_executed)
         {
             let msg = format!(
-                "[{}]=[{}]=[Serious]: A suspicious command '{}' was executed.",
+                "[{}]=[{}]=[Serious]: User '{}' executed a suspicious command '{}'.",
                 chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
                 self.module_name,
+                self.current_data.user,
                 self.current_data.command_executed
             );
             results.push(core_struts::Log::new(
@@ -183,23 +186,29 @@ impl AnalysisModule for AnomalyDetector {
 }
 
 impl AnomalyDetector {
-    // Fetch real commands using `ps` command
-    fn fetch_running_command(&self) -> String {
+    // Fetch real commands using `ps` command and capture the user as well
+    fn fetch_running_command(&self) -> (String, String) {
         let output = Command::new("ps")
             .arg("aux")
             .output()
             .expect("Failed to execute `ps` command");
         let data = String::from_utf8_lossy(&output.stdout);
 
-        // Extract command names (skip header, get commands from each line)
-        let command_list: Vec<&str> = data.lines()
+        // Extract user and command names (skip header -> get users and commands from each line)
+        let command_list: Vec<(String, String)> = data.lines()
             .skip(1) // Skip the header row
-            .map(|line| line.split_whitespace().nth(10).unwrap_or(""))
+            .map(|line| {
+                let parts: Vec<&str> = line.split_whitespace().collect();
+                let user = parts.get(0).unwrap_or(&"unknown").to_string(); // Get - user
+                let command = parts.get(10).unwrap_or(&"").to_string();   // Get - command
+                (user, command)
+            })
             .collect();
 
-        // Pick a random running command
-        let random_command = command_list.choose(&mut rand::thread_rng()).unwrap_or(&"");
-        random_command.to_string()
+        // Pick a random running command and user
+        let binding = (String::from("unknown"), String::from(""));
+        let random_command = command_list.choose(&mut rand::thread_rng()).unwrap_or(&binding);
+        (random_command.0.clone(), random_command.1.clone())
     }
 
     // Fetch current CPU usage from `top` command
@@ -368,6 +377,7 @@ impl Default for AnomalyDetector {
             current_data: SystemData {
                 file_name: String::new(),
                 command_executed: String::new(),
+                user: String::new(),
                 cpu_usage: 0.0,
                 memory_usage: 0.0,
             },
