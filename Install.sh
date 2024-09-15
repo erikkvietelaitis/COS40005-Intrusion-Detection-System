@@ -9,7 +9,7 @@ sudo apt-get update && apt-get upgrade -y
 
 # Creating a user named Chromia, as to access certain files
 USER_NAME="Chromia"
-PASSWORD="Password12345:)"
+# PASSWORD="Password12345:)"
 USER_HOME="/home/$USER_NAME"
 GROUP_NAME="Chromia_Group"
 
@@ -19,9 +19,9 @@ else
     echo "Creating user $USER_NAME..."
     sudo useradd -m $USER_NAME
     echo "User $USER_NAME created."
-    echo $USERNAME:$PASSWORD | sudo chpasswd
-    sudo chage -d 0 "$USERNAME"
-    echo "User $USERNAME created and password set."
+    # echo $USERNAME:$PASSWORD | sudo chpasswd
+    # sudo chage -d 0 "$USERNAME"
+    # echo "User $USERNAME created and password set."
 fi
 
 # Chromia user access to /var/log/btmp as so the user does not need  sudo access to view the logs
