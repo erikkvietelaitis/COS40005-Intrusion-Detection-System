@@ -69,7 +69,7 @@ fn main() {
     
     let mut logs: Vec<Log> = Vec::new();
     let mut i = 0;
-    println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT");
+    println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT!!");
     println!("------------------(Real Time alerts)------------------");
     loop {
         println!("Starting Tick({})", i.to_string());
