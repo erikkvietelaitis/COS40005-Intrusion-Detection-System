@@ -127,8 +127,10 @@ fn append_to_log(message: &str) -> std::io::Result<()> {
         .write(true)
         .append(true)
         .create(true)  // This will create the file if it doesn't exist
-        .open("Chormia.log")?;
+        .open("Chromia.log").unwrap();
+    if let Err(e) = writeln!(file, "A new line!") {
+        println!("Couldn't write to file: {}", e);
+    }
 
-    writeln!(file, "{}", message)?;  // Write the message and append a newline
     Ok(())
 }
