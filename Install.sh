@@ -9,31 +9,19 @@ sudo apt-get update && apt-get upgrade -y
 
 # Creating a user named Chromia, as to access certain files
 USER_NAME="Chromia"
-# PASSWORD="Password12345:)"
+PASSWORD="Password12345:)"
 USER_HOME="/home/$USER_NAME"
 GROUP_NAME="Chromia_Group"
 
-if id "$USER_NAME" &>/dev/null; then
-    echo "User $USER_NAME already exists."
-else
     echo "Creating user $USER_NAME..."
-    sudo useradd -m $USER_NAME
-    echo "User $USER_NAME created."
+    sudo groupadd $GROUP_NAME
+    sudo useradd -m -g $GROUP_NAME $USER_NAME
     echo $USER_NAME:$PASSWORD | sudo chpasswd
-    sudo chage -d 0 "$USER_NAME"
-    echo "User $USER_NAME created and password set."
-fi
+    echo "Allowing $USER_NAME access to /var/log/btmp without sudo..."
+    sudo usermod -aG $GROUP_NAME $USER_NAME
+    sudo chown root:$GROUP_NAME /var/log/btmp
+    sudo chmod 0640 /var/log/btmp
 
-# Chromia user access to /var/log/btmp as so the user does not need  sudo access to view the logs
-echo "Allowing $USER_NAME access to /var/log/btmp without sudo..."
-sudo groupadd $GROUP_NAME
-sudo usermod -aG $GROUP_NAME $USER_NAME
-sudo chown root:$GROUP_NAME /var/log/btmp
-sudo chmod 0640 /var/log/btmp
-newgrp $GROUP_NAME
-
-#Chaning to the Chromia user
-sudo -i -u $USER_NAME
 
 
 # Install Rust
