@@ -105,194 +105,104 @@ impl AnalysisModule for HTTPServer{
             msg.push_str(" code: ");
             msg.push_str(nlcode);
             let mut suspicion:String = "0".to_string();
-            if nlcode == "100"{
-                suspicion = "0".to_string();
-                msg.push_str(" Continue");
-            }else if nlcode == "101"{
-                suspicion = "0".to_string();
-                msg.push_str(" Switching Protocols");
-            }else if nlcode == "102"{
-                suspicion = "0".to_string();
-                msg.push_str(" Processing");
-            }else if nlcode == "103"{
-                suspicion = "0".to_string();
-                msg.push_str(" Early Hints");
-            }else if nlcode == "200"{
-                suspicion = "0".to_string();
-                msg.push_str(" OK");
-            }else if nlcode == "201"{
-                suspicion = "0".to_string();
-                msg.push_str(" Created");
-            }else if nlcode == "202"{
-                suspicion = "0".to_string();
-                msg.push_str(" Accepted");
-            }else if nlcode == "203"{
-                suspicion = "0".to_string();
-                msg.push_str(" Non-Authoritative Information");
-            }else if nlcode == "204"{
-                suspicion = "0".to_string();
-                msg.push_str(" No Content");
-            }else if nlcode == "205"{
-                suspicion = "0".to_string();
-                msg.push_str(" Reset Content");
-            }else if nlcode == "206"{
-                suspicion = "0".to_string();
-                msg.push_str(" Partial Content");
-            }else if nlcode == "207"{
-                suspicion = "0".to_string();
-                msg.push_str(" Multi-Status");
-            }else if nlcode == "208"{
-                suspicion = "0".to_string();
-                msg.push_str(" Already Reported");
-            }else if nlcode == "226"{
-                suspicion = "0".to_string();
-                msg.push_str(" IM Used");
-            }else if nlcode == "300"{
-                suspicion = "0".to_string();
-                msg.push_str(" Multiple Choices");
-            }else if nlcode == "301"{
-                suspicion = "0".to_string();
-                msg.push_str(" Moved Permanently");
-            }else if nlcode == "302"{
-                suspicion = "0".to_string();
-                msg.push_str(" Found");
-            }else if nlcode == "303"{
-                suspicion = "0".to_string();
-                msg.push_str(" See Other");
-            }else if nlcode == "304"{
-                suspicion = "0".to_string();
-                msg.push_str(" Not Modified");
-            }else if nlcode == "305"{
-                suspicion = "0".to_string();
-                msg.push_str(" Use Proxy");
-            }else if nlcode == "306"{
-                suspicion = "0".to_string();
-                msg.push_str(" unused");
-            }else if nlcode == "307"{
-                suspicion = "0".to_string();
-                msg.push_str(" Temporary Redirect");
-            }else if nlcode == "308"{
-                suspicion = "0".to_string();
-                msg.push_str(" Permanent Redirect");
-            }else if nlcode == "400"{
-                suspicion = "0".to_string();
-                msg.push_str(" Bad Request");
+            if nlcode == "400"{
+                suspicion = "20".to_string();
+                msg.push_str(" Bad Request"); // 20
             }else if nlcode == "401"{
-                suspicion = "0".to_string();
+                suspicion = "25".to_string(); // 10
                 msg.push_str(" Unauthorized");
-            }else if nlcode == "402"{
-                suspicion = "0".to_string();
-                msg.push_str(" Payment Required");
             }else if nlcode == "403"{
-                suspicion = "0".to_string();
+                suspicion = "15".to_string();
                 msg.push_str(" Forbidden");
             }else if nlcode == "404"{
-                suspicion = "0".to_string();
+                suspicion = "5".to_string();
                 msg.push_str(" Not Found");
             }else if nlcode == "405"{
-                suspicion = "0".to_string();
+                suspicion = "10".to_string();
                 msg.push_str(" Method Not Allowed");
             }else if nlcode == "406"{
-                suspicion = "0".to_string();
+                suspicion = "15".to_string();
                 msg.push_str(" Not Acceptable");
             }else if nlcode == "407"{
-                suspicion = "0".to_string();
+                suspicion = "20".to_string();
                 msg.push_str(" Proxy Authentication Required");
             }else if nlcode == "408"{
-                suspicion = "0".to_string();
+                suspicion = "3".to_string();
                 msg.push_str(" Request Timeout");
             }else if nlcode == "409"{
-                suspicion = "0".to_string();
+                suspicion = "10".to_string();
                 msg.push_str(" Conflict");
             }else if nlcode == "410"{
-                suspicion = "0".to_string();
+                suspicion = "1".to_string();
                 msg.push_str(" Gone");
             }else if nlcode == "411"{
-                suspicion = "0".to_string();
+                suspicion = "2".to_string();
                 msg.push_str(" Length Required");
             }else if nlcode == "412"{
-                suspicion = "0".to_string();
+                suspicion = "3".to_string();
                 msg.push_str(" Precondition Failed");
             }else if nlcode == "413"{
-                suspicion = "0".to_string();
+                suspicion = "10".to_string();
                 msg.push_str(" Payload Too Large");
             }else if nlcode == "414"{
-                suspicion = "0".to_string();
+                suspicion = "5".to_string();
                 msg.push_str(" URI Too Long");
             }else if nlcode == "415"{
-                suspicion = "0".to_string();
+                suspicion = "10".to_string();
                 msg.push_str(" Unsupported Media Type");
             }else if nlcode == "416"{
-                suspicion = "0".to_string();
+                suspicion = "5".to_string();
                 msg.push_str(" Range Not Satisfiable");
             }else if nlcode == "417"{
-                suspicion = "0".to_string();
+                suspicion = "20".to_string();
                 msg.push_str(" Expectation Failed");
             }else if nlcode == "418"{
                 suspicion = "0".to_string();
                 msg.push_str(" Im a teapot");//shockingly this is a real code
             }else if nlcode == "421"{
-                suspicion = "0".to_string();
+                suspicion = "1".to_string();
                 msg.push_str(" Misdirected Request");
             }else if nlcode == "422"{
-                suspicion = "0".to_string();
+                suspicion = "9".to_string();
                 msg.push_str(" Unprocessable Content");
-            }else if nlcode == "423"{
-                suspicion = "0".to_string();
-                msg.push_str(" Locked");
-            }else if nlcode == "424"{
-                suspicion = "0".to_string();
-                msg.push_str(" Failed Dependency");
-            }else if nlcode == "425"{
-                suspicion = "0".to_string();
-                msg.push_str(" Too Early");
-            }else if nlcode == "426"{
-                suspicion = "0".to_string();
-                msg.push_str(" Upgrade Required");
-            }else if nlcode == "428"{
-                suspicion = "0".to_string();
-                msg.push_str(" Precondition Required");
             }else if nlcode == "429"{
-                suspicion = "0".to_string();
+                suspicion = "15".to_string();
                 msg.push_str(" Too Many Requests");
             }else if nlcode == "431"{
-                suspicion = "0".to_string();
+                suspicion = "15".to_string();
                 msg.push_str(" Request Header Fields Too Large");
-            }else if nlcode == "451"{
-                suspicion = "0".to_string();
-                msg.push_str(" Unavailable For Legal Reasons");
             }else if nlcode == "500"{
-                suspicion = "0".to_string();
+                suspicion = "10".to_string();
                 msg.push_str(" Internal Server Error");
             }else if nlcode == "501"{
-                suspicion = "0".to_string();
+                suspicion = "5".to_string();
                 msg.push_str(" Not Implemented");
             }else if nlcode == "502"{
-                suspicion = "0".to_string();
+                suspicion = "5".to_string();
                 msg.push_str(" Bad Gateway")
             }else if nlcode == "503"{
-                suspicion = "0".to_string();
+                suspicion = "5".to_string();
                 msg.push_str(" Service Unavailable");
             }else if nlcode == "504"{
-                suspicion = "0".to_string();
+                suspicion = "3".to_string();
                 msg.push_str(" Gateway Timeout");
             }else if nlcode == "505"{
-                suspicion = "0".to_string();
+                suspicion = "4".to_string();
                 msg.push_str(" HTTP Version Not Supported");
             }else if nlcode == "506"{
                 suspicion = "0".to_string();
                 msg.push_str(" Variant Also Negotiates");
             }else if nlcode == "507"{
-                suspicion = "0".to_string();
+                suspicion = "10".to_string();
                 msg.push_str(" Insufficient Storage");
             }else if nlcode == "508"{
-                suspicion = "0".to_string();
+                suspicion = "5".to_string();
                 msg.push_str(" Loop Detected");
             }else if nlcode == "510"{
                 suspicion = "0".to_string();
                 msg.push_str(" Not Extended");
             }else if nlcode == "511"{
-                suspicion = "0".to_string();
+                suspicion = "40".to_string();
                 msg.push_str(" Network Authentication Required");
             }
             let mut data:HashMap<String,String> = HashMap::new();
