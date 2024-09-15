@@ -62,20 +62,10 @@ fn main() {
             Some(s) => s.clone(),
             None => section_not_found(module.get_name()),
         };
-        // for field in module.build_config_fields().into_iter(){
-        //     let vals = section.get(&field.name).unwrap_or(&field.default_values);
-        //     if(vals.len() == 0){
-        //         panic!("Chromia failed to launch: config field {} for {} was not provided a value",&field.name,module.get_name());
-        //     }
-            
-        //     vals.get(0).unwrap();
 
-        // }
         module.retrieve_config_data(section);
     }
     
-    // println!("{:?}", serde_json::to_string(&t).unwrap());
-
     let mut logs: Vec<Log> = Vec::new();
     let mut i = 0;
     println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT");
@@ -126,7 +116,7 @@ fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
     let file_result = system::sys_file_write("config.ini", &config_file_contents);
     match file_result{
         Ok(_) => println!("Successfully created Config file.\n Please fill out file and re-run Chromia to activate"),
-        Err(_e) => panic!("Could not create file in current directory!"),
+        Err(_e) => panic!("Could not create file in current directory! (Does Chromia have write permissions?)"),
     }
     return;
 }
