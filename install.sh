@@ -114,8 +114,8 @@ cargo build --release
 
 #move Chromia build to /bin
 cd ./target/release
-mkdir -p ~/Chromia
-mv Chromia ~/Chromia/
+sudo mkdir -p /bin/Chromia
+sudo mv Chromia /bin/Chromia
 
 #remove Chromia files
 ls
@@ -123,11 +123,14 @@ cd ../../../
 ls
 rm -rf ./COS40005-Intrusion-Detection-System
 
+#Copy B3sum to /bin
+sudo cp ~/.cargo/bin/b3sum /bin/Chromia
+
 #run Chromia
 sleep 5
 echo "Chromia has been installed successfully."
 echo "Chromia is installed in ~/Chromia"
 sleep 5
-cd ~/Chromia
+cd /bin/Chromia
 ./Chromia
 
