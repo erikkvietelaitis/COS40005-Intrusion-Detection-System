@@ -79,7 +79,8 @@ impl AnalysisModule for Authentication {
             //nls stands for new line split. this part of the code splits the line based on white spaces
             let nls: Vec<&str> = nl.split("[").collect();
             //nlip stands for new line ip. the ip adderess should always be the 11th string in the line
-            let nlip:&str =nls[7];
+            let nlipsplit: Vec<&str> =nls[7].split_whitespace().collect();
+            let nlip:&str = nlipsplit[0];
             //checks to see if the vector is empty
             if fips.len() != 0{
                 let mut i2: usize = 0;
@@ -117,7 +118,8 @@ impl AnalysisModule for Authentication {
             if !nls[4].contains("reboot") && !nls[4].contains("runlevel") && !nls[4].contains("shutdown") && !nls[5].contains("tty2"){
                 //print!("{}",nls[3]);
                 //print!("{}",nls[4]);
-                let nlip:&str =nls[7];
+                let nlipsplit: Vec<&str> =nls[7].split_whitespace().collect();
+                let nlip:&str = nlipsplit[0];
                 if sips.len() != 0{
                     let mut i4: usize = 0;
                     //this is used to see if the ip has been handeled within the vector
@@ -162,7 +164,7 @@ impl AnalysisModule for Authentication {
     // Take the current data gathered from one of the functions above, using this data, 
     // plus the persistent data stored in the object to create logs (AKA alerts) 
     fn perform_analysis(&mut self) -> Vec<crate::Log> {
-        let mut results: Vec<core_struts::Log> = Vec::new();
+        let mut results: Vec<core_structs::Log> = Vec::new();
         if self.current_data.cfips.len() > 0 {
             let mut i1: usize = 0;
             let mut i2: usize = 0;
@@ -182,13 +184,13 @@ impl AnalysisModule for Authentication {
                         msg.push_str(*&self.pfips[i2].num.to_string().as_str());
                         msg.push_str("' times in the past (undecided amount of time)");
                         if self.pfips[i2].num < 3 as u64{
-                            results.push(core_struts::Log::new(core_enums::LogType::Info,self.module_name.clone(),msg,));
+                            results.push(core_structs::Log::new(core_enums::LogType::Info,self.module_name.clone(),msg,));
                         } else if self.pfips[i2].num < 10 as u64 {
-                            results.push(core_struts::Log::new(core_enums::LogType::Warning,self.module_name.clone(),msg,));
+                            results.push(core_structs::Log::new(core_enums::LogType::Warning,self.module_name.clone(),msg,));
                         } else if self.pfips[i2].num < 1000 as u64{
-                            results.push(core_struts::Log::new(core_enums::LogType::Serious,self.module_name.clone(),msg,));
+                            results.push(core_structs::Log::new(core_enums::LogType::Serious,self.module_name.clone(),msg,));
                         } else{
-                            results.push(core_struts::Log::new(core_enums::LogType::Critical,self.module_name.clone(),msg,));
+                            results.push(core_structs::Log::new(core_enums::LogType::Critical,self.module_name.clone(),msg,));
                         }
                     }
                     i2 = i2 + 1;    
@@ -200,13 +202,13 @@ impl AnalysisModule for Authentication {
                     msg.push_str(&self.current_data.cfips[i1].num.to_string().as_str());
                     msg.push_str("' time(s)");
                     if self.current_data.cfips[i1].num < 3{
-                        results.push(core_struts::Log::new(core_enums::LogType::Info,self.module_name.clone(),msg,));
+                        results.push(core_structs::Log::new(core_enums::LogType::Info,self.module_name.clone(),msg,));
                     } else if self.current_data.cfips[i1].num < 10{
-                        results.push(core_struts::Log::new(core_enums::LogType::Warning,self.module_name.clone(),msg,));
+                        results.push(core_structs::Log::new(core_enums::LogType::Warning,self.module_name.clone(),msg,));
                     } else if self.current_data.cfips[i1].num < 1000{
-                        results.push(core_struts::Log::new(core_enums::LogType::Serious,self.module_name.clone(),msg,));
+                        results.push(core_structs::Log::new(core_enums::LogType::Serious,self.module_name.clone(),msg,));
                     } else {
-                        results.push(core_struts::Log::new(core_enums::LogType::Critical,self.module_name.clone(),msg,));
+                        results.push(core_structs::Log::new(core_enums::LogType::Critical,self.module_name.clone(),msg,));
                     }
                     let t = &self.current_data.cfips[i1];
                     self.pfips.push(t.clone());
@@ -228,13 +230,13 @@ impl AnalysisModule for Authentication {
                         msg.push_str(&self.pfips[i2].num.to_string().as_str());
                         msg.push_str("' failed attempts");
                         if self.pfips[i2].num < 3{
-                            results.push(core_struts::Log::new(core_enums::LogType::Info,self.module_name.clone(),msg,));
+                            results.push(core_structs::Log::new(core_enums::LogType::Info,self.module_name.clone(),msg,));
                         } else if self.pfips[i2].num < 10{
-                            results.push(core_struts::Log::new(core_enums::LogType::Warning,self.module_name.clone(),msg,));
+                            results.push(core_structs::Log::new(core_enums::LogType::Warning,self.module_name.clone(),msg,));
                         } else if self.pfips[i2].num < 1000{
-                            results.push(core_struts::Log::new(core_enums::LogType::Serious,self.module_name.clone(),msg,));
+                            results.push(core_structs::Log::new(core_enums::LogType::Serious,self.module_name.clone(),msg,));
                         } else{
-                            results.push(core_struts::Log::new(core_enums::LogType::Critical,self.module_name.clone(),msg,));
+                            results.push(core_structs::Log::new(core_enums::LogType::Critical,self.module_name.clone(),msg,));
                         }
                     }
                     i2 = i2 + 1;
@@ -251,7 +253,7 @@ impl AnalysisModule for Authentication {
                         msg.push_str("' time(s). and a total of ");
                         msg.push_str(&self.psips[i2].num.to_string().as_str());
                         msg.push_str("' times in the past (undecided amount of time)");
-                        results.push(core_struts::Log::new(core_enums::LogType::Info,self.module_name.clone(),msg,));
+                        results.push(core_structs::Log::new(core_enums::LogType::Info,self.module_name.clone(),msg,));
                     }
                     i3 = i3 + 1;    
                 }
@@ -261,7 +263,7 @@ impl AnalysisModule for Authentication {
                     msg.push_str("' has logged in seccesfully ");
                     msg.push_str(&self.current_data.csips[i1].num.to_string().as_str());
                     msg.push_str("' time(s)");
-                    results.push(core_struts::Log::new(core_enums::LogType::Info,self.module_name.clone(),msg,));
+                    results.push(core_structs::Log::new(core_enums::LogType::Info,self.module_name.clone(),msg,));
                     let t = &self.current_data.csips[i1];
                     self.psips.push(t.clone());
                 }
