@@ -90,6 +90,9 @@ ls
 rm -rf ./COS40005-Intrusion-Detection-System
 
 #run Chromia
+sleep 10 
+echo "Chromia has been installed successfully."
+echo "Chromia is installed in ~/bin"
 cd ~/bin
 ./Chromia
 
