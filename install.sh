@@ -43,7 +43,7 @@ echo -e "${COLOR_RED} ${TEXT_BOLD} Chromia must be run as sudo, it may not funct
 echo -e "${COLOR_RESET}"
 # Update and Upgrade the System
 sleep 5
-echo "Updating and upgrading system..."
+echo "Enter password to begin, Updating and upgrading system..."
 sudo apt-get update && apt-get upgrade -y
 
 # Install Rust
