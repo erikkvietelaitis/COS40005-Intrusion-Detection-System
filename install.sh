@@ -128,6 +128,6 @@ sleep 5
 echo "Chromia has been installed successfully."
 echo "Chromia is installed in ~/Chromia"
 sleep 5
-cd ~/bin
+cd ~/Chromia
 ./Chromia
 
