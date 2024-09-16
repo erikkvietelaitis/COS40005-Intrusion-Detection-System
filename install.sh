@@ -80,6 +80,7 @@ else
 	cargo --version
 
 	echo "Rust has been installed successfully."
+fi
 
 	if command -v b3sum &> /dev/null; then
     	echo "b3sum is already installed. Skipping installation."
@@ -87,7 +88,6 @@ else
     	echo "b3sum is not installed. Installing..."
     	cargo install b3sum
 	fi
-fi
 
 #Install git 
 if command -v git >/dev/null 2>&1; then
