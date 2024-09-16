@@ -85,7 +85,7 @@ else
     	echo "b3sum is already installed. Skipping installation."
 	else
     	echo "b3sum is not installed. Installing..."
-    	cargo install b3sum
+    	sudo cargo install b3sum
 	fi
 fi
 
