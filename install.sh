@@ -68,8 +68,25 @@ echo "Installing B3Sum..."
 cargo install b3sum
 
 #Install git 
-echo "Installing git..."
-sudo apt install -y git
+if command -v git >/dev/null 2>&1; then
+    echo "Git is already installed."
+else
+    echo "Git is not installed. Installing Git..."
+
+    # Update package list
+    sudo apt update
+
+    # Install Git
+    sudo apt install -y git
+
+    # Verify installation
+    if command -v git >/dev/null 2>&1; then
+        echo "Git has been successfully installed."
+    else
+        echo "Failed to install Git."
+        exit 1
+    fi
+fi
 
 #git clone Chromia
 git clone https://erikkvietelaitis:$CHROMIA_PAT@github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git
@@ -90,9 +107,10 @@ ls
 rm -rf ./COS40005-Intrusion-Detection-System
 
 #run Chromia
-sleep 10 
+sleep 5
 echo "Chromia has been installed successfully."
 echo "Chromia is installed in ~/bin"
+sleep 5
 cd ~/bin
 ./Chromia
 
