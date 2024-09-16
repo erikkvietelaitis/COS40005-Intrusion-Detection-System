@@ -19,7 +19,8 @@ pub struct FIM {
 
 // Function to generate hash using the key
 fn genhash(key: &str) -> (bool, String) {
-    let output = match Command::new("b3sum")
+    let output = match Command::new("sudo")
+        .arg("b3sum")
         .arg(key)
         .arg("--no-names")
         .output() {
