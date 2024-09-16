@@ -132,7 +132,7 @@ sudo cp ~/.cargo/bin/b3sum /bin/Chromia/Data
 git clone https://brokenpip:$CHROMIA_TPM_PAT@github.com/brokenpip/ctpb_ids.git
 
 #build CTPB IDS
-cd ./ctpb_ids/ctpb_tpm
+cd ./ctpb_ids/ctpb_tpm  #Need to fix ??Temp fix
 cargo build --release
 
 #move CTPB IDS build to /bin
@@ -140,7 +140,7 @@ cd ./target/release
 sudo mv ctpb_tpm /bin/Chromia
 
 #remove CTPB IDS files
-cd ~/Downloads
+cd ~/Downloads      #Need to fix ??Temp fix
 rm -rf ./ctpb_ids
 
 #run Chromia
