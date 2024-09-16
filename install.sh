@@ -70,10 +70,10 @@ then
     echo "Rust is already installed."
 else
 	echo "Please select 1 as this is the basic install and is what is required for the deployment of this application"
-	sudo curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 	# Set up environment
-	source /bin/.cargo/env
+	source $HOME/.cargo/env
 
 	# Check if Rust is installed correctly
 	rustc --version
@@ -87,9 +87,6 @@ fi
 	else
     	echo "b3sum is not installed. Installing..."
     	cargo install b3sum
-		sudo /home/your_username/.cargo/bin/b3sum
-		sudo visudo
-		Defaults secure_path="$HOME/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 	fi
 
 #Install git 
