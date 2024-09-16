@@ -40,7 +40,8 @@ fn main() {
     modules = vec![Box::new(
         <AnalysisModules::example::Example as std::default::Default>::default()
         
-    ),Box::new(<AnalysisModules::network::Networking as std::default::Default>::default())];
+    ),Box::new(<AnalysisModules::network::Networking as std::default::Default>::default()),
+    Box::new(<AnalysisModules::packet_sniffer::PacketSniffer as std::default::Default>::default()), ];
     println!("    loaded {} module/s", modules.len().to_string());
 
     if !Path::new("config.ini").exists() {
