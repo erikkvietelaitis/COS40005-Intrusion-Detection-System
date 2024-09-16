@@ -65,25 +65,29 @@ else
 fi
 
 # Install rustup (Rust's official installer)
-echo "Please select 1 as this is the basic install and is what is required for the deployment of this application"
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Set up environment
-source $HOME/.cargo/env
-
-# Check if Rust is installed correctly
-rustc --version
-cargo --version
-
-echo "Rust has been installed successfully."
-
-if command -v b3sum &> /dev/null; then
-    echo "b3sum is already installed. Skipping installation."
+if command -v rustc &> /dev/null
+then
+    echo "Rust is already installed."
 else
-    echo "b3sum is not installed. Installing..."
-    cargo install b3sum
-fi
+	echo "Please select 1 as this is the basic install and is what is required for the deployment of this application"
+	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
+	# Set up environment
+	source $HOME/.cargo/env
+
+	# Check if Rust is installed correctly
+	rustc --version
+	cargo --version
+
+	echo "Rust has been installed successfully."
+
+	if command -v b3sum &> /dev/null; then
+    	echo "b3sum is already installed. Skipping installation."
+	else
+    	echo "b3sum is not installed. Installing..."
+    	cargo install b3sum
+	fi
+fi
 
 #Install git 
 if command -v git >/dev/null 2>&1; then
