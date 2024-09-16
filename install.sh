@@ -1,8 +1,6 @@
-	#!/bin/bash
+#!/bin/bash
 CHROMIA_PAT="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"
 USER_HOME="/home/$USER_NAME"
-# Define color codes
-#!/bin/bash
 
 # Define color codes
 COLOR_RESET="\033[0m"
