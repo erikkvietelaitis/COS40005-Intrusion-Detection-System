@@ -34,9 +34,9 @@ cat << EOF
 
 Chromia IDS Software
 Version: 1.0.0
-Authors: Jane Doe, John Smith
+Authors: Ben, Lachlan, Erik, Sean, Simon and Sam
 
-Chromia is an Intrusion Detection System designed to protect your network from malicious activity.
+Chromia is a Host based Intrusion Detection System designed to protect your network from malicious activity.
 It provides real-time monitoring and alerts to help you maintain security.
 
 EOF
