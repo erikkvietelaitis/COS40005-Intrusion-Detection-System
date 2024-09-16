@@ -114,8 +114,8 @@ cargo build --release
 
 #move Chromia build to /bin
 cd ./target/release
-mkdir -p ~/bin
-mv Chromia ~/bin/
+mkdir -p ~/Chromia
+mv Chromia ~/Chromia/
 
 #remove Chromia files
 ls
@@ -126,7 +126,7 @@ rm -rf ./COS40005-Intrusion-Detection-System
 #run Chromia
 sleep 5
 echo "Chromia has been installed successfully."
-echo "Chromia is installed in ~/bin"
+echo "Chromia is installed in ~/Chromia"
 sleep 5
 cd ~/bin
 ./Chromia
