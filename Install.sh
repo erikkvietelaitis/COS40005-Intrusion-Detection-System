@@ -1,5 +1,6 @@
 	#!/bin/bash
 CHROMIA_PAT="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"
+USER_HOME="/home/$USER_NAME"
 # Define color codes
 #!/bin/bash
 
@@ -45,19 +46,9 @@ echo -e "${COLOR_RESET}"
 echo "Updating and upgrading system..."
 sudo apt-get update && apt-get upgrade -y
 
-# Creating a user named Chromia, as to access certain files
-USER_NAME="Chromia"
-PASSWORD="Password12345:)"
-USER_HOME="/home/$USER_NAME"
-GROUP_NAME="Chromia_Group"
-
-
-
-
-
 # Install Rust
 echo "Installing Rust... But, first we need to install curl"
-sudo apt install -y curl build-essential
+sudo  apt install -y curl build-essential
 
 # Install rustup (Rust's official installer)
 echo "Please select 1 as this is the basic install and is what is required for the deployment of this application"
