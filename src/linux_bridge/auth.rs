@@ -91,7 +91,8 @@ pub fn all_system_user_boottime() -> String {
 //NOTE: You will be prompted to enter your password to view the file, this will be like entering 
 //sudo utmpdump /var/log/btmp in the terminal and entering your password where it does not show up
 pub fn btmp_dump() -> String {
-    let output = Command::new("utmpdump")
+    let output = Command::new("sudo")
+        .arg("utmpdump")
         .arg("/var/log/btmp")
         .output()
         .expect("Failed to execute command");
