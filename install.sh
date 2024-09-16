@@ -70,10 +70,10 @@ then
     echo "Rust is already installed."
 else
 	echo "Please select 1 as this is the basic install and is what is required for the deployment of this application"
-	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+	sudo curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 	# Set up environment
-	source $HOME/.cargo/env
+	source /bin/.cargo/env
 
 	# Check if Rust is installed correctly
 	rustc --version
@@ -85,7 +85,7 @@ else
     	echo "b3sum is already installed. Skipping installation."
 	else
     	echo "b3sum is not installed. Installing..."
-    	sudo cargo install b3sum
+    	cargo install b3sum
 	fi
 fi
 
