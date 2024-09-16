@@ -34,9 +34,9 @@ cat << EOF
 
 Chromia IDS Software
 Version: 1.0.0
-Authors: Jane Doe, John Smith
+Authors: Ben, Lachlan, Erik, Sean, Simon and Sam
 
-Chromia is an Intrusion Detection System designed to protect your network from malicious activity.
+Chromia is a Host based Intrusion Detection System designed to protect your network from malicious activity.
 It provides real-time monitoring and alerts to help you maintain security.
 
 EOF
@@ -68,8 +68,20 @@ echo "Installing B3Sum..."
 cargo install b3sum
 
 #Install git 
-echo "Installing git..."
-sudo apt install -y git
+if command -v git >/dev/null 2>&1; then
+    echo "Git is already installed."
+else
+    # Install Git
+    sudo apt install -y git
+
+    # Verify installation
+    if command -v git >/dev/null 2>&1; then
+        echo "Git has been successfully installed."
+    else
+        echo "Failed to install Git."
+        exit 1
+    fi
+fi
 
 #git clone Chromia
 git clone https://erikkvietelaitis:$CHROMIA_PAT@github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git
@@ -83,11 +95,17 @@ cd ./target/release
 mkdir -p ~/bin
 mv Chromia ~/bin/
 
-#run Chromia
-#cargo run --release
-
 #remove Chromia files
 ls
 cd ../../../
 ls
 rm -rf ./COS40005-Intrusion-Detection-System
+
+#run Chromia
+sleep 5
+echo "Chromia has been installed successfully."
+echo "Chromia is installed in ~/bin"
+sleep 5
+cd ~/bin
+./Chromia
+
