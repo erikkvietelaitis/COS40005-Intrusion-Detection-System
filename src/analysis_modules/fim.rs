@@ -144,7 +144,7 @@ impl AnalysisModule for FIM {
     }
     fn build_config_fields(&self) -> Vec<crate::ConfigField> {
         let fields:Vec<ConfigField> = vec![
-            ConfigField::new("files".to_owned(),"Files to be monitored for integrity violations, must be an absolute path".to_owned(),core_enums::ConfigFieldType::Integer,vec!["/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/config.ini".to_owned()], true)
+            ConfigField::new("files".to_owned(),"Files to be monitored for integrity violations, must be an absolute path".to_owned(),core_enums::ConfigFieldType::Integer,vec!["./config.ini".to_owned()], true)
         ];
         
         return fields;
