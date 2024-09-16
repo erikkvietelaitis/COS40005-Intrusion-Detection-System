@@ -87,6 +87,9 @@ fi
 	else
     	echo "b3sum is not installed. Installing..."
     	cargo install b3sum
+		sudo /home/your_username/.cargo/bin/b3sum
+		sudo visudo
+		Defaults secure_path="$HOME/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 	fi
 
 #Install git 
