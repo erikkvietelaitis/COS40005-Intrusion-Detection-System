@@ -1,6 +1,7 @@
 #!/bin/bash
 CHROMIA_PAT="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"
 USER_HOME="/home/$USER_NAME"
+CHROMIA_TPM_PAT="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"
 
 # Define color codes
 COLOR_RESET="\033[0m"
@@ -126,6 +127,21 @@ rm -rf ./COS40005-Intrusion-Detection-System
 #Copy B3sum to /bin
 sudo mkdir -p /bin/Chromia/Data
 sudo cp ~/.cargo/bin/b3sum /bin/Chromia/Data
+
+#git clone CTPB IDS
+git clone https://brokenpip:$CHROMIA_TPM_PAT@github.com/brokenpip/ctpb_ids.git
+
+#build CTPB IDS
+cd ./ctpb_ids/ctpb_tpm
+cargo build --release
+
+#move CTPB IDS build to /bin
+cd ./target/release
+sudo mv ctpb_tpm /bin/Chromia
+
+#remove CTPB IDS files
+cd ~/Downloads
+rm -rf ./ctpb_ids
 
 #run Chromia
 sleep 5
