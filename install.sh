@@ -129,7 +129,7 @@ sudo mkdir -p /bin/Chromia/Data
 sudo cp ~/.cargo/bin/b3sum /bin/Chromia/Data
 
 # Git clone CTPB IDS
-git clone https://brokenpip:$CHROMIA_TPM_PAT@github.com/brokenpip/ctpb_ids.git /tmp/ChromiaTPM
+#git clone https://brokenpip:$CHROMIA_TPM_PAT@github.com/brokenpip/ctpb_ids.git /tmp/ChromiaTPM
 
 # Build CTPB IDS
 cd /tmp/ChromiaTPM
@@ -137,7 +137,7 @@ cargo build --release
 
 # Move CTPB IDS build to /bin
 cd /tmp/ChromiaTPM/target/release
-sudo mv ctpb_tpm/bin/Chromia
+sudo mv ctpb_tpm /bin/Chromia
 
 #remove CTPB IDS files
 #rm -rf /tmp/Tpm
