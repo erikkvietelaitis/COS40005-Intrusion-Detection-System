@@ -38,9 +38,11 @@ Chromia is a Host based Intrusion Detection System designed to protect your netw
 It provides real-time monitoring and alerts to help you maintain security.
 
 EOF
+sleep 2
 echo -e "${COLOR_RED} ${TEXT_BOLD} Chromia must be run as sudo, it may not function properly without this!"
 echo -e "${COLOR_RESET}"
 # Update and Upgrade the System
+sleep 5
 echo "Updating and upgrading system..."
 sudo apt-get update && apt-get upgrade -y
 
