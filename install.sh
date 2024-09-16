@@ -71,11 +71,6 @@ cargo install b3sum
 if command -v git >/dev/null 2>&1; then
     echo "Git is already installed."
 else
-    echo "Git is not installed. Installing Git..."
-
-    # Update package list
-    sudo apt update
-
     # Install Git
     sudo apt install -y git
 
