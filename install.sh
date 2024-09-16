@@ -47,8 +47,22 @@ echo "Updating and upgrading system..."
 sudo apt-get update && apt-get upgrade -y
 
 # Install Rust
-echo "Installing Rust... But, first we need to install curl"
-sudo  apt install -y curl build-essential
+# Check if curl is installed
+echo "Checking if curl is installed..."
+if ! dpkg -l | grep -q '^ii  curl'; then
+    echo "curl is not installed. Installing..."
+    sudo apt install -y curl
+else
+    echo "curl is already installed."
+fi
+
+# Check if build-essential is installed
+if ! dpkg -l | grep -q '^ii  build-essential'; then
+    echo "build-essential is not installed. Installing..."
+    sudo apt install -y build-essential
+else
+    echo "build-essential is already installed."
+fi
 
 # Install rustup (Rust's official installer)
 echo "Please select 1 as this is the basic install and is what is required for the deployment of this application"
@@ -63,9 +77,13 @@ cargo --version
 
 echo "Rust has been installed successfully."
 
-#Cargo install B3Sum
-echo "Installing B3Sum..."
-cargo install b3sum
+if command -v b3sum &> /dev/null; then
+    echo "b3sum is already installed. Skipping installation."
+else
+    echo "b3sum is not installed. Installing..."
+    cargo install b3sum
+fi
+
 
 #Install git 
 if command -v git >/dev/null 2>&1; then
