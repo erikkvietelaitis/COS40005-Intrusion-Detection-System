@@ -129,7 +129,7 @@ sudo cp ~/.cargo/bin/b3sum /bin/Chromia
 #run Chromia
 sleep 5
 echo "Chromia has been installed successfully."
-echo "Chromia is installed in ~/Chromia"
+echo "Chromia is installed in /bin/Chromia"
 sleep 5
 cd /bin/Chromia
 ./Chromia
