@@ -124,7 +124,8 @@ ls
 rm -rf ./COS40005-Intrusion-Detection-System
 
 #Copy B3sum to /bin
-sudo cp ~/.cargo/bin/b3sum /bin/Chromia
+sudo mkdir -p /bin/Chromia/Data
+sudo cp ~/.cargo/bin/b3sum /bin/Chromia/Data
 
 #run Chromia
 sleep 5
@@ -132,5 +133,5 @@ echo "Chromia has been installed successfully."
 echo "Chromia is installed in /bin/Chromia"
 cd /bin/Chromia
 sleep 5
-./Chromia
+sudo ./Chromia #sudo is required to run the program due to wanting the files to be in /bin
 
