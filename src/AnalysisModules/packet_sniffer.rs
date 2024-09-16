@@ -21,6 +21,7 @@ pub struct PacketSniffer {
     pub interface_name: String,
     pub packets: Arc<Mutex<Vec<PacketData>>>,
     pub packet_threshold: usize,
+    pub host_ip: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -30,21 +31,16 @@ pub struct PacketData {
 }
 
 impl PacketSniffer {
-    // Creates a new `PacketSniffer` instance.
-    // `module_name` - Name of the module.
-    // `interface_name` - Name of the network interface to capture packets from.
-    // `packet_threshold` - The number of packets that triggers an alert.
-    pub fn new(module_name: &str, interface_name: &str, packet_threshold: usize) -> Self {
+    pub fn new(module_name: &str, interface_name: &str, packet_threshold: usize, host_ip: Option<String>) -> Self {
         Self {
             module_name: module_name.to_string(),
             interface_name: interface_name.to_string(),
             packets: Arc::new(Mutex::new(Vec::new())),
             packet_threshold,
+            host_ip,
         }
     }
 
-    // Captures packets from the specified network interface for a given duration.
-    // `duration` - The amount of time to capture packets.
     fn capture_packets(&self, duration: Duration) {
         let packets = Arc::clone(&self.packets);
         let interface = datalink::interfaces()
@@ -87,7 +83,6 @@ impl PacketSniffer {
 
                         packet_data.source_ip = Some(ipv4.get_source().to_string());
                     } else if let Some(ipv6) = Ipv6Packet::new(ip_payload) {
-                        let next_header = ipv6.get_next_header();
                         // Handle IPv6 payloads if necessary
                     }
 
@@ -101,8 +96,6 @@ impl PacketSniffer {
         }
     }
 
-    // Analyzes the captured packets and generates logs if the packet count exceeds the threshold.
-    // A vector of `Log` instances containing the analysis results.
     fn analyze_packets(&self) -> Vec<Log> {
         let mut results = Vec::new();
         let packets = self.packets.lock().unwrap();
@@ -111,6 +104,13 @@ impl PacketSniffer {
         let mut unique_source_info = HashSet::new();
         for packet in packets.iter() {
             if let Some(source_ip) = &packet.source_ip {
+                // Skip packets from the host IP address
+                if let Some(host_ip) = &self.host_ip {
+                    if source_ip == host_ip {
+                        continue;
+                    }
+                }
+
                 if let Some(source_port) = packet.source_port {
                     unique_source_info.insert((source_ip.clone(), source_port));
                 }
@@ -138,7 +138,6 @@ impl PacketSniffer {
         results
     }
 
-    // Clears the captured packets from the buffer.
     fn clear_packets(&self) {
         let mut packets = self.packets.lock().unwrap();
         packets.clear();
@@ -146,8 +145,6 @@ impl PacketSniffer {
 }
 
 impl AnalysisModule for PacketSniffer {
-    // Starts the packet capturing process in a separate thread.
-    // `true` if the process was successfully started.
     fn get_data(&mut self) -> bool {
         let duration = Duration::from_secs(5); // Capture packets for 5 seconds
         let sniffer = Arc::new(self.clone());
@@ -162,8 +159,6 @@ impl AnalysisModule for PacketSniffer {
         todo!()
     }
 
-    // Performs the packet analysis and returns the generated logs.
-    // A vector of `Log` instances containing the analysis results.
     fn perform_analysis(&mut self) -> Vec<Log> {
         let logs = self.analyze_packets();
         self.clear_packets(); // Clear packets after analysis
@@ -176,21 +171,21 @@ impl AnalysisModule for PacketSniffer {
 
     fn build_config_fields(&self) -> Vec<ConfigField> {
         // Example network interfaces
-        let network_interfaces = vec!["eth0".to_owned(), "wlan0".to_owned(), "lo".to_owned()];
+        let network_interfaces = vec!["enp0s3".to_owned(), "wlan0".to_owned(), "lo".to_owned()];
         
         // Example packet thresholds
-        let packet_thresholds = vec!["10".to_owned(), "50".to_owned(), "200".to_owned()];
+        let packet_thresholds = vec!["200".to_owned()];
+        
+        // Host IP field
+        let host_ip: Vec<String> = vec!["192.168.1.9".to_owned()];
 
         vec![
             ConfigField::new("InterfaceName[]".to_owned(), "Network interface to capture packets from. Example: eth0, wlan0, lo".to_owned(), ConfigFieldType::String, network_interfaces, true),
             ConfigField::new("PacketThreshold".to_owned(), "Number of packets that triggers an alert. Example: 10, 50, 200".to_owned(), ConfigFieldType::Integer, packet_thresholds, true),
+            ConfigField::new("HostIP".to_owned(), "Host IP address to be exempted from alerts. Example: 192.168.1.100".to_owned(), ConfigFieldType::String, host_ip, false), // New field
         ]
     }
 
-    /// Retrieves and applies configuration data from a `HashMap`.
-    /// * `data` - A `HashMap` where keys are configuration field names and values are vectors of configuration values.
-    // # Returns
-    /// `true` if the configuration was successfully applied.
     fn retrieve_config_data(&mut self, data: HashMap<String, Vec<String>>) -> bool {
         for (field, vals) in data {
             match field.as_str() {
@@ -202,6 +197,9 @@ impl AnalysisModule for PacketSniffer {
                         .and_then(|v| v.parse().ok())
                         .unwrap_or(self.packet_threshold);
                 }
+                "HostIP" => {
+                    self.host_ip = vals.get(0).cloned();
+                }
                 _ => {}
             }
         }
@@ -210,14 +208,13 @@ impl AnalysisModule for PacketSniffer {
 }
 
 impl Default for PacketSniffer {
-    // Provides the default configuration for the `PacketSniffer`.
-    // A `PacketSniffer` instance with default values.
     fn default() -> Self {
         Self {
             module_name: String::from("PacketSniffer"),
             interface_name: String::from("eth0"),
             packets: Arc::new(Mutex::new(Vec::new())),
             packet_threshold: 200, // Default threshold changed to 200
+            host_ip: None, 
         }
     }
 }
@@ -229,6 +226,7 @@ impl Clone for PacketSniffer {
             interface_name: self.interface_name.clone(),
             packets: self.packets.clone(),
             packet_threshold: self.packet_threshold,
+            host_ip: self.host_ip.clone(),
         }
     }
 }
