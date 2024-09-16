@@ -83,11 +83,13 @@ cd ./target/release
 mkdir -p ~/bin
 mv Chromia ~/bin/
 
-#run Chromia
-#cargo run --release
-
 #remove Chromia files
 ls
 cd ../../../
 ls
 rm -rf ./COS40005-Intrusion-Detection-System
+
+#run Chromia
+cd ~/bin
+./Chromia
+
