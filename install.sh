@@ -1,8 +1,7 @@
 #!/bin/bash
 CHROMIA_PAT="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"
+TPM_PAT="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"
 USER_HOME="/home/$USER_NAME"
-CHROMIA_TPM_PAT="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"
-
 
 # Define color codes
 COLOR_RESET="\033[0m"
@@ -108,39 +107,35 @@ else
 fi
 
 #git clone Chromia
-git clone https://erikkvietelaitis:$CHROMIA_PAT@github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git /tmp/Chromia
+git clone https://erikkvietelaitis:$CHROMIA_PAT@github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git /tmp/Chromia/IDS
 
 #build Chromia
-cd /tmp/Chromia
+cd /tmp/Chromia/IDS
 cargo build --release
 
 #move Chromia build to /bin
-cd /tmp/Chromia/target/release
+cd /tmp/Chromia/IDS/target/release
 sudo mkdir -p /bin/Chromia
 sudo mv Chromia /bin/Chromia
-
-#remove Chromia files
-rm -rf /tmp/Chromia
-
-
 
 #Copy B3sum to /bin
 sudo mkdir -p /bin/Chromia/Data
 sudo cp ~/.cargo/bin/b3sum /bin/Chromia/Data
 
 # Git clone CTPB IDS
-#git clone https://brokenpip:$CHROMIA_TPM_PAT@github.com/brokenpip/ctpb_ids.git /tmp/ChromiaTPM
+git clone https:///brokenpip:$TPM_PAT@github.com/brokenpip/ctpb_ids.git /tmp/Chromia/TPM
+
 
 # Build CTPB IDS
-cd /tmp/ChromiaTPM
+cd /tmp/Chromia/TPM/ctpb_tpm
 cargo build --release
 
 # Move CTPB IDS build to /bin
-cd /tmp/ChromiaTPM/target/release
+cd /tmp/Chromia/TPM/ctpb_tpm/target/release
 sudo mv ctpb_tpm /bin/Chromia
 
 #remove CTPB IDS files
-#rm -rf /tmp/Tpm
+#rm -rf /tmp/Chromia
 
 #run Chromia
 sleep 5
@@ -149,4 +144,6 @@ echo "Chromia is installed in /bin/Chromia"
 cd /bin/Chromia
 sleep 5
 sudo ./Chromia #sudo is required to run the program due to wanting the files to be in /bin
+
+
 
