@@ -135,7 +135,7 @@ cd /tmp/Chromia/TPM/ctpb_tpm/target/release
 sudo mv ctpb_tpm /bin/Chromia
 
 #remove CTPB IDS files
-#rm -rf /tmp/Chromia
+sudo rm -rf /tmp/Chromia
 
 #run Chromia
 sleep 5
