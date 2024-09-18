@@ -1,7 +1,7 @@
-
 use std::collections::HashMap;
 use std::path::Path;
 use std::vec;
+use clap::Parser;
 
 use std::{thread, time};
 //use system::{system_uptime, system_user};
@@ -14,97 +14,119 @@ pub mod lara_core;
 pub mod linux_bridge;
 
 // Declare the linux_bridge module
-
+#[derive(Parser)]
+struct Args {
+    /// Activate debug mode
+    #[arg(short, long, action)]
+    debug: bool,
+}
 fn main() {
+    let mut debug = false;
+    let args = Args::parse();
+    if(args.debug){
+        debug = true;
+    }
     // TODO: Put startup info in seperate function
     println!("Chromia({}) is starting", env!("CARGO_PKG_VERSION"));
     println!("------------------");
-    println!("Host System Info:");
-    println!("    Host Name :{}", system::system_host_name());
-    println!("    OS: {}", system::system_name());
-    println!("    OS version: {}", system::system_os_version());
-    println!("    Kernal version: {}", system::system_kernel_version());
-    println!("    Current Time: {}", system::system_time());
-    println!("");
-    println!("Initialising Core systems:");
-
+    if debug{
+        println!("========== Host System Info: ==========");
+        println!("> Host Name :{}", system::system_host_name());
+        println!("> OS: {}", system::system_name());
+        println!("> OS version: {}", system::system_os_version());
+        println!("> Kernal version: {}", system::system_kernel_version());
+        println!("> Current Time: {}", system::system_time());    
+        println!("=======================================");
+        println!("Initializing Core systems:");
+    }
     // Should be loaded by configuration. Higher number means lower performance impact of the IDS
     let tick_intervals = time::Duration::from_millis(1000);
-    println!("    tick interval: {}ms", tick_intervals.as_millis());
+    println!("Tick Interval: {}ms", tick_intervals.as_millis());
     println!("");
-
-    println!("Initializing Analysis Modules:");
+    if debug{
+        println!("Initializing Analysis Modules:");
+        println!("");
+    }
     let mut modules: Vec<Box<dyn AnalysisModule>>;
-    println!("");
     // ADD NEW MODULES HERE \|/ use example module's exact structure
     modules = vec![
         Box::new(<analysis_modules::fim::FIM as std::default::Default>::default()),
         Box::new(<analysis_modules::network::Networking as std::default::Default>::default()),
         Box::new(<analysis_modules::httpserver::HTTPServer as std::default::Default>::default()),
         Box::new(<analysis_modules::authentication::Authentication as std::default::Default>::default()),
-        ];
-
-    println!("    loaded {} module/s", modules.len().to_string());
+    ];
 
     if !Path::new("config.ini").exists() {
         create_config(modules);
         return;
     }
+
     let config_result = system::read_csv("config.ini".to_owned());
     let config = match config_result {
         Ok(file) => file,
         Err(error) => panic!("Problem opening the file: {error:?}"),
     };
-    println!("Successfully found config file!");
-    let mut section: HashMap<String, Vec<String>>;
-    let mut _errors:Vec<&str>;
-    for module in modules.iter_mut() {
-        section = match config.get(&module.get_name()){
-            Some(s) => s.clone(),
-            None => section_not_found(module.get_name()),
-        };
-        // for field in module.build_config_fields().into_iter(){
-        //     let vals = section.get(&field.name).unwrap_or(&field.default_values);
-        //     if(vals.len() == 0){
-        //         panic!("Chromia failed to launch: config field {} for {} was not provided a value",&field.name,module.get_name());
-        //     }
-            
-        //     vals.get(0).unwrap();
-
-        // }
-        module.retrieve_config_data(section);
+    if debug{
+        println!("Successfully found config file!");
     }
-    
-    // println!("{:?}", serde_json::to_string(&t).unwrap());
+    let mut section: HashMap<String, Vec<String>>;
+
+    let mut i = 0;
+    while i < modules.len() {
+        section = match config.get(&modules[i].get_name()) {
+            Some(s) => s.clone(),
+            None => section_not_found(modules[i].get_name()),
+        };
+        if !modules[i].retrieve_config_data(section) {
+            modules.remove(i);
+        } else {
+            i += 1;
+        }
+    }
 
     let mut logs: Vec<Log> = Vec::new();
     let mut i = 0;
-    println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT");
-    println!("------------------(Real Time alerts)------------------");
+    if debug{
+        println!("    loaded {} module/s", modules.len().to_string());
+        println!("------------------(Real Time alerts)------------------");
+    }
     loop {
-        println!("Starting Tick({})", i.to_string());
+        if debug{
+            println!("Starting Tick({})", i.to_string());
+        }
         for module in modules.iter_mut() {
             if module.get_data() {
-                println!("Module:'{}' successfully gathered data", module.get_name());
+                if debug{
+                    println!("Module:'{}' successfully gathered data", module.get_name());
+                }
             } else {
-                println!(
-                    "ERROR::Module:'{}' failed trying to collect data",
-                    module.get_name()
-                );
+                if debug{
+                    println!(
+                        "ERROR::Module:'{}' failed trying to collect data",
+                        module.get_name()
+                    );
+                }
             }
             logs.append(&mut module.perform_analysis());
         }
-        println!("Following logs were generated this tick:");
+        if debug{
+            println!("Following logs were generated this tick:");
+        }
         for log in logs.iter() {
-            println!("    {}", log.build_alert());
+            if debug{
+                println!("    {}", log.build_alert());
+            }
         }
         logs = Vec::new();
         i += 1;
         thread::sleep(tick_intervals)
     }
 }
-fn section_not_found(name: String)->HashMap<String,Vec<String>>{
-    println!("Config for {} module was not found! Chromia will attempt to use default values", name);    
+fn section_not_found(name: String) -> HashMap<String, Vec<String>> {
+    println!(
+        "Config for {} module was not found! Chromia will attempt to use default values",
+        name
+    );
     return HashMap::new();
 }
 fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {

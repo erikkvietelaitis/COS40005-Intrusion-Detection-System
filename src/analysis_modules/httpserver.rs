@@ -1,15 +1,19 @@
 use std::collections::HashMap;
 use std::fs;
-
+use std::path::Path;
+use colored::Colorize;
+use core_enums::LogType;
+    
 use crate::lara_core::*;
 use crate::ConfigField;
+use crate::Log;
 use core_traits::AnalysisModule;
 use rand::Rng;
 
 
 // define the set of data that will be captured each tick, You can structure this however you like to fit your needs, Just call it this name
 struct CurrentData {
-    logs:HashMap<String,HashMap<String,String>>,
+    logs:HashMap<String, (usize, String)>,
     veclogs: Vec<WebLog>,
 }
 struct WebLog {
@@ -23,23 +27,26 @@ pub struct HTTPServer {
     //Everything else is persistent memory. The data you set in these will be remembered between ticks
     lasterrorlen:usize,
     lastaccesslen:usize,
+    clients: HashMap<String, usize>,
     module_name: String,
+    access_path:String,
+    error_path:String,
+
 }
 
 impl AnalysisModule for HTTPServer{
     // Use this to gather data from the host computer and store it in the current data struct,
     // This is called at the start of a tick to gather the data into CurrentData struct. If there is an error return false
     fn get_data(&mut self) -> bool {
-        let accessfilepath:String = "/var/log/apache2/access.log".to_string();
-        let errorfilepath:String = "/var/log/apache2/error.log".to_string();
-        //let errortestdata: &str ="[Wed Sep 11 13:10:31.495743 2024] [php:error] [pid 17084:tid 1904] [client ::1:53541] script 'C:/DevProjects/PersonalSite/Personal-Site/testing.php' not found or unable to stat\n[Wed Sep 11 13:17:29.031502 2024] [core:error] [pid 17084:tid 1892] (OS 5)Access is denied.  : [client ::1:53897] AH00132: file permissions deny server access: C:/DevProjects/PersonalSite/Personal-Site/tes.txt\n[Wed Sep 11 13:27:46.818722 2024] [core:error] [pid 17084:tid 1904] (OS 5)Access is denied.  : [client 192.168.0.45:50136] AH00132: file permissions deny server access: C:/DevProjects/PersonalSite/Personal-Site/tes.txt\n[Wed Sep 11 15:31:52.316572 2024] [ssl:warn] [pid 13840:tid 380] AH01909: www.example.com:443:0 server certificate does NOT include an ID which matches the server name\n[Wed Sep 11 15:31:52.342572 2024] [ssl:warn] [pid 13840:tid 380] AH01909: www.example.com:443:0 server certificate does NOT include an ID which matches the server name\n[Wed Sep 11 15:31:52.370156 2024] [mpm_winnt:notice] [pid 13840:tid 380] AH00354: Child: Starting 150 worker threads.";
-        //let accesstestdata: &str = "::1 - - [11/Sep/2024:13:18:57 +1000] \"GET /res/js/index.js HTTP/1.1\" 200 1024 \"http://localhost/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0\"\n::1 - - [11/Sep/2024:13:18:57 +1000] \"GET /res/css/styles.css?1.0.1 HTTP/1.1\" 200 3852 \"http://localhost/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0\"\n::1 - - [11/Sep/2024:13:18:57 +1000] \"GET /favicon.ico HTTP/1.1\" 404 295 \"http://localhost/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0\"\n::1 - - [11/Sep/2024:13:19:15 +1000] \"GET / HTTP/1.1\" 200 495 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0\"\n192.168.0.45 - - [11/Sep/2024:13:27:31 +1000] \"GET / HTTP/1.1\" 200 3967 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1\"\n192.168.0.45 - - [11/Sep/2024:13:27:31 +1000] \"GET /res/js/index.js HTTP/1.1\" 200 1024 \"http://192.168.0.206/\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1\"\n192.168.0.45 - - [11/Sep/2024:13:27:31 +1000] \"GET /res/css/styles.css?1.0.1 HTTP/1.1\" 200 3852 \"http://192.168.0.206/\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1\"\n192.168.0.45 - - [11/Sep/2024:13:27:46 +1000] \"GET /tes.txt HTTP/1.1\" 403 302 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1\"";
-        let errordump:String = fs::read_to_string(errorfilepath).expect("Should have been able to read the file");
-        //let errordump: &str = errortestdata;
-        //print!("{}",errordump);
-        let accessdump:String = fs::read_to_string(accessfilepath).expect("Should have been able to read the file");
-        //let accessdump: &str = accesstestdata;
-        //print!("{}",accessdump);
+        self.current_data.logs = HashMap::new();
+        if(!Path::new(&self.access_path).exists()){
+            eprint!("Could not find Appache Access log file. Provided URI is'{}'. Chromia will still run",&self.error_path);
+        }
+        if(!Path::new(&&self.error_path).exists()){
+            eprint!("Could not find Appache Error log file. Provided URI is'{}'",&self.error_path);
+        }
+        let errordump:String = fs::read_to_string(&self.error_path).expect("Should have been able to read the file");
+        let accessdump:String = fs::read_to_string(&self.access_path).expect("Should have been able to read the file");
         let errorlines: Vec<&str> = errordump.lines().collect();
         let accesslines: Vec<&str> = accessdump.lines().collect();
         let accesslineslen: usize = accesslines.len();
@@ -65,7 +72,6 @@ impl AnalysisModule for HTTPServer{
 
         while i1 < elines.len(){
             nl = elines[i1];
-            //print!("{}",nl);
             let nls: Vec<&str> = nl.split(&[']','[']).filter(|&r| r != "").collect();
             if nls[2].contains("php:error") || nls[2].contains("core:error"){
                 let errorsplit: Vec<&str> = nl.split(nls[6]).collect();
@@ -73,20 +79,15 @@ impl AnalysisModule for HTTPServer{
                 let mut nlerrormsg:String = errorsplit[1].to_string();
                 nlerrormsg.remove(0);
                 let mut data:HashMap<String,String> = HashMap::new();
-                //data.insert(nlerrormsg.to_string(),"1".to_string());
                 data.insert("msg".to_string(),nlerrormsg.clone());
                 data.insert("suspicion".to_string(),"1".to_string());
                 if nls[6].contains("::1"){
                     let nlip:&str = "::1";
-                    self.current_data.logs.insert(nlip.to_string(),data);
-                    let nllog = WebLog{ip:nlip.to_string(),msg:nlerrormsg,suspicion:"1".to_string()};
-                    self.current_data.veclogs.push(nllog);
+                    self.current_data.logs.insert(nlip.to_string(),(15,format!("Apache error occurred: '{}'",nlerrormsg.clone())));
                 }else{
                     let ipsplit: Vec<&str> = nls[6].split(&[' ',':']).filter(|&r| r != "").collect();
                     let nlip:&str = ipsplit[1];
-                    self.current_data.logs.insert(nlip.to_string(),data);
-                    let nllog = WebLog{ip:nlip.to_string(),msg:nlerrormsg,suspicion:"1".to_string()};
-                    self.current_data.veclogs.push(nllog);
+                    self.current_data.logs.insert(nlip.to_string(),(15,format!("Apache error occurred: '{}'",nlerrormsg.clone())));
                 }
             }
             i1 = i1 + 1;
@@ -94,11 +95,8 @@ impl AnalysisModule for HTTPServer{
         let mut i2: usize = 0;
         while i2 < alines.len(){
             nl = alines[i2];
-            //print!("{}",nl);
-            //print!("{}","\n");
             let nls: Vec<&str> = nl.split("\"").collect();
             let ipsplit: Vec<&str> = nls[0].split_whitespace().collect();
-            //print!("{}",ipsplit[0]);
             let nlip:&str = ipsplit[0];
             let codesplit: Vec<&str> = nls[2].split_whitespace().collect();
             let nlcode:&str = codesplit[0];
@@ -107,114 +105,109 @@ impl AnalysisModule for HTTPServer{
             msg.push_str(nlrequest);
             msg.push_str(" code: ");
             msg.push_str(nlcode);
-            let mut suspicion:String = "0".to_string();
+            let mut suspicion:usize = 0;
             if nlcode == "400"{
-                suspicion = "20".to_string();
+                suspicion = 20;
                 msg.push_str(" Bad Request"); // 20
             }else if nlcode == "401"{
-                suspicion = "25".to_string(); // 10
+                suspicion = 25; // 10
                 msg.push_str(" Unauthorized");
             }else if nlcode == "403"{
-                suspicion = "15".to_string();
+                suspicion = 15;
                 msg.push_str(" Forbidden");
             }else if nlcode == "404"{
-                suspicion = "5".to_string();
+                suspicion = 5;
                 msg.push_str(" Not Found");
             }else if nlcode == "405"{
-                suspicion = "10".to_string();
+                suspicion = 10;
                 msg.push_str(" Method Not Allowed");
             }else if nlcode == "406"{
-                suspicion = "15".to_string();
+                suspicion = 15;
                 msg.push_str(" Not Acceptable");
             }else if nlcode == "407"{
-                suspicion = "20".to_string();
+                suspicion = 20;
                 msg.push_str(" Proxy Authentication Required");
             }else if nlcode == "408"{
-                suspicion = "3".to_string();
+                suspicion = 3;
                 msg.push_str(" Request Timeout");
             }else if nlcode == "409"{
-                suspicion = "10".to_string();
+                suspicion = 10;
                 msg.push_str(" Conflict");
             }else if nlcode == "410"{
-                suspicion = "1".to_string();
+                suspicion = 2;
                 msg.push_str(" Gone");
             }else if nlcode == "411"{
-                suspicion = "2".to_string();
+                suspicion = 2;
                 msg.push_str(" Length Required");
             }else if nlcode == "412"{
-                suspicion = "3".to_string();
+                suspicion = 3;
                 msg.push_str(" Precondition Failed");
             }else if nlcode == "413"{
-                suspicion = "10".to_string();
+                suspicion = 10;
                 msg.push_str(" Payload Too Large");
             }else if nlcode == "414"{
-                suspicion = "5".to_string();
+                suspicion = 5;
                 msg.push_str(" URI Too Long");
             }else if nlcode == "415"{
-                suspicion = "10".to_string();
+                suspicion = 10;
                 msg.push_str(" Unsupported Media Type");
             }else if nlcode == "416"{
-                suspicion = "5".to_string();
+                suspicion = 5;
                 msg.push_str(" Range Not Satisfiable");
             }else if nlcode == "417"{
-                suspicion = "20".to_string();
+                suspicion = 20;
                 msg.push_str(" Expectation Failed");
             }else if nlcode == "418"{
-                suspicion = "0".to_string();
+                suspicion = 0;
                 msg.push_str(" Im a teapot");//shockingly this is a real code
             }else if nlcode == "421"{
-                suspicion = "1".to_string();
+                suspicion = 1;
                 msg.push_str(" Misdirected Request");
             }else if nlcode == "422"{
-                suspicion = "9".to_string();
+                suspicion = 9;
                 msg.push_str(" Unprocessable Content");
             }else if nlcode == "429"{
-                suspicion = "15".to_string();
+                suspicion = 15;
                 msg.push_str(" Too Many Requests");
             }else if nlcode == "431"{
-                suspicion = "15".to_string();
+                suspicion = 15;
                 msg.push_str(" Request Header Fields Too Large");
             }else if nlcode == "500"{
-                suspicion = "10".to_string();
+                suspicion = 10;
                 msg.push_str(" Internal Server Error");
             }else if nlcode == "501"{
-                suspicion = "5".to_string();
+                suspicion = 5;
                 msg.push_str(" Not Implemented");
             }else if nlcode == "502"{
-                suspicion = "5".to_string();
+                suspicion = 5;
                 msg.push_str(" Bad Gateway")
             }else if nlcode == "503"{
-                suspicion = "5".to_string();
+                suspicion = 5;
                 msg.push_str(" Service Unavailable");
             }else if nlcode == "504"{
-                suspicion = "3".to_string();
+                suspicion = 3;
                 msg.push_str(" Gateway Timeout");
             }else if nlcode == "505"{
-                suspicion = "4".to_string();
+                suspicion = 4;
                 msg.push_str(" HTTP Version Not Supported");
             }else if nlcode == "506"{
-                suspicion = "0".to_string();
+                suspicion = 0;
                 msg.push_str(" Variant Also Negotiates");
             }else if nlcode == "507"{
-                suspicion = "10".to_string();
+                suspicion = 10;
                 msg.push_str(" Insufficient Storage");
             }else if nlcode == "508"{
-                suspicion = "5".to_string();
+                suspicion = 5;
                 msg.push_str(" Loop Detected");
             }else if nlcode == "510"{
-                suspicion = "0".to_string();
+                suspicion = 0;
                 msg.push_str(" Not Extended");
             }else if nlcode == "511"{
-                suspicion = "40".to_string();
+                suspicion = 40;
                 msg.push_str(" Network Authentication Required");
             }
-            let mut data:HashMap<String,String> = HashMap::new();
-            //data.insert(msg,suspicion);
-            data.insert("msg".to_string(),msg.clone());
-            data.insert("suspicion".to_string(),suspicion.clone());
-            self.current_data.logs.insert(nlip.to_string(),data);
-            let nllog = WebLog{ip:nlip.to_string(),msg:msg.to_string(),suspicion:suspicion};
-            self.current_data.veclogs.push(nllog);
+            
+            self.current_data.logs.insert(nlip.to_string(),(suspicion,msg.clone()));
             i2 = i2 + 1;
         }
         return true;
@@ -228,21 +221,64 @@ impl AnalysisModule for HTTPServer{
     // plus the persistent data stored in the object to create logs (AKA alerts) 
     fn perform_analysis(&mut self) -> Vec<crate::Log> {
         let mut results: Vec<core_structs::Log> = Vec::new();
+        for (client, score) in self.clients.iter_mut(){
+            if(self.current_data.logs.contains_key(client)){
+                let (score, err_msg) =&self.current_data.logs[client];
+                *score += score;
+                if *score > 14{
+                    let level:LogType;
+                    let sus_msg:String;
+                    if *score > 30{
+                        if *score > 40{
+                            if *score > 50{
+                            level = LogType::Critical;
+                            }else{
+                                level = LogType::Serious;
+                            }
+                        }else{
+                            level = LogType::Warning;
 
+                        }
+                    }else{
+                        level = LogType::Info;
+                    }
+                    let error_msg = format!("Client [{}] ({}) - {}", client, sus_msg, err_msg);
+                    results.push(Log::new(LogType::, module, message))
+                } 
+                
+            }
+        }
         return results;
     }
     fn get_name(&self) -> String{
         return self.module_name.clone();
     }
     fn build_config_fields(&self) -> Vec<crate::ConfigField> {
-        let fields:Vec<ConfigField> = vec![];
-        
+        let fields:Vec<ConfigField> = vec![
+            ConfigField::new("Access-Log Path".to_owned(),"Path to the Access log for Appache".to_owned(),core_enums::ConfigFieldType::String,vec!["/var/log/apache2/access.log".to_owned()], false),
+            ConfigField::new("Error-Log Path".to_owned(),"Path to the Error log for Appache".to_owned(),core_enums::ConfigFieldType::String,vec!["/var/log/apache2/error.log".to_owned()], false)
+        ];        
+
         return fields;
     }
     fn retrieve_config_data(&mut self, data: HashMap<String,Vec<String>>) -> bool{
         for (field, vals) in data.into_iter(){
-            for val in vals{
-                println!("{}->{}", field, val);
+            if field == "Access-Log Path"{
+                if !Path::new(&vals[0]).exists(){
+                    let msg = format!("{}",format!("Could not find specified path for Appache Access logs '{}'",&vals[0].italic()).red().bold());
+                    println!("{}",msg);
+                    return false;
+                }else{
+                    self.access_path = vals[0].to_string();
+                }
+            }else if field=="Error-Log Path"{
+                if !Path::new(&vals[0]).exists(){
+                    let msg = format!("{}",format!("Could not find specified path for Appache error logs '{}'",&vals[0].italic()).red().bold());
+                    println!("{}",msg);
+                    return false;
+                }else{
+                    self.error_path = vals[0].to_string();
+                }
             }
         }
         return true;
@@ -255,6 +291,9 @@ impl Default for HTTPServer {
         Self {
             lasterrorlen:0,
             lastaccesslen:0,
+            access_path:"".to_string(),
+            error_path:"".to_string(),
+            clients: HashMap::new(),
             module_name: String::from("HTTPServerModule"),
             current_data: CurrentData {
                 logs: HashMap::new(),
@@ -263,15 +302,3 @@ impl Default for HTTPServer {
         }
     }
 }
-// Must be implemented to allow copying
-// basically implement this function that creates a new version of itself with every parameter identical
-// impl Clone for HTTPServer<'_> {
-//     fn clone(&self) -> Self {
-//         Self {
-//             current_data: self.current_data,
-//             lasterrorlen: self.lasterrorlen.clone(),
-//             lastaccesslen: self.lastaccesslen.clone(),
-//             module_name: self.module_name.clone(),
-//         }
-//     }
-// }
