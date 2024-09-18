@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::lara_core::core_struts::*;
+use crate::lara_core::core_structs::*;
 
 pub trait AnalysisModule {
     /**

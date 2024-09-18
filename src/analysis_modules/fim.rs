@@ -3,7 +3,7 @@ use core_traits::AnalysisModule;
 use std::collections::HashMap;
 use std::process::Command;
 use std::path::Path;
-use crate::ConfigField;
+use core_structs::*;
 #[derive(Debug, Clone)]
 struct CurrentData {
     new_hashes: HashMap<String, String>,
@@ -19,7 +19,7 @@ pub struct FIM {
 
 // Function to generate hash using the key
 fn genhash(key: &str) -> (bool, String) {
-    let output = match Command::new("b3sum")
+    let output = match Command::new("./Data/b3sum")
         .arg(key)
         .arg("--no-names")
         .output() {
@@ -105,8 +105,8 @@ impl AnalysisModule for FIM {
         todo!()
     }
 
-    fn perform_analysis(&mut self) -> Vec<crate::Log> {
-        let mut results: Vec<crate::Log> = Vec::new();
+    fn perform_analysis(&mut self) -> Vec<core_structs::Log> {
+        let mut results: Vec<core_structs::Log> = Vec::new();
     
         // Iterate over each filepath and hash in the new_hashes
         for (filepath, new_hash) in &self.current_data.new_hashes {
@@ -115,8 +115,8 @@ impl AnalysisModule for FIM {
                     if new_hash != previous_hash {
                         // If hashes differ, create a log entry
                         let msg = format!(
-                            "File '{}' was modified. Previous hash: '{}', New hash: '{}'",
-                            filepath, previous_hash, new_hash
+                            "File '{}' has been modified!",
+                            filepath
                         );
                         eprintln!("Log: {}", msg); // Debug print for logs
                         results.push(crate::Log::new(
@@ -144,10 +144,7 @@ impl AnalysisModule for FIM {
     }
     fn build_config_fields(&self) -> Vec<crate::ConfigField> {
         let fields:Vec<ConfigField> = vec![
-            //ConfigField::new("fileName".to_owned(),"The name of your favorite file, must be single string".to_owned(),core_enums::ConfigFieldType::String,vec!["config.ini".to_owned()], false),
-            //ConfigField::new("CoolestFileTypes".to_owned(),"The coolest file types".to_owned(),CoreEnums::ConfigFieldType::String,vec![".ini".to_owned(),".csv".to_owned(),".webp".to_owned(),".rs".to_owned()], true),
-            //ConfigField::new("Cool Number".to_owned(),"The coolest number".to_owned(),CoreEnums::ConfigFieldType::Integer,vec!["1".to_owned(),"299792458".to_owned(),"69".to_owned(),"329".to_owned()], true),
-            ConfigField::new("files".to_owned(),"Files to be monitored for integrity violations, must be an absolute path".to_owned(),core_enums::ConfigFieldType::Integer,vec!["/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/test".to_owned()], true)
+            ConfigField::new("files".to_owned(),"Files to be monitored for integrity violations, must be an absolute path".to_owned(),core_enums::ConfigFieldType::Integer,vec!["/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/config.ini".to_owned()], true)
         ];
         
         return fields;
