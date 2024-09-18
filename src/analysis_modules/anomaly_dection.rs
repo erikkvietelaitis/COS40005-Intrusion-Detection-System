@@ -67,8 +67,8 @@ impl AnalysisModule for AnomalyDetector {
     }
 
     // Function to analyse the gathered data and generate logs if anomalies are detected
-    fn perform_analysis(&mut self) -> Vec<core_struts::Log> {
-        let mut results: Vec<core_struts::Log> = Vec::new(); // Start an empty vector to store logs
+    fn perform_analysis(&mut self) -> Vec<core_structs::Log> {
+        let mut results: Vec<core_structs::Log> = Vec::new(); // Start an empty vector to store logs
 
         // Define multiple patterns to detect suspicious commands
         let suspicious_pattern = Regex::new(r"rm|chmod|chown|dd|nc|netcat|telnet|wget|curl|kill|sudo").unwrap();
@@ -84,7 +84,7 @@ impl AnalysisModule for AnomalyDetector {
                 self.current_data.user,
                 self.current_data.command_executed
             );
-            results.push(core_struts::Log::new(
+            results.push(core_structs::Log::new(
                 core_enums::LogType::Serious,
                 self.module_name.clone(),
                 msg,
@@ -99,7 +99,7 @@ impl AnalysisModule for AnomalyDetector {
                 self.module_name,
                 self.current_data.file_name
             );
-            results.push(core_struts::Log::new(
+            results.push(core_structs::Log::new(
                 core_enums::LogType::Serious,
                 self.module_name.clone(),
                 msg,
@@ -114,7 +114,7 @@ impl AnalysisModule for AnomalyDetector {
                 self.module_name,
                 self.current_data.cpu_usage
             );
-            results.push(core_struts::Log::new(
+            results.push(core_structs::Log::new(
                 core_enums::LogType::Warning,
                 self.module_name.clone(),
                 msg,
@@ -124,10 +124,9 @@ impl AnalysisModule for AnomalyDetector {
         if self.check_anomalous_memory_usage(self.current_data.memory_usage) {
             let msg = format!(
                 "Memory usage is at {:.2}% which is higher than the expected average.",
-                self.module_name,
                 self.current_data.memory_usage
             );
-            results.push(core_struts::Log::new(
+            results.push(core_structs::Log::new(
                 core_enums::LogType::Warning,
                 self.module_name.clone(),
                 msg,
@@ -139,11 +138,9 @@ impl AnalysisModule for AnomalyDetector {
         if !network_log.is_empty() {
             let msg = format!(
                 "Network issues detected with packet drops. {}",
-                chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
-                self.module_name,
                 network_log
             );
-            results.push(core_struts::Log::new(
+            results.push(core_structs::Log::new(
                 core_enums::LogType::Warning,
                 self.module_name.clone(),
                 msg,
@@ -159,7 +156,7 @@ impl AnalysisModule for AnomalyDetector {
                 self.module_name,
                 disk_log
             );
-            results.push(core_struts::Log::new(
+            results.push(core_structs::Log::new(
                 core_enums::LogType::Warning,
                 self.module_name.clone(),
                 msg,
@@ -405,7 +402,7 @@ fn print_module_success(module_name: &str) {
     println!("Module: '{}' - Successfully gathered data", module_name);
 }
 
-fn print_generated_logs(tick_num: usize, logs: Vec<core_struts::Log>) {
+fn print_generated_logs(tick_num: usize, logs: Vec<core_structs::Log>) {
     if logs.is_empty() {
         println!("No anomalies detected during Tick({})", tick_num);
     } else {
