@@ -123,8 +123,7 @@ impl AnalysisModule for AnomalyDetector {
 
         if self.check_anomalous_memory_usage(self.current_data.memory_usage) {
             let msg = format!(
-                "[{}]=[{}]=[Warning]: Memory usage is at {:.2}% which is higher than the expected average.",
-                chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+                "Memory usage is at {:.2}% which is higher than the expected average.",
                 self.module_name,
                 self.current_data.memory_usage
             );
@@ -139,7 +138,7 @@ impl AnalysisModule for AnomalyDetector {
         let network_log = self.check_network_packet_drops();
         if !network_log.is_empty() {
             let msg = format!(
-                "[{}]=[{}]=[Warning]: Network issues detected with packet drops. {}",
+                "Network issues detected with packet drops. {}",
                 chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
                 self.module_name,
                 network_log
