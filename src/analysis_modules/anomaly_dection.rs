@@ -71,10 +71,10 @@ impl AnalysisModule for AnomalyDetector {
         let mut results: Vec<core_structs::Log> = Vec::new(); // Start an empty vector to store logs
 
         // Define multiple patterns to detect suspicious commands
-        let suspicious_pattern = Regex::new(r"rm|chmod|chown|dd|nc|netcat|telnet|wget|curl|kill|sudo").unwrap();
+        let suspicious_pattern = AnomalyDetector::suspicious_command_patterns();
 
         // Check if the executed command is not in the safe list or matches a suspicious pattern
-        if !self.known_safe_commands.contains(&self.current_data.command_executed)
+        if !AnomalyDetector::safe_commands().contains(&self.current_data.command_executed)
             || suspicious_pattern.is_match(&self.current_data.command_executed)
         {
             let msg = format!(
@@ -182,6 +182,38 @@ impl AnalysisModule for AnomalyDetector {
 }
 
 impl AnomalyDetector {
+    // Safe commands to ignore in the logging system
+    fn safe_commands() -> Vec<String> {
+        vec![
+            "ls".to_string(), 
+            "cat".to_string(), 
+            "ps".to_string(), 
+            "cd".to_string(), 
+            "echo".to_string(), 
+            "grep".to_string(), 
+            "sshd".to_string(), 
+            "systemd".to_string(), 
+            "cron".to_string(),
+            "ssh".to_string(),
+            "scp".to_string(),
+            "curl".to_string(),
+            "wget".to_string(),
+            "ping".to_string(),
+            "netstat".to_string(),
+            "df".to_string(),
+            "uptime".to_string(),
+            "free".to_string(),
+            "top".to_string()
+        ]
+    }
+    
+
+    // Patterns for suspicious commands
+    fn suspicious_command_patterns() -> Regex {
+        // More focused suspicious commands
+        Regex::new(r"\b(rm|dd|nc|netcat|telnet|chmod|chown|kill)\b").unwrap()
+    }
+
     // Fetch real commands using `ps` command and capture the user as well
     fn fetch_running_command(&self) -> (String, String) {
         let output = Command::new("ps")
