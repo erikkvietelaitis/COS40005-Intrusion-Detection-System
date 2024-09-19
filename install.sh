@@ -67,6 +67,24 @@ echo "Rust has been installed successfully."
 echo "Installing B3Sum..."
 cargo install b3sum
 
+#install net-tools
+echo "Installing net-tools..."
+if command -v netstat >/dev/null 2>&1; then
+    echo "Net-tools is already installed."
+else
+    sudo apt install -y net-tools
+
+        # Verify installation
+    if command -v netstat >/dev/null 2>&1; then
+        echo "Net-toolst has been successfully installed."
+    else
+        echo "Failed to install Net-tools."
+        exit 1
+    fi
+fi
+
+
+
 #Install git 
 if command -v git >/dev/null 2>&1; then
     echo "Git is already installed."
