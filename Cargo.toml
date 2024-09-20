@@ -14,8 +14,10 @@ chrono = "0.4"
 sysinfo = "0.31.2"
 nix = "0.23.0"
 byteorder = "1.4"
-
-
+whoami = "1.2"
+users = "0.11"
+notify = "5.0"
+dirs = "4.0"
 #Netowrking
 port_scanner = "0.1.5"
 pnet = "0.35.0"
