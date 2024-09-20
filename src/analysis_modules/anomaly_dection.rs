@@ -1,12 +1,16 @@
-use crate::lara_core::*;                    // Importing core components of the LaraCore module
-use rand::prelude::*;                      // Importing useful traits for random number generation and selection
-use core_traits::AnalysisModule;          // Bringing in the AnalysisModule trait for implementation
-use regex::Regex;                        // Importing Regex for pattern matching on strings
-use crate::linux_bridge::sam;           // Importing functions from sam.rs
-use std::process::Command;             // For executing system commands
-use chrono;
+// Necessary imports
+use crate::lara_core::*;                    // Import core components
+use rand::prelude::*;                       // For random number generation
+use core_traits::AnalysisModule;            // Trait for implementation
+use regex::Regex;                           // For pattern matching
+use crate::linux_bridge::sam;               // Import functions from sam.rs
+use std::process::Command;                  // For executing system commands
+use chrono;                                 // For date and time
+use std::collections::HashMap;              // For configuration data
+use crate::ConfigField;                     // For configuration fields
+use core_enums;                             // For config field types
 
-const MAX_RUNS: usize = 10;                 // The number of runs we keep track of for averaging
+const MAX_RUNS: usize = 10;                 // Number of runs to keep track of for averaging
 
 // Struct to store disk state
 #[derive(Clone, Debug)]
@@ -18,71 +22,76 @@ struct DiskState {
     use_percent: f32,
 }
 
-// This is a struct to store system data for the current tick
+// Struct to store system data for the current tick
 #[derive(Debug, Clone)]
 struct SystemData {
-    file_name: String,                     // Name of the file being accessed
-    command_executed: String,             // Command that was executed
-    user: String,                        // User who ran the command
-    cpu_usage: f32,                     // Current CPU usage
-    memory_usage: f32,                 // Current memory usage
+    file_name: String,                      // Name of the file being accessed
+    command_executed: String,               // Command that was executed
+    user: String,                           // User who ran the command
+    cpu_usage: f32,                         // Current CPU usage
+    memory_usage: f32,                      // Current memory usage
 }
 
-// This is the main structure for the AnomalyDetector module
+// Main structure for the AnomalyDetector module
 pub struct AnomalyDetector {
-    current_data: SystemData,              // Holds the data collected in the current tick
-    history_of_filenames: Vec<String>,    // Keeps a history of filenames accessed
-    known_safe_commands: Vec<String>,    // List of commands considered safe
-    known_safe_files: Vec<String>,      // List of files considered safe
-    module_name: String,               // Name of the module
-    cpu_history: Vec<f32>,            // Stores CPU usage for the last 10 runs
-    memory_history: Vec<f32>,        // Stores memory usage for the last 10 runs
-    previous_disks: Vec<DiskState>  // Stores previous disk states for comparison
+    current_data: SystemData,               // Data collected in the current tick
+    history_of_filenames: Vec<String>,      // History of filenames accessed
+    known_safe_commands: Vec<String>,       // List of commands considered safe
+    known_safe_files: Vec<String>,          // List of files considered safe
+    module_name: String,                    // Name of the module
+    cpu_history: Vec<f32>,                  // CPU usage for the last 10 runs
+    memory_history: Vec<f32>,               // Memory usage for the last 10 runs
+    previous_disks: Vec<DiskState>,         // Previous disk states for comparison
 }
 
+// Implementation of the AnalysisModule trait for AnomalyDetector
 impl AnalysisModule for AnomalyDetector {
-    // This function gathers system data
+    // Function to gather system data
     fn get_data(&mut self) -> bool {
-        // Fetch real running commands from the system using `ps`
-        let (user, command_executed) = self.fetch_running_command();
-        let files: Vec<&str> = vec!["/etc/passwd", "/var/log/syslog", "/home/user/.bashrc"];
+        // Fetch real running commands from the system using ps
+        if let Some((user, command_executed)) = self.fetch_running_command() {
+            let files: Vec<&str> = vec!["/etc/passwd", "/var/log/syslog", "/home/user/.bashrc"];
 
-        // Randomly select a file to simulate system activity
-        self.current_data = SystemData {
-            file_name: files.choose(&mut rand::thread_rng()).unwrap().to_string(),
-            command_executed,
-            user,
-            cpu_usage: self.fetch_cpu_usage(),        // Fetch current CPU usage
-            memory_usage: self.fetch_memory_usage(), // Fetch current memory usage
-        };
+            // Randomly select a file to simulate system activity
+            self.current_data = SystemData {
+                file_name: files.choose(&mut rand::thread_rng()).unwrap().to_string(),
+                command_executed,
+                user,
+                cpu_usage: self.fetch_cpu_usage(),       // Fetch current CPU usage
+                memory_usage: self.fetch_memory_usage(), // Fetch current memory usage
+            };
 
-        // Update CPU and memory history
-        self.update_cpu_memory_history(self.current_data.cpu_usage, self.current_data.memory_usage);
-        true // Tells us that the data collection was successful
+            // Update CPU and memory history
+            self.update_cpu_memory_history(self.current_data.cpu_usage, self.current_data.memory_usage);
+            true // Data collection was successful
+        } else {
+            false // No commands found from logged-in users
+        }
     }
 
-    // Function to gather predictable data
+    // Function to gather predictable data (not implemented)
     fn get_testing_data(&mut self) -> bool {
-        todo!() 
+        todo!()
     }
 
-    // Function to analyse the gathered data and generate logs if anomalies are detected
+    // Function to analyze the gathered data and generate logs if anomalies are detected
     fn perform_analysis(&mut self) -> Vec<core_structs::Log> {
         let mut results: Vec<core_structs::Log> = Vec::new(); // Start an empty vector to store logs
 
-        // Define multiple patterns to detect suspicious commands
-        let suspicious_pattern = AnomalyDetector::suspicious_command_patterns();
+        // Extract command name
+        let command_executed = self.current_data.command_executed.clone();
+        let command_name = command_executed.split_whitespace().next().unwrap_or("").to_string();
 
         // Check if the executed command is not in the safe list or matches a suspicious pattern
-        if !AnomalyDetector::safe_commands().contains(&self.current_data.command_executed)
-            || suspicious_pattern.is_match(&self.current_data.command_executed)
+        if !self.known_safe_commands.contains(&command_name)
+            || self.suspicious_command_patterns().is_match(&command_name)
         {
             let msg = format!(
                 "[{}]=[{}]=[Serious]: User '{}' executed a suspicious command '{}'.",
                 chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
                 self.module_name,
                 self.current_data.user,
-                self.current_data.command_executed
+                command_executed
             );
             results.push(core_structs::Log::new(
                 core_enums::LogType::Serious,
@@ -123,7 +132,9 @@ impl AnalysisModule for AnomalyDetector {
 
         if self.check_anomalous_memory_usage(self.current_data.memory_usage) {
             let msg = format!(
-                "Memory usage is at {:.2}% which is higher than the expected average.",
+                "[{}]=[{}]=[Warning]: Memory usage is at {:.2}% which is higher than the expected average.",
+                chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+                self.module_name,
                 self.current_data.memory_usage
             );
             results.push(core_structs::Log::new(
@@ -133,11 +144,13 @@ impl AnalysisModule for AnomalyDetector {
             ));
         }
 
-        // Call network packet drop detection and logging
+        // Check network packet drops and log if necessary
         let network_log = self.check_network_packet_drops();
         if !network_log.is_empty() {
             let msg = format!(
-                "Network issues detected with packet drops. {}",
+                "[{}]=[{}]=[Warning]: Network issues detected with packet drops. {}",
+                chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+                self.module_name,
                 network_log
             );
             results.push(core_structs::Log::new(
@@ -168,89 +181,103 @@ impl AnalysisModule for AnomalyDetector {
         results // Return the list of logs generated during analysis
     }
 
+    // Return the name of the module
     fn get_name(&self) -> String {
-        self.module_name.clone() // Return the name of the module
+        self.module_name.clone()
     }
 
-    fn build_config_fields(&self) -> Vec<crate::ConfigField> {
-        Vec::new()
+    // Define configurable fields for the module
+    fn build_config_fields(&self) -> Vec<ConfigField> {
+        vec![
+            ConfigField::new(
+                "KnownSafeCommands".to_owned(),
+                "List of commands considered safe".to_owned(),
+                core_enums::ConfigFieldType::String,
+                self.known_safe_commands.clone(),
+                true,
+            ),
+            ConfigField::new(
+                "KnownSafeFiles".to_owned(),
+                "List of files considered safe".to_owned(),
+                core_enums::ConfigFieldType::String,
+                self.known_safe_files.clone(),
+                true,
+            ),
+        ]
     }
 
-    fn retrieve_config_data(&mut self, _data: std::collections::HashMap<String, Vec<String>>) -> bool {
+    // Retrieve user-provided configuration data
+    fn retrieve_config_data(&mut self, data: HashMap<String, Vec<String>>) -> bool {
+        for (field, vals) in data {
+            match field.as_str() {
+                "KnownSafeCommands" => {
+                    self.known_safe_commands = vals;
+                }
+                "KnownSafeFiles" => {
+                    self.known_safe_files = vals;
+                }
+                _ => {}
+            }
+        }
         true
     }
 }
 
+// Implementation of additional methods for AnomalyDetector
 impl AnomalyDetector {
-    // Safe commands to ignore in the logging system
-    fn safe_commands() -> Vec<String> {
-        vec![
-            "ls".to_string(), 
-            "cat".to_string(), 
-            "ps".to_string(), 
-            "cd".to_string(), 
-            "echo".to_string(), 
-            "grep".to_string(), 
-            "sshd".to_string(), 
-            "systemd".to_string(), 
-            "cron".to_string(),
-            "ssh".to_string(),
-            "scp".to_string(),
-            "curl".to_string(),
-            "wget".to_string(),
-            "ping".to_string(),
-            "netstat".to_string(),
-            "df".to_string(),
-            "uptime".to_string(),
-            "free".to_string(),
-            "top".to_string()
-        ]
+    // Retrieve logged-in users
+    fn get_logged_in_users() -> Vec<String> {
+        let output = Command::new("who")
+            .output()
+            .expect("Failed to execute who command");
+        let data = String::from_utf8_lossy(&output.stdout);
+
+        data.lines()
+            .map(|line| line.split_whitespace().next().unwrap_or("unknown").to_string())
+            .collect()
     }
-    
+
+    // Fetch running commands executed by logged-in users
+    fn fetch_running_command(&self) -> Option<(String, String)> {
+        let logged_in_users = Self::get_logged_in_users();
+
+        let output = Command::new("ps")
+            .arg("axo")
+            .arg("user,tty,comm")
+            .output()
+            .expect("Failed to execute ps command");
+        let data = String::from_utf8_lossy(&output.stdout);
+
+        let command_list: Vec<(String, String)> = data.lines()
+            .skip(1) // Skip header
+            .map(|line| {
+                let parts: Vec<&str> = line.split_whitespace().collect();
+                let user = parts.get(0).unwrap_or(&"unknown").to_string();
+                let command = parts.get(2).unwrap_or(&"").to_string();
+                (user, command)
+            })
+            .filter(|(user, _)| logged_in_users.contains(user))
+            .collect();
+
+        command_list.choose(&mut rand::thread_rng()).cloned()
+    }
 
     // Patterns for suspicious commands
-    fn suspicious_command_patterns() -> Regex {
-        // More focused suspicious commands
+    fn suspicious_command_patterns(&self) -> Regex {
         Regex::new(r"\b(rm|dd|nc|netcat|telnet|chmod|chown|kill)\b").unwrap()
     }
 
-    // Fetch real commands using `ps` command and capture the user as well
-    fn fetch_running_command(&self) -> (String, String) {
-        let output = Command::new("ps")
-            .arg("aux")
-            .output()
-            .expect("Failed to execute `ps` command");
-        let data = String::from_utf8_lossy(&output.stdout);
-
-        // Extract user and command names (skip header -> get users and commands from each line)
-        let command_list: Vec<(String, String)> = data.lines()
-            .skip(1) // Skip the header row
-            .map(|line| {
-                let parts: Vec<&str> = line.split_whitespace().collect();
-                let user = parts.get(0).unwrap_or(&"unknown").to_string(); // Get - user
-                let command = parts.get(10).unwrap_or(&"").to_string();   // Get - command
-                (user, command)
-            })
-            .collect();
-
-        // Pick a random running command and user
-        let binding = (String::from("unknown"), String::from(""));
-        let random_command = command_list.choose(&mut rand::thread_rng()).unwrap_or(&binding);
-        (random_command.0.clone(), random_command.1.clone())
-    }
-
-    // Fetch current CPU usage from `top` command
+    // Fetch current CPU usage from top command
     fn fetch_cpu_usage(&self) -> f32 {
         let output = Command::new("top")
             .arg("-bn1")
             .output()
-            .expect("Failed to execute command");
+            .expect("Failed to execute top command");
         let data = String::from_utf8_lossy(&output.stdout);
 
-        // Process and extract the CPU usage information from the command output.
+        // Process and extract the CPU usage information
         let cpu_usage = data.lines()
-            .filter(|line| line.contains("%Cpu(s)"))
-            .next()
+            .find(|line| line.contains("%Cpu(s)"))
             .and_then(|line| {
                 line.split_whitespace()
                     .nth(1)
@@ -261,82 +288,26 @@ impl AnomalyDetector {
         cpu_usage
     }
 
-    // Fetch current memory usage from `free` command
+    // Fetch current memory usage from free command
     fn fetch_memory_usage(&self) -> f32 {
         let output = Command::new("free")
             .arg("-m")
             .output()
-            .expect("Failed to execute command");
+            .expect("Failed to execute free command");
         let data = String::from_utf8_lossy(&output.stdout);
 
-        // Process and extract memory usage information from the free command
+        // Process and extract memory usage information
         let memory_usage = data.lines()
-            .filter(|line| line.starts_with("Mem:"))
-            .next()
+            .find(|line| line.starts_with("Mem:"))
             .and_then(|line| {
                 let parts: Vec<&str> = line.split_whitespace().collect();
-                let used_mem: f32 = parts[2].parse().unwrap_or(0.0);   // Used memory
-                let total_mem: f32 = parts[1].parse().unwrap_or(1.0); // Total memory
+                let used_mem: f32 = parts.get(2)?.parse().unwrap_or(0.0);   // Used memory
+                let total_mem: f32 = parts.get(1)?.parse().unwrap_or(1.0);  // Total memory
                 Some((used_mem / total_mem) * 100.0)
             })
             .unwrap_or(0.0);
 
         memory_usage
-    }
-
-    // Fetch disk usage from `df` command and filter `/dev` drives
-    fn check_disk_changes_and_usage(&mut self) -> Vec<String> {
-        let output = Command::new("df")
-            .arg("-h")
-            .output()
-            .expect("Failed to execute df command");
-        let data = String::from_utf8_lossy(&output.stdout);
-
-        let mut logs: Vec<String> = Vec::new();
-        let mut current_disks: Vec<DiskState> = Vec::new();
-
-        for line in data.lines().skip(1) {  // Skipping the header row
-            let disk_info: Vec<&str> = line.split_whitespace().collect();
-            if disk_info.len() < 6 || !disk_info[0].starts_with("/dev") {
-                continue; // We are only interested in /dev drives
-            }
-
-            let use_percent = disk_info[4].trim_end_matches('%').parse::<f32>().unwrap_or(0.0);
-            let disk = DiskState {
-                filesystem: disk_info[0].to_string(),
-                size: disk_info[1].to_string(),
-                used: disk_info[2].to_string(),
-                avail: disk_info[3].to_string(),
-                use_percent,
-            };
-            current_disks.push(disk.clone());
-
-            // Compare with previous disk states to detect new or missing disks
-            let found_in_previous = self.previous_disks.iter().any(|d| d.filesystem == disk.filesystem);
-            if !found_in_previous {
-                logs.push(format!("A new disk was detected: {}", disk.filesystem));
-            }
-
-            // Check for abnormal usage (>20% increase in use)
-            if let Some(prev_disk) = self.previous_disks.iter().find(|d| d.filesystem == disk.filesystem) {
-                if disk.use_percent > prev_disk.use_percent * 1.2 {
-                    logs.push(format!(
-                        "An abnormal increase in disk usage was detected on '{}'. Usage increased by more than 20%.",
-                        disk.filesystem
-                    ));
-                }
-            }
-        }
-
-        // Detect if any disk is missing
-        for prev_disk in self.previous_disks.iter() {
-            if !current_disks.iter().any(|d| d.filesystem == prev_disk.filesystem) {
-                logs.push(format!("Disk '{}' was removed.", prev_disk.filesystem));
-            }
-        }
-
-        self.previous_disks = current_disks; // Update previous disk state
-        logs
     }
 
     // Check for network packet drops
@@ -363,11 +334,66 @@ impl AnomalyDetector {
         if drop_count > 0 {
             format!("{} dropped packets", drop_count)
         } else {
-            String::new() // No dropped packets, return empty string to avoid logging
+            String::new() // No dropped packets
         }
     }
 
-    // Updates the CPU and memory history, keeping track of the last 10 runs
+    // Fetch disk usage from df command and check for changes
+    fn check_disk_changes_and_usage(&mut self) -> Vec<String> {
+        let output = Command::new("df")
+            .arg("-h")
+            .output()
+            .expect("Failed to execute df command");
+        let data = String::from_utf8_lossy(&output.stdout);
+
+        let mut logs: Vec<String> = Vec::new();
+        let mut current_disks: Vec<DiskState> = Vec::new();
+
+        for line in data.lines().skip(1) { // Skipping the header row
+            let disk_info: Vec<&str> = line.split_whitespace().collect();
+            if disk_info.len() < 6 || !disk_info[0].starts_with("/dev") {
+                continue; // Only interested in /dev drives
+            }
+
+            let use_percent = disk_info[4].trim_end_matches('%').parse::<f32>().unwrap_or(0.0);
+            let disk = DiskState {
+                filesystem: disk_info[0].to_string(),
+                size: disk_info[1].to_string(),
+                used: disk_info[2].to_string(),
+                avail: disk_info[3].to_string(),
+                use_percent,
+            };
+            current_disks.push(disk.clone());
+
+            // Compare with previous disk states to detect new or missing disks
+            let found_in_previous = self.previous_disks.iter().any(|d| d.filesystem == disk.filesystem);
+            if !found_in_previous {
+                logs.push(format!("A new disk was detected: {}", disk.filesystem));
+            }
+
+            // Check for abnormal usage (>20% increase)
+            if let Some(prev_disk) = self.previous_disks.iter().find(|d| d.filesystem == disk.filesystem) {
+                if disk.use_percent > prev_disk.use_percent * 1.2 {
+                    logs.push(format!(
+                        "An abnormal increase in disk usage was detected on '{}'. Usage increased by more than 20%.",
+                        disk.filesystem
+                    ));
+                }
+            }
+        }
+
+        // Detect if any disk is missing
+        for prev_disk in self.previous_disks.iter() {
+            if !current_disks.iter().any(|d| d.filesystem == prev_disk.filesystem) {
+                logs.push(format!("Disk '{}' was removed.", prev_disk.filesystem));
+            }
+        }
+
+        self.previous_disks = current_disks; // Update previous disk state
+        logs
+    }
+
+    // Update CPU and memory history, keeping track of the last 10 runs
     fn update_cpu_memory_history(&mut self, cpu: f32, memory: f32) {
         if self.cpu_history.len() >= MAX_RUNS {
             self.cpu_history.remove(0); // Remove the oldest entry
@@ -375,24 +401,28 @@ impl AnomalyDetector {
         if self.memory_history.len() >= MAX_RUNS {
             self.memory_history.remove(0); // Remove the oldest entry
         }
-        self.cpu_history.push(cpu);      // Add the latest CPU usage
+        self.cpu_history.push(cpu);       // Add the latest CPU usage
         self.memory_history.push(memory); // Add the latest memory usage
     }
 
+    // Calculate average CPU usage
     fn average_cpu_usage(&self) -> f32 {
         let sum: f32 = self.cpu_history.iter().sum();
         sum / self.cpu_history.len() as f32
     }
 
+    // Calculate average memory usage
     fn average_memory_usage(&self) -> f32 {
         let sum: f32 = self.memory_history.iter().sum();
         sum / self.memory_history.len() as f32
     }
 
+    // Check for anomalous CPU usage
     fn check_anomalous_cpu_usage(&self, current_cpu: f32) -> bool {
         current_cpu > self.average_cpu_usage() * 1.2
     }
 
+    // Check for anomalous memory usage
     fn check_anomalous_memory_usage(&self, current_memory: f32) -> bool {
         current_memory > self.average_memory_usage() * 1.2
     }
@@ -420,8 +450,7 @@ impl Default for AnomalyDetector {
     }
 }
 
-// FORMATTING --
-
+// Formatting functions (assumed to be helper functions for display)
 fn print_tick_info(tick_num: usize, cpu_usage: f32, memory_usage: f32) {
     println!("\n===== Tick #{} =====", tick_num);
     println!("-----------------------------------");
