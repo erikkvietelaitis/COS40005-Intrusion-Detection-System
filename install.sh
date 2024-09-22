@@ -137,61 +137,68 @@ sudo mv ctpb_tpm /bin/Chromia
 # #remove CTPB IDS files
 sudo rm -rf /tmp/Chromia
 
-# CHROMIA_PATH="/bin/Chromia"
-# # Extract the application name
-# APP_NAME=$(basename "$CHROMIA_PATH")
-# # Check if the application exists
-# if [ ! -f "$CHROMIA_PATH" ]; then
-#     echo "Error: Application not found at the specified path: $CHROMIA_PATH"
-#     exit 1
-# fi
-# # Create the .service file path
-# SERVICE_FILE="/etc/systemd/system/${APP_NAME}.service"
 
-# # Create the .service file
-# echo "Creating systemd service file at $SERVICE_FILE"
+CHROMIA_PATH="/bin/Chromia"
+cd $CHROMIA_PATH
 
-# cat <<EOL > "$SERVICE_FILE"
-# [Unit]
-# Description=$APP_NAME Background Service
+# Extract the application name
+APP_NAME=$(basename "$CHROMIA_PATH")
+echo "Application name: $APP_NAME"
+# Check if the application exists
+if [ ! -f "$APP_NAME" ]; then
+    echo "Error: Application not found at the specified path: $CHROMIA_PATH"
+    exit 1
+fi
+# Create the .service file path
+echo "Creating the .service file path..."
+SERVICE_FILE="/etc/systemd/system/${APP_NAME}.service"
 
-# [Service]
-# ExecStart=$CHROMIA_PATH
-# Restart=always
+# Create the .service file
+echo "Creating systemd service file at $SERVICE_FILE"
 
-# [Install]
-# WantedBy=multi-user.target
-# EOL
+sudo bash -c "cat <<EOL > $SERVICE_FILE
+[Unit]
+Description=$APP_NAME Background Service
 
-# # Reload systemd to recognize the new service
-# echo "Reloading systemd daemon..."
-# systemctl daemon-reload
+[Service]
+ExecStart=$CHROMIA_PATH/$APP_NAME
+Restart=always
 
-# # Enable the service to start on boot
-# echo "Enabling the $APP_NAME service..."
-# systemctl enable "$APP_NAME"
+[Install]
+WantedBy=multi-user.target
+EOL"
 
-# # Start the service
-# echo "Starting the $APP_NAME service..."
-# systemctl start "$APP_NAME"
+# Reload systemd to recognize the new service
+echo "Reloading systemd daemon..."
+systemctl daemon-reload
+
+# Enable the service to start on boot
+echo "Enabling the $APP_NAME service..."
+systemctl enable "$APP_NAME"
+
+# Start the service
+echo "Starting the $APP_NAME service..."
+systemctl start "$APP_NAME"
 
 # # Check the status of the service
-# echo "Checking the status of $APP_NAME service..."
-# systemctl status "$APP_NAME"
-
-# echo "Service for $APP_NAME created and started successfully."
+echo "Checking the status of $APP_NAME service..."
+systemctl status "$APP_NAME" &
+STATUS_PID=$!
+sleep 5
+kill $STATUS_PID
+echo "Service for $APP_NAME created and started successfully."
+echo "Continuing with the installation..."
 
 #run Chromia
-
 sleep 5
 echo "Chromia has been installed successfully."
 echo "Chromia is installed in /bin/Chromia"
-cd /bin/Chromia
+cd $CHROMIA_PATH
 sudo ./Chromia
-echo "Chromia has been run"
-echo "Chromia is now running but changes need to be made to the config file"
-echo "Please refer to /bin/Chromia/Config.ini"
-echo "We are taking you there"
-sleep 10
-kill $!
-sudo ./Chromia
+# echo "Chromia has been run"
+# echo "Chromia is now running but changes need to be made to the config file"
+# echo "Please refer to /bin/Chromia/Config.ini"
+# echo "We are taking you there"
+# sleep 10
+# kill $!
+# sudo ./Chromia
