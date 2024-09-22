@@ -127,15 +127,59 @@ git clone https:///brokenpip:$TPM_PAT@github.com/brokenpip/ctpb_ids.git /tmp/Chr
 
 
 # Build CTPB IDS
-cd /tmp/Chromia/TPM/ctpb_tpm
+cd /tmp/Chromia/TPM/ctpb_ids/ctpb_tpm
 cargo build --release
 
 # Move CTPB IDS build to /bin
-cd /tmp/Chromia/TPM/ctpb_tpm/target/release
+cd /tmp/Chromia/TPM/ctpb_ids/ctpb_tpm/target/release
 sudo mv ctpb_tpm /bin/Chromia
 
-#remove CTPB IDS files
+# #remove CTPB IDS files
 sudo rm -rf /tmp/Chromia
+
+# CHROMIA_PATH="/bin/Chromia"
+# # Extract the application name
+# APP_NAME=$(basename "$CHROMIA_PATH")
+# # Check if the application exists
+# if [ ! -f "$CHROMIA_PATH" ]; then
+#     echo "Error: Application not found at the specified path: $CHROMIA_PATH"
+#     exit 1
+# fi
+# # Create the .service file path
+# SERVICE_FILE="/etc/systemd/system/${APP_NAME}.service"
+
+# # Create the .service file
+# echo "Creating systemd service file at $SERVICE_FILE"
+
+# cat <<EOL > "$SERVICE_FILE"
+# [Unit]
+# Description=$APP_NAME Background Service
+
+# [Service]
+# ExecStart=$CHROMIA_PATH
+# Restart=always
+
+# [Install]
+# WantedBy=multi-user.target
+# EOL
+
+# # Reload systemd to recognize the new service
+# echo "Reloading systemd daemon..."
+# systemctl daemon-reload
+
+# # Enable the service to start on boot
+# echo "Enabling the $APP_NAME service..."
+# systemctl enable "$APP_NAME"
+
+# # Start the service
+# echo "Starting the $APP_NAME service..."
+# systemctl start "$APP_NAME"
+
+# # Check the status of the service
+# echo "Checking the status of $APP_NAME service..."
+# systemctl status "$APP_NAME"
+
+# echo "Service for $APP_NAME created and started successfully."
 
 #run Chromia
 sleep 5
@@ -146,4 +190,7 @@ sleep 5
 sudo ./Chromia #sudo is required to run the program due to wanting the files to be in /bin
 
 
+
+sleep 5
+echo "Chromia has been run successfully."
 
