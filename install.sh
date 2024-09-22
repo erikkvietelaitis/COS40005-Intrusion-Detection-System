@@ -182,15 +182,16 @@ sudo rm -rf /tmp/Chromia
 # echo "Service for $APP_NAME created and started successfully."
 
 #run Chromia
+
 sleep 5
 echo "Chromia has been installed successfully."
 echo "Chromia is installed in /bin/Chromia"
 cd /bin/Chromia
-sleep 5
-sudo ./Chromia #sudo is required to run the program due to wanting the files to be in /bin
-
-
-
-sleep 5
-echo "Chromia has been run successfully."
-
+sudo ./Chromia
+echo "Chromia has been run"
+echo "Chromia is now running but changes need to be made to the config file"
+echo "Please refer to /bin/Chromia/Config.ini"
+echo "We are taking you there"
+sleep 10
+kill $!
+sudo ./Chromia
