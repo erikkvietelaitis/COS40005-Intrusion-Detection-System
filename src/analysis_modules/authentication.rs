@@ -39,7 +39,7 @@ impl AnalysisModule for Authentication {
         //a failedloginip object to use when placing objects into the vector 
         let mut nlflip: FailedLogInIp;
         //the actual data will be pulled by the linux bridge
-        let failtestdata: &str = "root     ssh:notty    218.92.0.158     Wed Mar 13 14:34 - 14:34  (00:00)\nsindesi  ssh:notty    59.164.69.10     Wed Mar 13 14:34 - 14:34  (00:00)/nroot     ssh:notty    218.92.0.158     Wed Mar 13 14:34 - 14:34  (00:00)\nsindesi  ssh:notty    59.164.69.10     Wed Mar 13 14:34 - 14:34  (00:00)\nroot     ssh:notty    218.92.0.158     Wed Mar 13 14:34 - 14:34  (00:00)";
+        //let failtestdata: &str = "root     ssh:notty    218.92.0.158     Wed Mar 13 14:34 - 14:34  (00:00)\nsindesi  ssh:notty    59.164.69.10     Wed Mar 13 14:34 - 14:34  (00:00)/nroot     ssh:notty    218.92.0.158     Wed Mar 13 14:34 - 14:34  (00:00)\nsindesi  ssh:notty    59.164.69.10     Wed Mar 13 14:34 - 14:34  (00:00)\nroot     ssh:notty    218.92.0.158     Wed Mar 13 14:34 - 14:34  (00:00)";
         //let successtestdata: &str = "ids      tty2         tty2             Sun Sep  8 09:28   still logged in\nids      seat0        login screen     Sun Sep  8 09:28   still logged in\nreboot   system boot  6.8.0-41-generic Sun Sep  8 09:27   still running\nids      tty2         tty2             Sun Sep  8 08:24 - crash  (01:03)\nids      seat0        login screen     Sun Sep  8 08:24 - crash  (01:03)\nreboot   system boot  6.8.0-41-generic Sun Sep  8 08:23   still running\nreboot   system boot  6.8.0-41-generic Fri Sep  6 14:24   still running\nids      tty2         tty2             Tue Sep  3 11:13 - crash (3+03:10)\nids      seat0        login screen     Tue Sep  3 11:13 - crash (3+03:10)\nreboot   system boot  6.8.0-41-generic Tue Sep  3 11:13   still running\nids      tty2         tty2             Mon Sep  2 12:16 - crash  (22:57)\nids      seat0        login screen     Mon Sep  2 12:16 - crash  (22:57)\nreboot   system boot  6.8.0-41-generic Mon Sep  2 12:15   still running\nreboot   system boot  6.8.0-41-generic Mon Sep  2 12:11   still running\nids      tty2         tty2             Tue Aug 27 17:59 - crash (5+18:12)\nids      seat0        login screen     Tue Aug 27 17:59 - crash (5+18:12)\nreboot   system boot  6.8.0-40-generic Tue Aug 27 17:58   still running\nids      tty2         tty2             Mon Aug 26 23:02 - crash  (18:55)\nids      seat0        login screen     Mon Aug 26 23:02 - crash  (18:55)\nreboot   system boot  6.8.0-40-generic Mon Aug 26 23:02   still running\nids      tty2         tty2             Mon Aug 26 22:54 - crash  (00:08)\nids      seat0        login screen     Mon Aug 26 22:54 - crash  (00:08)\nreboot   system boot  6.8.0-40-generic Mon Aug 26 22:53   still running\nreboot   system boot  6.8.0-40-generic Mon Aug 26 22:51   still running\nreboot   system boot  6.8.0-40-generic Mon Aug 26 22:45   still running\nreboot   system boot  6.8.0-40-generic Thu Aug 22 14:01   still running\nids      tty2         tty2             Wed Aug 21 16:13 - down   (00:29)\nids      seat0        login screen     Wed Aug 21 16:13 - down   (00:29)\nreboot   system boot  6.8.0-40-generic Wed Aug 21 16:11 - 16:43  (00:31)\nids      tty2         tty2             Tue Aug 20 20:29 - down   (19:42)\nids      seat0        login screen     Tue Aug 20 20:29 - down   (19:42)\nreboot   system boot  6.8.0-31-generic Tue Aug 20 20:28 - 16:11  (19:43)\nids      tty2         tty2             Tue Aug 20 20:27 - down   (00:00)\nids      seat0        login screen     Tue Aug 20 20:27 - down   (00:00)\nreboot   system boot  6.8.0-31-generic Tue Aug 20 20:24 - 20:27  (00:03)";
         //seperates the file into lines
         let btmpdump: &str = &auth::btmp_dump();
@@ -166,9 +166,10 @@ impl AnalysisModule for Authentication {
         if self.current_data.cfips.len() > 0 {
             let mut i1: usize = 0;
             let mut i2: usize = 0;
-            let mut inpfips: bool = false;
+            
             while i1 < self.current_data.cfips.len() {
-                inpfips = false;
+                let mut inpfips: bool = false;
+                //inpfips = false;
                 while i2 < self.pfips.len() {
                     if self.current_data.cfips[i1].ip == self.pfips[i2].ip {
                         inpfips = true;
@@ -218,7 +219,7 @@ impl AnalysisModule for Authentication {
             let mut i1: usize = 0;
             let mut i2: usize = 0;
             let mut i3: usize = 0;
-            let mut inpsips: bool = false;
+            
             while i1 < self.current_data.csips.len() {
                 while i2 < self.current_data.cfips.len(){
                     if self.current_data.csips[i1].ip == self.pfips[i2].ip {
@@ -239,7 +240,8 @@ impl AnalysisModule for Authentication {
                     }
                     i2 = i2 + 1;
                 }
-                inpsips = false;
+                let mut inpsips: bool = false;
+                //inpsips = false;
                 while i3 < self.psips.len() {
                     if self.current_data.csips[i1].ip == self.psips[i3].ip {
                         inpsips = true;
@@ -278,7 +280,7 @@ impl AnalysisModule for Authentication {
         let fields:Vec<ConfigField> = vec![];
         return fields;
     }
-    fn retrieve_config_data(&mut self, data: HashMap<String,Vec<String>>) -> bool{
+    fn retrieve_config_data(&mut self, _data: HashMap<String,Vec<String>>) -> bool{
         return true;
     }
 }

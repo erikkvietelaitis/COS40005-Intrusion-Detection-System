@@ -56,7 +56,7 @@ impl Networking {
 
     fn log_scan_results(&self) {
         // println!("Scanning ports from {} to {}", self.current_data.start_port, self.current_data.end_port);
-        let open_ports_str = self.current_data.open_ports.iter()
+        let _open_ports_str = self.current_data.open_ports.iter()
             .map(ToString::to_string)
             .collect::<Vec<String>>()
             .join(", ");
@@ -73,8 +73,8 @@ impl Networking {
         }
     }
 
-    fn debug_open_ports(&self) {
-        // println!("Debug: Currently detected open ports: {:?}", self.current_data.open_ports);
+    fn _debug_open_ports(&self) {
+         println!("Debug: Currently detected open ports: {:?}", self.current_data.open_ports);
     }
 }
 

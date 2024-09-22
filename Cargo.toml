@@ -22,4 +22,7 @@ pnet = "0.35.0"
 rust-ini = "0.21.1"
 serde_json = "1.0.127"
 
+#fim
+dirhash = "0.2.0"
+
 

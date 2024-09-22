@@ -40,8 +40,8 @@ fn main() {
     // ADD NEW MODULES HERE \|/ use example module's exact structure
     modules = vec![
         Box::new(<analysis_modules::fim::FIM as std::default::Default>::default()),
-        Box::new(<analysis_modules::network::Networking as std::default::Default>::default()),
-        Box::new(<analysis_modules::authentication::Authentication as std::default::Default>::default()),
+        //Box::new(<analysis_modules::network::Networking as std::default::Default>::default()),
+        //Box::new(<analysis_modules::authentication::Authentication as std::default::Default>::default()),
         ];
 
     println!("    loaded {} module/s", modules.len().to_string());

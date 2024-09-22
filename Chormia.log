@@ -1,0 +1,13 @@
+[2024-09-22 17:14:22]=[Networking]=[Serious]:Alert: Expected blocked port 80 is open.
+[2024-09-22 17:14:26]=[Authentication]=[Info]:ip address '0.0.0.0        ] ' has failed to log in 2' time(s)
+[2024-09-22 17:14:26]=[Authentication]=[Info]:ip address '0.0.0.0        ] ' has successfully logged in after 2' failed attempts
+[2024-09-22 17:14:26]=[Authentication]=[Info]:ip address '0.0.0.0        ] ' has logged in seccesfully 9' time(s)
+[2024-09-22 17:14:27]=[Networking]=[Serious]:Alert: Expected blocked port 631 is open.
+[2024-09-22 17:15:00]=[Authentication]=[Info]:ip address '0.0.0.0        ] ' has failed to log in 2' time(s)
+[2024-09-22 17:15:00]=[Authentication]=[Info]:ip address '0.0.0.0        ] ' has successfully logged in after 2' failed attempts
+[2024-09-22 17:15:00]=[Authentication]=[Info]:ip address '0.0.0.0        ] ' has logged in seccesfully 9' time(s)
+[2024-09-22 18:35:18]=[FIM]=[Serious]:File '/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/src' has been modified!
+[2024-09-22 18:35:28]=[FIM]=[Serious]:File '/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/src' has been modified!
+[2024-09-22 18:36:09]=[FIM]=[Serious]:File '/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/src' has been modified!
+[2024-09-22 18:38:09]=[FIM]=[Serious]:File '/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/src' has been modified!
+[2024-09-22 18:38:12]=[FIM]=[Serious]:File '/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/src' has been modified!
