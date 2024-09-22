@@ -161,7 +161,9 @@ sudo bash -c "cat <<EOL > $SERVICE_FILE
 Description=$APP_NAME Background Service
 
 [Service]
-ExecStart=$CHROMIA_PATH/$APP_NAME
+Environment=CHROMIA_PATH=/bin/Chromia
+Environment=APP_NAME=Chromia
+ExecStart=${CHROMIA_PATH}/${APP_NAME}
 Restart=always
 
 [Install]
