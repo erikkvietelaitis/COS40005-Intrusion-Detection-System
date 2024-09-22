@@ -195,10 +195,11 @@ echo "Chromia has been installed successfully."
 echo "Chromia is installed in /bin/Chromia"
 cd $CHROMIA_PATH
 sudo ./Chromia
+sleep 5
+kill $!
+sudo ./Chromia
 # echo "Chromia has been run"
 # echo "Chromia is now running but changes need to be made to the config file"
 # echo "Please refer to /bin/Chromia/Config.ini"
 # echo "We are taking you there"
-# sleep 10
-# kill $!
-# sudo ./Chromia
+
