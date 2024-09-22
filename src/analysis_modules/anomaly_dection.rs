@@ -675,7 +675,11 @@ impl Default for AnomalyDetector {
                 // If there is any other default safe files - add here 
             ],
             known_unsafe_commands: vec![
-                // add any default unsafe commands here 
+                "rm".into(),
+                "sudo".into(),
+                "dd".into(),
+                "mkfs".into(),
+                "fdisk".into(),
             ],
             known_unsafe_files: vec![
                 // add any default unsafe files here
