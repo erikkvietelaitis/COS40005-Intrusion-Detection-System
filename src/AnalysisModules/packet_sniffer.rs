@@ -16,14 +16,16 @@ use crate::LaraCore::CoreEnums::ConfigFieldType;
 use crate::ConfigField;
 use crate::LaraCore::CoreTraits::AnalysisModule;
 
+/// Struct representing the Packet Sniffer module.
 pub struct PacketSniffer {
     pub module_name: String,
     pub interface_name: String,
-    pub packets: Arc<Mutex<Vec<PacketData>>>,
-    pub packet_threshold: usize,
-    pub host_ip: Option<String>,
+    pub packets: Arc<Mutex<Vec<PacketData>>>, // Thread-safe storage for packets
+    pub packet_threshold: usize, // Alert threshold for packet counts
+    pub host_ip: Option<String>, // Host IP to exclude from alerts
 }
 
+/// Struct to hold packet data (source IP and port).
 #[derive(Debug, Clone)]
 pub struct PacketData {
     pub source_ip: Option<String>,
@@ -31,6 +33,7 @@ pub struct PacketData {
 }
 
 impl PacketSniffer {
+    /// Creates a new PacketSniffer instance.
     pub fn new(module_name: &str, interface_name: &str, packet_threshold: usize, host_ip: Option<String>) -> Self {
         Self {
             module_name: module_name.to_string(),
@@ -41,6 +44,7 @@ impl PacketSniffer {
         }
     }
 
+    /// Captures packets for a specified duration.
     fn capture_packets(&self, duration: Duration) {
         let packets = Arc::clone(&self.packets);
         let interface = datalink::interfaces()
@@ -48,6 +52,7 @@ impl PacketSniffer {
             .find(|iface| iface.name == self.interface_name)
             .expect("Interface not found");
 
+        // Create a channel to capture packets
         let channel_result = datalink::channel(&interface, Default::default());
         let mut rx = match channel_result {
             Ok(datalink::Channel::Ethernet(_, rx)) => rx,
@@ -64,8 +69,10 @@ impl PacketSniffer {
                         source_port: None,
                     };
 
+                    // Extract IP payload from Ethernet frame
                     let ip_payload = ethernet.payload();
 
+                    // Handle IPv4 packets
                     if let Some(ipv4) = Ipv4Packet::new(ip_payload) {
                         match ipv4.get_next_level_protocol() {
                             IpNextHeaderProtocols::Tcp => {
@@ -80,12 +87,12 @@ impl PacketSniffer {
                             }
                             _ => {},
                         }
-
                         packet_data.source_ip = Some(ipv4.get_source().to_string());
                     } else if let Some(ipv6) = Ipv6Packet::new(ip_payload) {
-                        // Handle IPv6 payloads if necessary
+                        // Handle IPv6 payloads if necessary (not implemented)
                     }
 
+                    // Store captured packet data
                     let mut packets = packets.lock().unwrap();
                     packets.push(packet_data);
                 }
@@ -96,12 +103,14 @@ impl PacketSniffer {
         }
     }
 
+    /// Analyzes captured packets and generates logs for alerts.
     fn analyze_packets(&self) -> Vec<Log> {
         let mut results = Vec::new();
         let packets = self.packets.lock().unwrap();
     
-        // Use a HashSet to track unique source IP and port combinations
-        let mut unique_source_info = HashSet::new();
+        // Track packet counts by (source IP, source port)
+        let mut packet_count_by_ip_port: HashMap<(String, u16), usize> = HashMap::new();
+    
         for packet in packets.iter() {
             if let Some(source_ip) = &packet.source_ip {
                 // Skip packets from the host IP address
@@ -110,34 +119,33 @@ impl PacketSniffer {
                         continue;
                     }
                 }
-
+    
                 if let Some(source_port) = packet.source_port {
-                    unique_source_info.insert((source_ip.clone(), source_port));
+                    // Increment the count for this IP and port
+                    let count = packet_count_by_ip_port.entry((source_ip.clone(), source_port)).or_insert(0);
+                    *count += 1;
                 }
             }
         }
     
-        // Alert if packet count exceeds threshold
-        if packets.len() > self.packet_threshold {
-            let source_info: Vec<String> = unique_source_info.into_iter().map(|(ip, port)| {
-                format!("Source IP: {}, Source Port: {}", ip, port)
-            }).collect();
-    
-            results.push(Log::new(
-                LogType::Warning,
-                self.module_name.clone(),
-                format!(
-                    "Packet alert: {} packets captured, exceeds threshold of {} packets. {}",
-                    packets.len(),
-                    self.packet_threshold,
-                    source_info.join(", ")
-                ),
-            ));
+        // Generate alerts for IPs and ports that exceed the threshold
+        for ((ip, port), count) in packet_count_by_ip_port {
+            if count > self.packet_threshold {
+                results.push(Log::new(
+                    LogType::Warning,
+                    self.module_name.clone(),
+                    format!(
+                        "Packet alert: {} packets captured from Source IP: {} on Port: {} exceeds threshold of {} packets.",
+                        count, ip, port, self.packet_threshold
+                    ),
+                ));
+            }
         }
     
         results
     }
 
+    /// Clears the captured packets.
     fn clear_packets(&self) {
         let mut packets = self.packets.lock().unwrap();
         packets.clear();
@@ -156,7 +164,7 @@ impl AnalysisModule for PacketSniffer {
     }
 
     fn get_testing_data(&mut self) -> bool {
-        todo!()
+        todo!() // Placeholder for testing data
     }
 
     fn perform_analysis(&mut self) -> Vec<Log> {
@@ -171,16 +179,16 @@ impl AnalysisModule for PacketSniffer {
 
     fn build_config_fields(&self) -> Vec<ConfigField> {
         // Example network interfaces
-        let network_interfaces = vec!["enp0s3".to_owned(), "wlan0".to_owned(), "lo".to_owned()];
+        let network_interfaces = vec!["enp0s3".to_owned(), "wlan0".to_owned(), "eth0".to_owned()];
         
         // Example packet thresholds
-        let packet_thresholds = vec!["200".to_owned()];
+        let packet_thresholds = vec!["100".to_owned()];
         
         // Host IP field
-        let host_ip: Vec<String> = vec!["192.168.1.9".to_owned()];
+        let host_ip: Vec<String> = vec!["192.167.1.100".to_owned()];
 
         vec![
-            ConfigField::new("InterfaceName[]".to_owned(), "Network interface to capture packets from. Example: eth0, wlan0, lo".to_owned(), ConfigFieldType::String, network_interfaces, true),
+            ConfigField::new("InterfaceName[]".to_owned(), "Network interface to capture packets from. Example: enp0s3, wlan0, eth0".to_owned(), ConfigFieldType::String, network_interfaces, true),
             ConfigField::new("PacketThreshold".to_owned(), "Number of packets that triggers an alert. Example: 10, 50, 200".to_owned(), ConfigFieldType::Integer, packet_thresholds, true),
             ConfigField::new("HostIP".to_owned(), "Host IP address to be exempted from alerts. Example: 192.168.1.100".to_owned(), ConfigFieldType::String, host_ip, false), // New field
         ]
@@ -213,7 +221,7 @@ impl Default for PacketSniffer {
             module_name: String::from("PacketSniffer"),
             interface_name: String::from("eth0"),
             packets: Arc::new(Mutex::new(Vec::new())),
-            packet_threshold: 200, // Default threshold changed to 200
+            packet_threshold: 100, // Default threshold
             host_ip: None, 
         }
     }
