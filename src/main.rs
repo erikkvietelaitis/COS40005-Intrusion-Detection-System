@@ -118,6 +118,8 @@ fn main() {
             if debug {
                 println!("{}", log.build_alert());
             }
+            let _ = append_to_log(&log.build_alert());
+
         }
         logs = Vec::new();
         i += 1;
