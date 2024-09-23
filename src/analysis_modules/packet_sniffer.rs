@@ -9,11 +9,11 @@ use pnet::packet::tcp::TcpPacket;
 use pnet::packet::udp::UdpPacket;
 use pnet::packet::ip::IpNextHeaderProtocols;
 
-use crate::LaraCore::CoreStruts::Log;
-use crate::LaraCore::CoreEnums::LogType;
-use crate::LaraCore::CoreEnums::ConfigFieldType;
+use crate::lara_core::core_structs::Log;
+use crate::lara_core::core_enums::LogType;
+use crate::lara_core::core_enums::ConfigFieldType;
 use crate::ConfigField;
-use crate::LaraCore::CoreTraits::AnalysisModule;
+use crate::lara_core::core_traits::AnalysisModule;
 
 /// Struct representing the Packet Sniffer module.
 pub struct PacketSniffer {
