@@ -61,7 +61,7 @@ fn main() {
     ];
     println!("    loaded {} module/s", modules.len().to_string());
 
-    if !Path::new("config.ini").exists() {
+    if !Path::new("/etc/Chromia/config.ini").exists() {
         create_config(modules);
         return;
     }
