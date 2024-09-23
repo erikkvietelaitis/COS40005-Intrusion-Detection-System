@@ -41,11 +41,9 @@ fn main() {
     modules = vec![
         Box::new(<analysis_modules::fim::FIM as std::default::Default>::default()),
         Box::new(<analysis_modules::network::Networking as std::default::Default>::default()),
-        Box::new(
-            <analysis_modules::authentication::Authentication as std::default::Default>::default(),
-        ),
+        Box::new(<analysis_modules::authentication::Authentication as std::default::Default>::default()),
+        Box::new(<analysis_modules::packet_sniffer::PacketSniffer as std::default::Default>::default()),
     ];
-
     println!("    loaded {} module/s", modules.len().to_string());
 
     if !Path::new("config.ini").exists() {
