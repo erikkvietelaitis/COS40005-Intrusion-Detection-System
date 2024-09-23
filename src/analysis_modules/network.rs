@@ -65,7 +65,6 @@ impl Networking {
 
     fn log_generated_alerts(&self, alerts: &[core_structs::Log]) {
         if alerts.is_empty() {
-            println!("No new alerts generated.");
         } else {
             for alert in alerts {
                 println!("{}", alert.build_alert());
@@ -118,7 +117,6 @@ impl AnalysisModule for Networking {
 
         let alerts = self.generate_unique_alerts(&open_ports, &blocked_ports);
 
-        self.log_generated_alerts(&alerts);
 
         results.extend(alerts);
 
