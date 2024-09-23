@@ -1,6 +1,6 @@
+use std::collections::HashMap;
 use std::fs::OpenOptions;
 use std::io::Write;
-use std::collections::HashMap;
 use std::path::Path;
 use std::vec;
 
@@ -41,8 +41,10 @@ fn main() {
     modules = vec![
         Box::new(<analysis_modules::fim::FIM as std::default::Default>::default()),
         Box::new(<analysis_modules::network::Networking as std::default::Default>::default()),
-        Box::new(<analysis_modules::authentication::Authentication as std::default::Default>::default()),
-        ];
+        Box::new(
+            <analysis_modules::authentication::Authentication as std::default::Default>::default(),
+        ),
+    ];
 
     println!("    loaded {} module/s", modules.len().to_string());
 
@@ -56,17 +58,22 @@ fn main() {
         Err(error) => panic!("Problem opening the file: {error:?}"),
     };
     println!("Successfully found config file!");
-    let mut section: HashMap<String, Vec<String>>;
-    let mut _errors:Vec<&str>;
-    for module in modules.iter_mut() {
-        section = match config.get(&module.get_name()){
+     modules.retain_mut(| module|{
+        let section: HashMap<String, Vec<String>>;
+
+        section = match config.get(&module.get_name()) {
             Some(s) => s.clone(),
             None => section_not_found(module.get_name()),
         };
+        if !module.retrieve_config_data(section){
+            println!("{} could not be started due to an error in the config file! Please review errors and restart Chromia",module.get_name());
+            return false;
+        }else{
+            return true;
+        }
+    });
 
-        module.retrieve_config_data(section);
-    }
-    
+
     let mut logs: Vec<Log> = Vec::new();
     let mut i = 0;
     println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT!!");
@@ -94,8 +101,11 @@ fn main() {
         thread::sleep(tick_intervals)
     }
 }
-fn section_not_found(name: String)->HashMap<String,Vec<String>>{
-    println!("Config for {} module was not found! Chromia will attempt to use default values", name);    
+fn section_not_found(name: String) -> HashMap<String, Vec<String>> {
+    println!(
+        "Config for {} module was not found! Chromia will attempt to use default values",
+        name
+    );
     return HashMap::new();
 }
 fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
@@ -126,9 +136,9 @@ fn append_to_log(message: &str) -> std::io::Result<()> {
     let mut file = OpenOptions::new()
         .write(true)
         .append(true)
-        .create(true)  // This will create the file if it doesn't exist
+        .create(true) // This will create the file if it doesn't exist
         .open("var/log/Chormia.log")?;
 
-    writeln!(file, "{}", message)?;  // Write the message and append a newline
+    writeln!(file, "{}", message)?; // Write the message and append a newline
     Ok(())
 }
