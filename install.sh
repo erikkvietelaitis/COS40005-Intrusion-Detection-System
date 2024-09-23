@@ -46,6 +46,14 @@ echo -e "${COLOR_RESET}"
 sleep 5
 echo "Enter password to begin, Updating and upgrading system..."
 sudo apt-get update && apt-get upgrade -y
+# Check if net-tools is installed
+echo "Checking if net-tools is installed..."
+if ! dpkg -l | grep 'net-tools'; then
+    echo "net-tools is not installed. Installing..."
+    sudo apt install net-tools
+else
+    echo "net-tools is already installed."
+fi
 
 # Install Rust
 # Check if curl is installed
@@ -176,18 +184,12 @@ systemctl daemon-reload
 # Enable the service to start on boot
 echo "Enabling the $APP_NAME service..."
 systemctl enable "$APP_NAME"
-
-# Start the service
-echo "Starting the $APP_NAME service..."
-systemctl start "$APP_NAME"
-
-# # Check the status of the service
-echo "Checking the status of $APP_NAME service..."
-systemctl status "$APP_NAME" &
-STATUS_PID=$!
-
-# echo "Chromia has been run"
-# echo "Chromia is now running but changes need to be made to the config file"
-# echo "Please refer to /bin/Chromia/Config.ini"
-# echo "We are taking you there"
-
+if [-f /etc/Chromia/config.ini]; then
+	echo "Existsing Config File Found! Starting Chromia"
+	sudo systemctl start Chromia;
+else
+sudo /bin/Chromia/Chromia
+echo ""
+echo ""
+echo -e "${COLOR_RED} ${TEXT_BOLD}Config File created at '/etc/Chromia/config.ini', please edit this and then run 'sudo systemctl start Chromia', or restart your PC"
+fi
