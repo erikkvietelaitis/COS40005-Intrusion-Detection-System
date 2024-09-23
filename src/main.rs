@@ -66,7 +66,7 @@ fn main() {
         return;
     }
 
-    let config_result = system::read_csv("config.ini".to_owned());
+    let config_result = system::read_csv("/etc/Chromia/config.ini".to_owned());
     let config = match config_result {
         Ok(file) => file,
         Err(error) => panic!("Problem opening the file: {error:?}"),
