@@ -1,7 +1,8 @@
+use clap::Parser;
 use std::collections::HashMap;
+use std::fs;
 use std::path::Path;
 use std::vec;
-use clap::Parser;
 
 use std::{thread, time};
 //use system::{system_uptime, system_user};
@@ -23,19 +24,19 @@ struct Args {
 fn main() {
     let mut debug = false;
     let args = Args::parse();
-    if(args.debug){
+    if (args.debug) {
         debug = true;
     }
     // TODO: Put startup info in seperate function
     println!("Chromia({}) is starting", env!("CARGO_PKG_VERSION"));
     println!("------------------");
-    if debug{
+    if debug {
         println!("========== Host System Info: ==========");
         println!("> Host Name :{}", system::system_host_name());
         println!("> OS: {}", system::system_name());
         println!("> OS version: {}", system::system_os_version());
         println!("> Kernal version: {}", system::system_kernel_version());
-        println!("> Current Time: {}", system::system_time());    
+        println!("> Current Time: {}", system::system_time());
         println!("=======================================");
         println!("Initializing Core systems:");
     }
@@ -43,7 +44,7 @@ fn main() {
     let tick_intervals = time::Duration::from_millis(1000);
     println!("Tick Interval: {}ms", tick_intervals.as_millis());
     println!("");
-    if debug{
+    if debug {
         println!("Initializing Analysis Modules:");
         println!("");
     }
@@ -53,7 +54,9 @@ fn main() {
         Box::new(<analysis_modules::fim::FIM as std::default::Default>::default()),
         Box::new(<analysis_modules::network::Networking as std::default::Default>::default()),
         Box::new(<analysis_modules::httpserver::HTTPServer as std::default::Default>::default()),
-        Box::new(<analysis_modules::authentication::Authentication as std::default::Default>::default()),
+        Box::new(
+            <analysis_modules::authentication::Authentication as std::default::Default>::default(),
+        ),
     ];
 
     if !Path::new("config.ini").exists() {
@@ -66,7 +69,7 @@ fn main() {
         Ok(file) => file,
         Err(error) => panic!("Problem opening the file: {error:?}"),
     };
-    if debug{
+    if debug {
         println!("Successfully found config file!");
     }
     let mut section: HashMap<String, Vec<String>>;
@@ -86,21 +89,21 @@ fn main() {
 
     let mut logs: Vec<Log> = Vec::new();
     let mut i = 0;
-    if debug{
+    if debug {
         println!("    loaded {} module/s", modules.len().to_string());
         println!("------------------(Real Time alerts)------------------");
     }
     loop {
-        if debug{
+        if debug {
             println!("Starting Tick({})", i.to_string());
         }
         for module in modules.iter_mut() {
             if module.get_data() {
-                if debug{
+                if debug {
                     println!("Module:'{}' successfully gathered data", module.get_name());
                 }
             } else {
-                if debug{
+                if debug {
                     println!(
                         "ERROR::Module:'{}' failed trying to collect data",
                         module.get_name()
@@ -109,11 +112,11 @@ fn main() {
             }
             logs.append(&mut module.perform_analysis());
         }
-        if debug{
+        if debug {
             println!("Following logs were generated this tick:");
         }
         for log in logs.iter() {
-            if debug{
+            if debug {
                 println!("    {}", log.build_alert());
             }
         }
@@ -146,7 +149,15 @@ fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
         }
         config_file_contents.push_str("\n");
     }
-    let file_result = system::sys_file_write("config.ini", &config_file_contents);
+    let path = Path::new("/etc/Chromia");
+    if !path.exists() {
+        match fs::create_dir_all(path) {
+            Ok(_) => println!(""),
+            Err(e) => println!("Failed to create directory: {}", e),
+        }
+    }
+
+    let file_result = system::sys_file_write("/etc/Chromia/config.ini", &config_file_contents);
     match file_result{
         Ok(_) => println!("Successfully created Config file.\n Please fill out file and re-run Chromia to activate"),
         Err(_e) => panic!("Could not create file in current directory!"),

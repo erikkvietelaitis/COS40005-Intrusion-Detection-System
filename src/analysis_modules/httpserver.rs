@@ -221,16 +221,17 @@ impl AnalysisModule for HTTPServer{
     // plus the persistent data stored in the object to create logs (AKA alerts) 
     fn perform_analysis(&mut self) -> Vec<crate::Log> {
         let mut results: Vec<core_structs::Log> = Vec::new();
+        let self_name = self.get_name();
         for (client, score) in self.clients.iter_mut(){
             if(self.current_data.logs.contains_key(client)){
-                let (score, err_msg) =&self.current_data.logs[client];
-                *score += score;
-                if *score > 14{
+                let (mut score, err_msg) =&self.current_data.logs[client];
+                score += score;
+                if score > 14{
                     let level:LogType;
-                    let sus_msg:String;
-                    if *score > 30{
-                        if *score > 40{
-                            if *score > 50{
+                    // let sus_msg:String;
+                    if score > 30{
+                        if score > 40{
+                            if score > 50{
                             level = LogType::Critical;
                             }else{
                                 level = LogType::Serious;
@@ -242,8 +243,8 @@ impl AnalysisModule for HTTPServer{
                     }else{
                         level = LogType::Info;
                     }
-                    let error_msg = format!("Client [{}] ({}) - {}", client, sus_msg, err_msg);
-                    results.push(Log::new(LogType::, module, message))
+                    let error_msg = format!("Client [{}] - {}", client,  err_msg);
+                    results.push(Log::new(level, self_name.clone(), error_msg))
                 } 
                 
             }
