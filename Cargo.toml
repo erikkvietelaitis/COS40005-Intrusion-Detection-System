@@ -8,6 +8,9 @@ edition = "2021"
 [dependencies]
 #testing
 rand = "0.7.0"
+#Core
+colored="2.1.0"
+clap = { version = "4.0", features = ["derive"] }
 
 #System Info
 chrono = "0.4"
