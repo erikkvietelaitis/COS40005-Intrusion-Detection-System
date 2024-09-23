@@ -5,7 +5,6 @@ use std::time::{Duration, Instant};
 use pnet::datalink;
 use pnet::packet::{Packet, ethernet::EthernetPacket};
 use pnet::packet::ipv4::Ipv4Packet;
-use pnet::packet::ipv6::Ipv6Packet;
 use pnet::packet::tcp::TcpPacket;
 use pnet::packet::udp::UdpPacket;
 use pnet::packet::ip::IpNextHeaderProtocols;
@@ -23,6 +22,7 @@ pub struct PacketSniffer {
     pub packets: Arc<Mutex<Vec<PacketData>>>, // Thread-safe storage for packets
     pub packet_threshold: usize, // Alert threshold for packet counts
     pub host_ip: Option<String>, // Host IP to exclude from alerts
+    pub has_errors: bool, // Flag to indicate configuration errors
 }
 
 /// Struct to hold packet data (source IP and port).
@@ -41,6 +41,7 @@ impl PacketSniffer {
             packets: Arc::new(Mutex::new(Vec::new())),
             packet_threshold,
             host_ip,
+            has_errors: false, // Initialize error flag
         }
     }
 
@@ -88,8 +89,6 @@ impl PacketSniffer {
                             _ => {},
                         }
                         packet_data.source_ip = Some(ipv4.get_source().to_string());
-                    } else if let Some(ipv6) = Ipv6Packet::new(ip_payload) {
-                        // Handle IPv6 payloads if necessary (not implemented)
                     }
 
                     // Store captured packet data
@@ -154,6 +153,11 @@ impl PacketSniffer {
 
 impl AnalysisModule for PacketSniffer {
     fn get_data(&mut self) -> bool {
+        if self.has_errors {
+            println!("Configuration has errors. PacketSniffer will not run.");
+            return false; // Early exit if there are configuration errors
+        }
+
         let duration = Duration::from_secs(5); // Capture packets for 5 seconds
         let sniffer = Arc::new(self.clone());
         let sniffer_clone = Arc::clone(&sniffer);
@@ -190,28 +194,74 @@ impl AnalysisModule for PacketSniffer {
         vec![
             ConfigField::new("InterfaceName[]".to_owned(), "Network interface to capture packets from. Example: enp0s3, wlan0, eth0".to_owned(), ConfigFieldType::String, network_interfaces, true),
             ConfigField::new("PacketThreshold".to_owned(), "Number of packets that triggers an alert. Example: 10, 50, 200".to_owned(), ConfigFieldType::Integer, packet_thresholds, true),
-            ConfigField::new("HostIP".to_owned(), "Host IP address to be exempted from alerts. Example: 192.168.1.100".to_owned(), ConfigFieldType::String, host_ip, false), // New field
+            ConfigField::new("HostIP".to_owned(), "Host IP address to be exempted from alerts. Example: 192.168.1.100".to_owned(), ConfigFieldType::String, host_ip, false),
         ]
     }
 
     fn retrieve_config_data(&mut self, data: HashMap<String, Vec<String>>) -> bool {
+        self.has_errors = false; // Reset the error flag
+        let mut error_messages = Vec::new(); // Collect error messages
+
         for (field, vals) in data {
             match field.as_str() {
                 "InterfaceName[]" => {
                     self.interface_name = vals.get(0).cloned().unwrap_or_default();
                 }
                 "PacketThreshold" => {
-                    self.packet_threshold = vals.get(0)
-                        .and_then(|v| v.parse().ok())
-                        .unwrap_or(self.packet_threshold);
+                    if let Some(v) = vals.get(0) {
+                        match v.parse::<usize>() {
+                            Ok(threshold) => {
+                                self.packet_threshold = threshold;
+                            }
+                            Err(_) => {
+                                error_messages.push(format!("Error: PacketThreshold '{}' is not a valid number.", v));
+                                self.has_errors = true; // Set error flag
+                            }
+                        }
+                    } else {
+                        error_messages.push("Error: PacketThreshold is missing.".to_string());
+                        self.has_errors = true; // Set error flag
+                    }
                 }
                 "HostIP" => {
-                    self.host_ip = vals.get(0).cloned();
+                    let ip = vals.get(0).cloned();
+                    if let Some(ip_value) = &ip {
+                        if !ip_value.is_empty() {
+                            // Basic IP format check
+                            let segments: Vec<&str> = ip_value.split('.').collect();
+                            if segments.len() != 4 || segments.iter().any(|&s| s.parse::<u8>().is_err()) {
+                                error_messages.push(format!("Error: HostIP '{}' is invalid. It must be a valid IPv4 address.", ip_value));
+                                self.has_errors = true; // Set error flag
+                            }
+                        }
+                    }
+                    self.host_ip = ip;
                 }
                 _ => {}
             }
         }
-        true
+
+        // Check if the interface name is valid
+        let available_interfaces: HashSet<String> = datalink::interfaces()
+            .iter()
+            .map(|iface| iface.name.clone())
+            .collect();
+
+        if !available_interfaces.contains(&self.interface_name) {
+            error_messages.push(format!("Error: The specified interface '{}' does not exist.", self.interface_name));
+            self.has_errors = true; // Set error flag
+        }
+
+        // Print all error messages if there are any
+        if self.has_errors {
+            for msg in error_messages {
+                println!("{}", msg);
+            }
+            println!("Configuration has errors. Please fix them before starting.");
+            return false; // Prevent further execution if invalid
+        }
+
+        true // All checks passed
     }
 }
 
@@ -222,7 +272,8 @@ impl Default for PacketSniffer {
             interface_name: String::from("eth0"),
             packets: Arc::new(Mutex::new(Vec::new())),
             packet_threshold: 100, // Default threshold
-            host_ip: None, 
+            host_ip: None,
+            has_errors: false, // Initialize error flag
         }
     }
 }
@@ -235,6 +286,7 @@ impl Clone for PacketSniffer {
             packets: self.packets.clone(),
             packet_threshold: self.packet_threshold,
             host_ip: self.host_ip.clone(),
+            has_errors: self.has_errors, 
         }
     }
 }
