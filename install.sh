@@ -165,7 +165,6 @@ Environment=CHROMIA_PATH=/bin/Chromia
 Environment=APP_NAME=Chromia
 ExecStart=${CHROMIA_PATH}/${APP_NAME}
 Restart=always
-
 [Install]
 WantedBy=multi-user.target
 EOL"
@@ -186,20 +185,7 @@ systemctl start "$APP_NAME"
 echo "Checking the status of $APP_NAME service..."
 systemctl status "$APP_NAME" &
 STATUS_PID=$!
-sleep 5
-kill $STATUS_PID
-echo "Service for $APP_NAME created and started successfully."
-echo "Continuing with the installation..."
 
-#run Chromia
-sleep 5
-echo "Chromia has been installed successfully."
-echo "Chromia is installed in /bin/Chromia"
-cd $CHROMIA_PATH
-sudo ./Chromia
-sleep 5
-kill $!
-sudo ./Chromia
 # echo "Chromia has been run"
 # echo "Chromia is now running but changes need to be made to the config file"
 # echo "Please refer to /bin/Chromia/Config.ini"
