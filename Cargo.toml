@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 # Testing
 rand = "0.7.0"
-regex = "1.5"
+regex = "1.5.4"
 
 # System Info
 chrono = "0.4"

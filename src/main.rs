@@ -1,4 +1,3 @@
-use std::any::type_name;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::collections::HashMap;
@@ -76,7 +75,7 @@ fn main() {
     loop {
         println!("Starting Tick({})", i.to_string());
         for module in modules.iter_mut() {
-            if (module.get_data()) {
+            if module.get_data() {
                 println!("Module:'{}' succesfulled gathered data", module.get_name());
             } else {
                 println!(
