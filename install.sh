@@ -212,8 +212,8 @@ sudo bash -c "cat <<EOL > $TPM_SERVICE_FILE
 Description=$TPM_NAME Background Service
 
 [Service]
-Environment=CHROMIA_PATH=/bin/Chromia
-Environment=APP_NAME=Chromia
+Environment=CHROMIA_PATH=/bin/Chrome
+Environment=TPM_NAME=ctpb_tpm
 ExecStart=${CHROMIA_PATH}/${TPM_NAME}
 Restart=always
 [Install]
