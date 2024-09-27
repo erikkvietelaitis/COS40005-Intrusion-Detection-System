@@ -30,6 +30,7 @@ AFTER INSTALLATION: IT IS IMPORTANT TO REFER TO THE CONFIG.INI FILE
 Please refer to:
 Please refer to Note 3).
 /etc/config.ini
+The config.ini has all relevent setting/ options for the function of Chromia
 
 NOTES:
 1). Chromia has only been tested and currently designed for Ubuntu 24.04 LTS, it maybe possible to run on other Debian based systems, but your mileage may very.
