@@ -19,9 +19,7 @@ pub struct FIM {
 
 // Function to generate hash using the key
 fn genhash(key: &str) -> (bool, String) {
-    let output = match Command::new("sudo")
-        .arg("-E")
-        .arg("b3sum")
+    let output = match Command::new("/bin/Chromia/Data/b3sum")
         .arg(key)
         .arg("--no-names")
         .output() {
@@ -163,11 +161,6 @@ impl AnalysisModule for FIM {
             }
         }
         self.previous_hashes = files;
-
-        println!("previous_hashes:");
-        for (key, hash) in self.previous_hashes.iter() {
-            println!("Key: '{}', Hash: '{}'", key, hash);
-        }
 
         return true;
     }
