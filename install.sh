@@ -145,7 +145,6 @@ sudo mv ctpb_tpm /bin/Chromia
 # #remove CTPB IDS files
 sudo rm -rf /tmp/Chromia
 
-
 CHROMIA_PATH="/bin/Chromia"
 cd $CHROMIA_PATH
 
@@ -188,6 +187,52 @@ if [-f /etc/Chromia/config.ini]; then
 	echo "Existsing Config File Found! Starting Chromia"
 	sudo systemctl start Chromia;
 else
+
+
+
+### Crating a .service file for TPM
+# Extract the application name
+TPM_NAME= "ctpb_tpm"
+
+cd $CHROMIA_PATH
+if [ ! -f "$TPM_NAME" ]; then
+    echo "Error: Application not found at the specified path: $CHROMIA_PATH"
+    exit 1
+fi
+
+# Create the .service file path
+echo "Creating the .service file path..."
+TPM_SERVICE_FILE="/etc/systemd/system/${TPM_NAME}.service"
+
+# Create the .service file
+echo "Creating systemd service file at $TPM_SERVICE_FILE"
+
+sudo bash -c "cat <<EOL > $TPM_SERVICE_FILE
+[Unit]
+Description=$TPM_NAME Background Service
+
+[Service]
+Environment=CHROMIA_PATH=/bin/Chromia
+Environment=APP_NAME=Chromia
+ExecStart=${CHROMIA_PATH}/${TPM_NAME}
+Restart=always
+[Install]
+WantedBy=multi-user.target
+EOL"
+
+# Reload systemd to recognize the new service
+echo "Reloading systemd daemon..."
+systemctl daemon-reload
+
+# Enable the service to start on boot
+echo "Enabling the $TPM_NAME service..."
+systemctl enable "$TPM_NAME"
+if [-f /etc/Chromia/config.ini]; then
+	echo "Existsing Config File Found! Starting Chromia"
+	sudo systemctl start Chromia;
+else
+
+
 sudo /bin/Chromia/Chromia
 echo ""
 echo ""
