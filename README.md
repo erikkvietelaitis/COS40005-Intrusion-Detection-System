@@ -26,10 +26,17 @@ rust packages
 
 The install script will also have to create directries for installation + Notes 2). as to ensure that the service runs to the best that we can provide.
 
+AFTER INSTALLATION: IT IS IMPORTANT TO REFER TO THE CONFIG.INI FILE
+Please refer to:
+Please refer to Note 3).
+/etc/config.ini
+
 NOTES:
 1). Chromia has only been tested and currently designed for Ubuntu 24.04 LTS, it maybe possible to run on other Debian based systems, but your mileage may very.
 
 2). For Chromia to work we have to make two .service files as part of the install script. these are to help insure that Chromia remains active when closed as well as also restart after the Host device has been reset.
+
+3). Chromia may run and print logs but may not work properly as all files may not be properly configured
 
 >
 
