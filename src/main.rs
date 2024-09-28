@@ -7,12 +7,11 @@ use std::path::Path;
 use std::vec;
 
 use std::{thread, time};
-//use system::{system_uptime, system_user};
 use lara_core::core_traits::AnalysisModule;
 
 use crate::lara_core::core_structs::*;
 pub mod analysis_modules;
-use crate::linux_bridge::system;
+use crate::linux_bridge::*;
 pub mod lara_core;
 pub mod linux_bridge;
 
@@ -53,6 +52,8 @@ fn main() {
     let mut modules: Vec<Box<dyn AnalysisModule>>;
     // ADD NEW MODULES HERE \|/ use example module's exact structure
     modules = vec![
+        Box::new(<analysis_modules::example::Example as std::default::Default>::default()),
+        Box::new(<analysis_modules::anomaly_detection::AnomalyDetector as std::default::Default>::default()),
         Box::new(<analysis_modules::fim::FIM as std::default::Default>::default()),
         Box::new(<analysis_modules::network::Networking as std::default::Default>::default()),
         Box::new(<analysis_modules::authentication::Authentication as std::default::Default>::default()),
@@ -92,6 +93,7 @@ fn main() {
     let mut i = 0;
     println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT!!");
     println!("------------------(Real Time alerts)------------------");
+
     loop {
         if debug {
             println!("Starting Tick({})", i.to_string());

@@ -114,6 +114,7 @@ pub fn read_csv(path: String) -> io::Result<HashMap<String,HashMap<String,Vec<St
 }
 
 
+
 // Function to write to a file, with a path and content to a prespecified file path based on another functions declaration.
 pub fn sys_file_write(filepath: &str, content: &str) -> io::Result<()> {
     let mut file = File::create(filepath)?;
@@ -137,6 +138,34 @@ pub fn file_write() {
         }
     }
 }
+
+
+
+use std::process::Command;
+//Function to call CPU usage directly from the top command, and return the CPU usage as a string.
+pub fn cpu_usage() -> String {
+    let output = Command::new("top")
+        .output()
+        .expect("Failed to execute command");
+    let last = String::from_utf8_lossy(&output.stdout);
+    return last.to_string();
+}
+
+
+// //Function to call memory usage from the sysinfo crate, and return the memory usage as a string.
+// pub fn memory_usage() -> String {
+//     let system = System::new_all();
+//     let memory = system.used_memory();
+//     return format!("Memory Usage: {} KB", memory);
+// }
+
+// //Function to call disk usage from the sysinfo crate, and return the disk usage as a string.
+// pub fn disk_usage() -> String {
+//     let system = System::new_all();
+//     let disk = system.used_memory();
+//     return format!("Disk Usage: {} KB", disk);
+// }
+
 
 
 

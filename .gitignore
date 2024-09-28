@@ -9,4 +9,5 @@ target/
 # More information here https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html
 # for erik testing I think?
 src/hot_code/hot_code
+Cargo.lock
 *.lock
