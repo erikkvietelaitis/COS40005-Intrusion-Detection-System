@@ -81,7 +81,8 @@
 ## About The Project
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
-Chromia ws created by student attedning at Swinburne University as part of there final year project:
+Students where asked by BadSecurity Inc to develop a Host Based Intrustion Detection System. We where tasked to do the reuqired reasurch and determine the best means of development.
+Chromia was created by student attedning at Swinburne University as part of there final year project:
 Students include:
 [![GitHub username](https://img.shields.io/badge/GitHub-Ben-blue?style=for-the-badge&logo=github)](https://github.com/brokenpip)
 [![GitHub username](https://img.shields.io/badge/GitHub-Lachlan-blue?style=for-the-badge&logo=github)](https://github.com/DoctorLock)
@@ -89,7 +90,6 @@ Students include:
 [![GitHub username](https://img.shields.io/badge/GitHub-Sam-blue?style=for-the-badge&logo=github)](https://github.com/samsharma12)
 [![GitHub username](https://img.shields.io/badge/GitHub-Simon-blue?style=for-the-badge&logo=github)](https://github.com/SimonPH2)
 [![GitHub username](https://img.shields.io/badge/GitHub-Sean-blue?style=for-the-badge&logo=github)](https://github.com/stackingheaps)
-Students where asked by BadSecurity Inc to develop a Host Based Intrustion Detection System. We where tasked to do the reuqired reasurch and determine the best means of development.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
