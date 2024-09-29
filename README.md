@@ -37,7 +37,7 @@
 <h3 align="center">Chromia Hostbased IDS</h3>
 
   <p align="center">
-    Design a host-based intrusion detection system that can detect, monitor and alert on malicious activity or attacks on a linux-based webserver.
+    A host-based intrusion detection system that can detect, monitor and alert on malicious activity or attacks on a linux-based webserver.
     <br />
     <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
     <br />
