@@ -237,4 +237,3 @@ sudo /bin/Chromia/Chromia
 echo ""
 echo ""
 echo -e "${COLOR_RED} ${TEXT_BOLD}Config File created at '/etc/Chromia/config.ini', please edit this and then run 'sudo systemctl start Chromia', or restart your PC"
-fi
