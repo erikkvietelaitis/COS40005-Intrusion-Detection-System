@@ -1,6 +1,4 @@
 #!/bin/bash
-CHROMIA_PAT="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"
-TPM_PAT="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"
 USER_HOME="/home/$USER_NAME"
 
 # Define color codes
@@ -115,7 +113,7 @@ else
 fi
 
 #git clone Chromia
-git clone https://erikkvietelaitis:$CHROMIA_PAT@github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git /tmp/Chromia/IDS
+git clone https://github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git /tmp/Chromia/IDS
 
 #build Chromia
 cd /tmp/Chromia/IDS
@@ -131,7 +129,7 @@ sudo mkdir -p /bin/Chromia/Data
 sudo cp ~/.cargo/bin/b3sum /bin/Chromia/Data
 
 # Git clone CTPB IDS
-git clone https:///brokenpip:$TPM_PAT@github.com/brokenpip/ctpb_ids.git /tmp/Chromia/TPM
+git clone https:///github.com/brokenpip/ctpb_ids.git /tmp/Chromia/TPM
 
 
 # Build CTPB IDS
