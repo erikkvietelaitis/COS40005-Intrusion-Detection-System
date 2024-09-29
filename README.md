@@ -2,45 +2,6 @@
 
 Design a host-based intrusion detection system that can detect, monitor and alert on malicious activity or attacks on a linux-based webserver.
 
-<!--INSTALLING CHROMIA HOST BASED IDS -->
-
-Users that want to try Chromia Host Based IDS will have to download via GitHub the install.sh script. This script will work to install all required dependences as well as create the required software.
-
-Once cloned from GitHub using
-git clone and the Github link
-
-You will need to install Chromia.
-Please refer to NOTE 1). Chromia has a limited install distrubtion and has limited testing, please submit report bugs realted to the Guthub repo for further assesment, but at this time development has no plans for expanding to other distros.
-
-Installation can be completed via changing to the directory where Chromia was installed and then run:
-chmod +x install.sh Making the script exacutable
-./install.sh Installing the excutable script
-
-Chromia will install 3rd party depndecies as part of the install process as so it can function this can include:
-git
-net-tools
-curl
-rust
-rust packages
--B3Sum
-
-The install script will also have to create directries for installation + Notes 2). as to ensure that the service runs to the best that we can provide.
-
-AFTER INSTALLATION: IT IS IMPORTANT TO REFER TO THE CONFIG.INI FILE
-Please refer to:
-Please refer to Note 3).
-/etc/config.ini
-The config.ini has all relevent setting/ options for the function of Chromia
-
-NOTES:
-1). Chromia has only been tested and currently designed for Ubuntu 24.04 LTS, it maybe possible to run on other Debian based systems, but your mileage may very.
-
-2). For Chromia to work we have to make two .service files as part of the install script. these are to help insure that Chromia remains active when closed as well as also restart after the Host device has been reset.
-
-3). Chromia may run and print logs but may not work properly as all files may not be properly configured
-
->
-
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 
 <a name="readme-top"></a>
@@ -137,6 +98,55 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 <!-- GETTING STARTED -->
 
 ## Getting Started
+
+<!--INSTALLING CHROMIA HOST BASED IDS -->
+
+Users that want to try Chromia Host Based IDS will have to download via GitHub the install.sh script. This script will work to install all required dependences as well as create the required software.
+
+Once cloned from GitHub using
+git clone and the Github link
+
+You will need to install Chromia.
+Chromia has a limited install distrubtion[^1] and has limited testing, please submit report bugs realted to the Guthub Repo for further assesment, but at this time development has no plans for expanding to other distros.
+
+Installation can be completed via changing to the directory where Chromia was installed and then run:
+chmod +x install.sh Making the script exacutable
+./install.sh Installing the excutable script
+
+Chromia will install 3rd party depndecies as part of the install process as so it can function this can include:
+git
+net-tools
+curl
+rust
+rust packages
+-B3Sum
+
+The install script will also have to create directries for installation[^2]. as to ensure that the service runs to the best that we can provide.
+
+AFTER INSTALLATION: IT IS IMPORTANT TO REFER TO THE CONFIG.INI FILE[^3]
+Please refer to:
+Please refer to
+/etc/config.ini
+The config.ini has all relevent setting/ options for the function of Chromia
+
+NOTES:
+[^1]: Chromia has only been tested and currently designed for Ubuntu 24.04 LTS, it maybe possible to run on other Debian based systems, but your mileage may very.
+
+[^2]: For Chromia to work we have to make two .service files as part of the install script. these are to help insure that Chromia remains active when closed as well as also restart after the Host device has been reset.
+
+[^3]: Chromia may run and print logs but may not work properly as all files may not be properly configured
+
+
+
+
+
+
+
+
+
+
+
+
 
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
