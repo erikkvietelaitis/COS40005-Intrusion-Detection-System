@@ -213,7 +213,7 @@ echo "Enabling the ctpb_tpm service..."
 systemctl enable "ctpb_tpm"
 echo "Enabling the $APP_NAME service..."
 systemctl enable "$APP_NAME"
-if [-f /etc/Chromia/config.ini]; then
+if [ -f /etc/Chromia/config.ini]; then
 	echo "Existsing Config File Found! Starting Chromia"
 	sudo systemctl start Chromia;
 else
