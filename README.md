@@ -1,7 +1,4 @@
 # COS40005-Intrusion-Detection-System
-
-Design a host-based intrusion detection system that can detect, monitor and alert on malicious activity or attacks on a linux-based webserver.
-
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 
 <a name="readme-top"></a>
@@ -37,10 +34,10 @@ Design a host-based intrusion detection system that can detect, monitor and aler
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">project_title</h3>
+<h3 align="center">Chromia Hostbased IDS</h3>
 
   <p align="center">
-    project_description
+    Design a host-based intrusion detection system that can detect, monitor and alert on malicious activity or attacks on a linux-based webserver.
     <br />
     <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
     <br />
