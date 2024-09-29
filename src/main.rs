@@ -5,7 +5,7 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;
 use std::vec;
-
+use std::fs::File;
 use lara_core::core_traits::AnalysisModule;
 use std::{thread, time};
 
