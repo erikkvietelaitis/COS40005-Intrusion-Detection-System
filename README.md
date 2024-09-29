@@ -100,15 +100,16 @@ Students include:
 <!-- GETTING STARTED -->
 
 ## Getting Started
+### Prerequisites
+Users that want to try Chromia Host Based IDS will have to download via GitHub the install.sh script. This script will work to install all required dependences as well as create the required software.
+This can be completed via downlaoding the script via:
+
+
+
+Once the install script is download 
 
 <!--INSTALLING CHROMIA HOST BASED IDS -->
-
-Users that want to try Chromia Host Based IDS will have to download via GitHub the install.sh script. This script will work to install all required dependences as well as create the required software.
-
-Once cloned from GitHub using
-git clone and the Github link
-
-You will need to install Chromia.
+You will need to install Chromia via the install.sh scripte
 Chromia has a limited install distrubtion[^1] and has limited testing, please submit report bugs realted to the Guthub Repo for further assesment, but at this time development has no plans for expanding to other distros.
 
 Installation can be completed via changing to the directory where Chromia was installed and then run:
@@ -141,6 +142,14 @@ NOTES:
 
 
 
+Once cloned from GitHub using
+git clone and the Github link
+
+
+
+
+
+
 
 
 
@@ -152,8 +161,6 @@ NOTES:
 
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
-
-### Prerequisites
 
 This is an example of how to list things you need to use the software and how to install them.
 
