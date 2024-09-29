@@ -4,6 +4,7 @@ use std::fs;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;
+use std::time::Duration;
 use std::vec;
 use std::fs::File;
 use lara_core::core_traits::AnalysisModule;
@@ -74,8 +75,8 @@ fn main() {
     println!("Successfully found config file!");
     // load core info
     let mut core_fields_default: HashMap<String, Vec<String>> = HashMap::new();
-    core_fields_default["tickInterval"] = vec!["1000".to_owned()];
-    core_fields_default["logLocation"] = vec!["/var/log/Chormia.log".to_owned()];
+    core_fields_default.insert("tickInterval".to_owned(),vec!["1000".to_owned()]);
+    core_fields_default.insert("logLocation".to_owned(), vec!["/var/log/Chormia.log".to_owned()]);
 
     let core_fields: HashMap<String, Vec<String>> = match config.get("CoreSystem") {
         Some(s) => s.clone(),
@@ -85,26 +86,24 @@ fn main() {
         .get("tickInterval")
         .unwrap_or(core_fields_default.get("tickInterval").unwrap());
 
-    let tick_intervals = time::Duration::from_millis(
-        Some(tick_interval_str.parse::<i32>()).unwrap_or(
-            core_fields_default
-                .get("tickInterval")
-                .unwrap()
-                .parse::<i32>(),
-        ),
-    );
-    let log_dir =  Path::new(core_fields.get("logLocation").unwrap_or(core_fields_default.get("logLocation").unwrap()));
+    let binding = tick_interval_str[0].parse::<u64>();
+    let tick_int_u = match &binding{
+        Ok(number) => number,
+        Err(_) => &1000
+    };
+    let tick_intervals = Duration::from_millis(*tick_int_u);
+    let log_dir_str = core_fields.get("logLocation").unwrap_or(core_fields_default.get("logLocation").unwrap());
+    let log_dir =  Path::new(&log_dir_str[0]);
     if log_dir.exists() {
-        println!("Log File found at dir '{}'",log_dir);
+        println!("Log File found at dir '{}'",log_dir_str[0]);
     } else {
-        println!("Log File dir '{}' does not exist, creating now.", log_dir);
-        match File::create(path) {
+        println!("Log File dir '{}' does not exist, creating now.", log_dir_str[0]);
+        match File::create(log_dir_str[0].clone()) {
             Ok(mut file) => {
-                println!("Log file at '{}' created successfully.", log_dir);
+                println!("Log file at '{}' created successfully.", log_dir_str[0]);
             }
             Err(err) => {
-                eprintln!("Error creating log '{}': {:?}", log_dir, err);
-                return Err(err); 
+                eprintln!("Error creating log '{}': {:?}", log_dir_str[0], err);
             }
         }
     }
@@ -156,7 +155,7 @@ fn main() {
             if debug {
                 println!("{}", log.build_alert());
             }
-            let _ = append_to_log(&log.build_alert(),log_dir);
+            let _ = append_to_log(&log.build_alert(),&log_dir);
         }
         logs = Vec::new();
         i += 1;
@@ -203,7 +202,7 @@ fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
     }
     return;
 }
-fn append_to_log(message: &str, log_dir: Path) -> std::io::Result<()> {
+fn append_to_log(message: &str, log_dir: &Path) -> std::io::Result<()> {
     let mut file = OpenOptions::new()
         .write(true)
         .append(true)
