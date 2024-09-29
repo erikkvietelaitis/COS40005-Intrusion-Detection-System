@@ -1,13 +1,13 @@
+use clap::Parser;
 use std::collections::HashMap;
+use std::fs;
 use std::fs::OpenOptions;
 use std::io::Write;
-use clap::Parser;
-use std::fs;
 use std::path::Path;
 use std::vec;
 
-use std::{thread, time};
 use lara_core::core_traits::AnalysisModule;
+use std::{thread, time};
 
 use crate::lara_core::core_structs::*;
 pub mod analysis_modules;
@@ -41,9 +41,7 @@ fn main() {
         println!("=======================================");
         println!("Initializing Core systems:");
     }
-    // Should be loaded by configuration. Higher number means lower performance impact of the IDS
-    let tick_intervals = time::Duration::from_millis(1000);
-    println!("Tick Interval: {}ms", tick_intervals.as_millis());
+
     println!("");
     if debug {
         println!("Initializing Analysis Modules:");
@@ -67,13 +65,52 @@ fn main() {
         return;
     }
 
-    let config_result = system::read_csv("/etc/Chromia/config.ini".to_owned());
+    let config_result: Result<HashMap<String, HashMap<String, Vec<String>>>, std::io::Error> =
+        system::read_csv("/etc/Chromia/config.ini".to_owned());
     let config = match config_result {
         Ok(file) => file,
         Err(error) => panic!("Problem opening the file: {error:?}"),
     };
     println!("Successfully found config file!");
-     modules.retain_mut(| module|{
+    // load core info
+    let mut core_fields_default: HashMap<String, Vec<String>> = HashMap::new();
+    core_fields_default["tickInterval"] = vec!["1000".to_owned()];
+    core_fields_default["logLocation"] = vec!["/var/log/Chormia.log".to_owned()];
+
+    let core_fields: HashMap<String, Vec<String>> = match config.get("CoreSystem") {
+        Some(s) => s.clone(),
+        None => core_fields_default.clone(),
+    };
+    let tick_interval_str = core_fields
+        .get("tickInterval")
+        .unwrap_or(core_fields_default.get("tickInterval").unwrap());
+
+    let tick_intervals = time::Duration::from_millis(
+        Some(tick_interval_str.parse::<i32>()).unwrap_or(
+            core_fields_default
+                .get("tickInterval")
+                .unwrap()
+                .parse::<i32>(),
+        ),
+    );
+    let log_dir =  Path::new(core_fields.get("logLocation").unwrap_or(core_fields_default.get("logLocation").unwrap()));
+    if log_dir.exists() {
+        println!("Log File found at dir '{}'",log_dir);
+    } else {
+        println!("Log File dir '{}' does not exist, creating now.", log_dir);
+        match File::create(path) {
+            Ok(mut file) => {
+                println!("Log file at '{}' created successfully.", log_dir);
+            }
+            Err(err) => {
+                eprintln!("Error creating log '{}': {:?}", log_dir, err);
+                return Err(err); 
+            }
+        }
+    }
+    // Should be loaded by configuration. Higher number means lower performance impact of the IDS
+    println!("Tick Interval: {}ms", tick_intervals.as_millis());
+    modules.retain_mut(| module|{
         let section: HashMap<String, Vec<String>>;
 
         section = match config.get(&module.get_name()) {
@@ -87,7 +124,6 @@ fn main() {
             return true;
         }
     });
-
 
     let mut logs: Vec<Log> = Vec::new();
     let mut i = 0;
@@ -120,8 +156,7 @@ fn main() {
             if debug {
                 println!("{}", log.build_alert());
             }
-            let _ = append_to_log(&log.build_alert());
-
+            let _ = append_to_log(&log.build_alert(),log_dir);
         }
         logs = Vec::new();
         i += 1;
@@ -135,12 +170,13 @@ fn section_not_found(name: String) -> HashMap<String, Vec<String>> {
     );
     return HashMap::new();
 }
+
 fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
     println!("Could not find config file; Creating configuration file now");
     let mut config_file_contents: String = String::new();
     let mut fields: Vec<ConfigField>;
     //Define core system fields
-    config_file_contents.push_str("[CoreSystem]\n;The time in milliseconds that the systems waits between checks \n;Higher numbers reduce performance impact and timeliness of alerts\ntickInterval=1000\n");
+    config_file_contents.push_str("[CoreSystem]\n;The time in milliseconds that the systems waits between checks \n;Higher numbers reduce performance impact and timeliness of alerts\ntickInterval=1000\n;Location to write log file\nlogLocation");
     for module in modules.iter_mut() {
         config_file_contents.push_str("[");
         config_file_contents.push_str(&module.get_name());
@@ -167,12 +203,12 @@ fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
     }
     return;
 }
-fn append_to_log(message: &str) -> std::io::Result<()> {
+fn append_to_log(message: &str, log_dir: Path) -> std::io::Result<()> {
     let mut file = OpenOptions::new()
         .write(true)
         .append(true)
         .create(true) // This will create the file if it doesn't exist
-        .open("/var/log/Chormia.log")?;
+        .open(log_dir)?;
 
     writeln!(file, "{}", message)?; // Write the message and append a newline
     Ok(())
