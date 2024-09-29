@@ -175,7 +175,7 @@ fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
     let mut config_file_contents: String = String::new();
     let mut fields: Vec<ConfigField>;
     //Define core system fields
-    config_file_contents.push_str("[CoreSystem]\n;The time in milliseconds that the systems waits between checks \n;Higher numbers reduce performance impact and timeliness of alerts\ntickInterval=1000\n;Location to write log file\nlogLocation=/var/log/Chormia.log");
+    config_file_contents.push_str("[CoreSystem]\n;The time in milliseconds that the systems waits between checks \n;Higher numbers reduce performance impact and timeliness of alerts\ntickInterval=1000\n;Location to write log file\nlogLocation=/var/log/Chormia.log\n");
     for module in modules.iter_mut() {
         config_file_contents.push_str("[");
         config_file_contents.push_str(&module.get_name());
