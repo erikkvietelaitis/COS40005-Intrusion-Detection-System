@@ -105,7 +105,9 @@ Students include:
 Users that want to try Chromia Host Based IDS will have to download via GitHub the install.sh script. This script will work to install all required dependences as well as create the required software.
 This can be completed via downlaoding the script via:
 <br>
-[![Download Install Script](https://img.shields.io/badge/Download%20Install%20Script-blue?style=for-the-badge)](https://raw.githubusercontent.com/erikkvietelaitis/COS40005-Intrusion-Detection-System/readme/install.sh?raw=true)
+<a href="https://raw.githubusercontent.com/erikkvietelaitis/COS40005-Intrusion-Detection-System/readme/install.sh?raw=true" download>
+  <img src="https://img.shields.io/badge/Download%20Install%20Script-blue?style=for-the-badge" alt="Download Install Script">
+</a>
 
 
 Once the install script is download 
