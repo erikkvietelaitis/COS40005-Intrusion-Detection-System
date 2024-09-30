@@ -136,8 +136,11 @@ In the installation process you maybe asked to install rust we recommend to selc
 You maybe prompted in the install process to enter your password, this is to build, start, and reload the systemd services[^2]. If you dont enter your passowrd it could cause the system to not install properlly or have complications in the installation process 
 
 AFTER INSTALLATION: IT IS IMPORTANT TO REFER TO THE CONFIG.INI FILE[^3]
+
 Please refer to
+
 /etc/config.ini
+
 The config.ini has all relevent setting/ options for the function of Chromia
 
 NOTES:
