@@ -33,4 +33,7 @@ version = "0.35.0"
 # New dependencies for AnomalyDetector
 colored = "2.0"
 audit = "0.3"
+#fim
+dirhash = "0.2.0"
+
 
