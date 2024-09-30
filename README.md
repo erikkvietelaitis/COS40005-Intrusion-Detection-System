@@ -101,37 +101,41 @@ Students include:
 <!-- GETTING STARTED -->
 
 ## Getting Started
+Chromia has a limited install distrubtion[^1] and has limited testing, please submit report bugs realted to the Guthub Repo for further assesment, but at this time development has no plans for expanding to other distros.
 ### Prerequisites
 Users that want to try Chromia Host Based IDS will have to download via GitHub the install.sh script. This script will work to install all required dependences as well as create the required software.
 This can be completed via downlaoding the script via:
+Chromia will install 3rd party depndecies as part of the install process as so it can function this can include:
+- git
+- net-tools
+- curl
+- rust
+- rust packages
+- B3Sum
+
+The install script will also have to create directries and severvice files for installation[^2]. as to ensure that the service runs to the best that we can provide.
 <br>
 <a href="https://raw.githubusercontent.com/erikkvietelaitis/COS40005-Intrusion-Detection-System/readme/install.sh" download="install.sh">
   <img src="https://img.shields.io/badge/Download%20Install%20Script-blue?style=for-the-badge" alt="Download Install Script">
 </a>
+<br>
+This will open a "raw" view of the install.sh script allowing you to audit it.
+Once happy right click on the raw install.sh code and Save As.
+Save the install.sh in any directory.
 
+###Installation
 
-Once the install script is download 
+Once the install script is downloaded 
+Installation can be completed via changing to the directory where the install.sh script was installed and then run:
+```
+chmod +x     #Install.sh Making the script exacutable
+sudo ./install.sh #Installing the excutable script
+```
+In the installation process you maybe asked to install rust we recommend to selcet option 1 as this is the simplest install path that is known not to break the rust install process
 
-<!--INSTALLING CHROMIA HOST BASED IDS -->
-You will need to install Chromia via the install.sh scripte
-Chromia has a limited install distrubtion[^1] and has limited testing, please submit report bugs realted to the Guthub Repo for further assesment, but at this time development has no plans for expanding to other distros.
-
-Installation can be completed via changing to the directory where Chromia was installed and then run:
-chmod +x install.sh Making the script exacutable
-./install.sh Installing the excutable script
-
-Chromia will install 3rd party depndecies as part of the install process as so it can function this can include:
-git
-net-tools
-curl
-rust
-rust packages
--B3Sum
-
-The install script will also have to create directries for installation[^2]. as to ensure that the service runs to the best that we can provide.
+You maybe prompted in the install process to enter your password, this is to build, start, and reload the systemd services[^2]. If you dont enter your passowrd it could cause the system to not install properlly or have complications in the installation process 
 
 AFTER INSTALLATION: IT IS IMPORTANT TO REFER TO THE CONFIG.INI FILE[^3]
-Please refer to:
 Please refer to
 /etc/config.ini
 The config.ini has all relevent setting/ options for the function of Chromia
@@ -142,64 +146,6 @@ NOTES:
 [^2]: For Chromia to work we have to make two .service files as part of the install script. these are to help insure that Chromia remains active when closed as well as also restart after the Host device has been reset.
 
 [^3]: Chromia may run and print logs but may not work properly as all files may not be properly configured
-
-
-
-
-Once cloned from GitHub using
-git clone and the Github link
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
-
-This is an example of how to list things you need to use the software and how to install them.
-
-- npm
-  ```sh
-  npm install npm@latest -g
-  ```
-
-### Installation
-
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/github_username/repo_name.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = "ENTER YOUR API";
-   ```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- USAGE EXAMPLES -->
-
-## Usage
-
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ROADMAP -->
 
@@ -236,16 +182,6 @@ Don't forget to give the project a star! Thanks again!
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- CONTACT -->
-
-## Contact
-
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
-
-Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
