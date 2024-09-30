@@ -128,8 +128,8 @@ Save the install.sh in any directory.
 Once the install script is downloaded 
 Installation can be completed via changing to the directory where the install.sh script was installed and then run:
 ```
-chmod +x     #Install.sh Making the script exacutable
-sudo ./install.sh #Installing the excutable script
+chmod +x install.sh   #Making the script exacutable
+sudo ./install.sh     #Installing the excutable script
 ```
 In the installation process you maybe asked to install rust we recommend to selcet option 1 as this is the simplest install path that is known not to break the rust install process
 
