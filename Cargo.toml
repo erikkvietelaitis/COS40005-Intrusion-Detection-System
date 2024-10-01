@@ -22,7 +22,7 @@ notify = "5.1"
 dirs = "4.0"
 dirhash = "0.2.0"
 # New dependencies for AnomalyDetector
-colored = "2.0"
+
 audit = "0.3"
 
 # Networking
