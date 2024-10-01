@@ -18,7 +18,7 @@ nix = "0.23.0"
 byteorder = "1.4"
 whoami = "1.2"
 users = "0.11"
-notify = "5.1" 
+notify = "5.0.0"
 dirs = "4.0"
 dirhash = "0.2.0"
 # New dependencies for AnomalyDetector
@@ -36,3 +36,6 @@ version = "0.35.0"
 
 
 
+[[bin]]
+name = "test_anomaly_detector"
+path = "src/bin/test_anomaly_detector.rs"
