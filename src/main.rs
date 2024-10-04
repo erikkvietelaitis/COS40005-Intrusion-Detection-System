@@ -43,6 +43,84 @@ fn main() {
         println!("Initializing Core systems:");
     }
 
+    let ids_bootlogpath = "/var/log/ironids.log";
+    let tpm_folder_a = "/var/chromia";
+    let tpm_folder_p = "/var/chromia/ids";
+    let _ = append_to_log(&tpm_folder_a,ids_bootlogpath);
+    let fpath = Path::new(tpm_folder_a);
+    if !fpath.exists() {
+        // Create the folder
+        match fs::create_dir(fpath) {
+            Ok(_) => {
+                append_to_log(&format!("Directory created successfully."),ids_bootlogpath);
+                let fpath2 = Path::new(tpm_folder_p);
+                match fs::create_dir(fpath2) {
+                    Ok(_) => {
+                        append_to_log(&format!("Directory created successfully."),ids_bootlogpath);
+                    }
+                    Err(e) => append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath),
+                }
+            }
+            Err(e) => append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath),
+        }
+    } else {
+        println!("Folder already exists.");
+        let fpath = Path::new(tpm_folder_p);
+        if !fpath.exists() {
+            // Create the folder
+            match fs::create_dir(fpath) {
+                Ok(_) => {
+                    append_to_log(&format!("Directory created successfully."),ids_bootlogpath);
+                    let fpath2 = Path::new(tpm_folder_p);
+                    match fs::create_dir(fpath2) {
+                        Ok(_) => {
+                            append_to_log(&format!("Directory created successfully."),ids_bootlogpath);
+                        }
+                        Err(e) => append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath),
+                    }
+                }
+                Err(e) => append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath),
+            }
+        } else {
+            append_to_log(&format!("Folder already exists."),ids_bootlogpath);
+            
+        }
+    }
+
+    let tick = time::Duration::from_millis(1000);
+    let debug = false;
+    let target_pid = process::id();
+    let lock_path = format!("/var/chromia/ids/{}",target_pid.to_string());
+    append_to_log(&format!("{}",lock_path.to_string()),ids_bootlogpath); //debug use
+
+    // 1 - see if any remnants exist
+    let (lca, lcb) = lock_check(&target_pid);
+
+    if !lca {
+        append_to_log(&format!("Previous shutdown improper!! ID of {} was found", lcb),ids_bootlogpath);
+    } else {
+        let _ = File::create(&lock_path);
+        if file_check(&lock_path) {
+            append_to_log(&format!("Lock file created."),ids_bootlogpath) // to log
+        }
+    }
+
+    
+ 
+    
+    // confirm hash of TPM code
+    let tpm_path = "/bin/Chromia/ctpb_tpm";
+   
+    let (bbo, exec_hash) = genhash(&tpm_path);
+    if bbo {
+        append_to_log(&format!("Hash: '{}'", exec_hash.trim()),ids_bootlogpath);
+        if exec_hash.trim() == "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262".to_string() {
+            append_to_log(&format!("No tamper found for TPM."),ids_bootlogpath);
+        } else {
+            append_to_log(&format!("Hash for TPM not matching."),ids_bootlogpath);
+        }
+    }
+
     println!("");
     if debug {
         println!("Initializing Analysis Modules:");

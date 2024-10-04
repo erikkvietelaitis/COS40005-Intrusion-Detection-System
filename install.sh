@@ -119,7 +119,7 @@ else
 fi
 
 #git clone Chromia
-git clone https://github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git /tmp/Chromia/IDS
+git clone --branch mainpluslockfile https://github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git /tmp/Chromia/IDS
 
 #build Chromia
 cd /tmp/Chromia/IDS
@@ -135,7 +135,7 @@ sudo mkdir -p /bin/Chromia/Data
 sudo cp ~/.cargo/bin/b3sum /bin/Chromia/Data
 
 # Git clone CTPB IDS
-git clone https:///github.com/brokenpip/ctpb_ids.git /tmp/Chromia/TPM
+git clone https://github.com/brokenpip/ctpb_ids.git /tmp/Chromia/TPM
 
 
 # Build CTPB IDS
