@@ -206,7 +206,7 @@ impl AnalysisModule for FIM {
                     if new_hash != previous_hash {
                         // If hashes differ, create a log entry
                         let msg = format!(
-                            "File '{}' has been modified!",
+                            "Folder '{}' has been modified!",
                             filepath
                         );
                         eprintln!("Log: {}", msg); // Debug print for logs
@@ -236,8 +236,8 @@ impl AnalysisModule for FIM {
     }
     fn build_config_fields(&self) -> Vec<crate::ConfigField> {
         let fields:Vec<ConfigField> = vec![
-            ConfigField::new("files".to_owned(),"Files to be monitored for integrity violations, must be an absolute path".to_owned(),core_enums::ConfigFieldType::Integer,vec!["/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/config.ini".to_owned()], true),
-            ConfigField::new("folders".to_owned(),"Files to be monitored for integrity violations, must be an absolute path".to_owned(),core_enums::ConfigFieldType::Integer,vec!["/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/src".to_owned()], true)
+            ConfigField::new("files".to_owned(),"File to be monitored for integrity violations, must be an absolute path".to_owned(),core_enums::ConfigFieldType::Integer,vec!["/etc/Chromia/config.ini".to_owned()], true),
+            ConfigField::new("folders".to_owned(),"Folder to be monitored for integrity violations, must be an absolute path".to_owned(),core_enums::ConfigFieldType::Integer,vec!["/bin/Chromia".to_owned()], true)
         ];
         
         return fields;
