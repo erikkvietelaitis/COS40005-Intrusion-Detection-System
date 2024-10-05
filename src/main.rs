@@ -114,7 +114,7 @@ fn main() {
     let (bbo, exec_hash) = genhash(&tpm_path);
     if bbo {
         append_to_log(&format!("Hash: '{}'", exec_hash.trim()),ids_bootlogpath);
-        if exec_hash.trim() == "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262".to_string() {
+        if exec_hash.trim() == "4e0c3c94b1d2f7686a7115fcc74d80d5303874d86174ca3805972e2c99a7b799".to_string() {
             append_to_log(&format!("No tamper found for TPM."),ids_bootlogpath);
         } else {
             append_to_log(&format!("Hash for TPM not matching."),ids_bootlogpath);
