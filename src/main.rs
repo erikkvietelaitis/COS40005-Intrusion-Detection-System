@@ -309,7 +309,7 @@ fn lock_check(target_pid: &u32) -> (bool, u32) {
 }
 fn genhash(key: &str) -> (bool, String) {
     let ids_bootlogpath = Path::new("/var/log/ironids.log");
-    let _ = append_to_log(&ids_bootlogpath,ids_bootlogpath);
+    let _ = append_to_log("/var/log/ironids.log",ids_bootlogpath);
     let output = match Command::new("/bin/Chromia/Data/b3sum")
         .arg(key)
         .arg("--no-names")
