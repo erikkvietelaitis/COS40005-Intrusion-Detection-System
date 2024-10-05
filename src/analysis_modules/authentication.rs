@@ -323,7 +323,7 @@ mod tests {
         // Validate logs for new failed IP
         assert_eq!(logs.len(), 1);
         assert!(logs[0].message.contains("192.168.1.1"));
-        assert_eq!(logs[0].log_type, core_enums::LogType::Info);
+        assert!(logs[0].build_alert().contains("[Info]"));
     }
 
     #[test]
@@ -345,6 +345,6 @@ mod tests {
         // Validate logs for existing failed IP
         assert_eq!(logs.len(), 1);
         assert!(logs[0].message.contains("192.168.1.1"));
-        assert_eq!(logs[0].log_type, core_enums::LogType::Warning);
+        assert!(logs[0].build_alert().contains("[Contains]"));
     }
 }
