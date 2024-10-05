@@ -139,7 +139,7 @@ git clone https://github.com/brokenpip/ctpb_ids.git /tmp/Chromia/TPM
 
 
 # Build CTPB IDS
-cd /tmp/Chromia/TPM/ctpb_ids/ctpb_tpm
+cd /tmp/Chromia/TPM/ctpb_ids
 cargo build --release
 
 # Move CTPB IDS build to /bin

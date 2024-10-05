@@ -217,6 +217,24 @@ fn main() {
         if debug {
             println!("Starting Tick({})", i.to_string());
         }
+
+        let (lca, lcb) = lock_check(&target_pid);
+        if !lca {
+            append_to_log(&format!("IDS tampered with; ID of {} was found", lcb),ids_bootlogpath);
+            let trouble_path = format!("/var/chromia/ids/{}",lcb.to_string());
+            match fs::remove_file(&trouble_path) {
+                Ok(_) => append_to_log(&format!("File '{}' deleted successfully.", &lock_path),ids_bootlogpath),
+                Err(e) => append_to_log(&format!("Failed to delete file '{}': {}", &lock_path, e),ids_bootlogpath),
+            }
+        }
+        if lca && lcb == 0 {
+            append_to_log(&format!("IDS tampered with; lock_file deleted"),ids_bootlogpath);
+            let _ = File::create(&lock_path);
+            if file_check(&lock_path) {
+                append_to_log(&format!("Lock file created."),ids_bootlogpath); // to log
+            }
+        }
+
         for module in modules.iter_mut() {
             if module.get_data() {
                 if debug {
