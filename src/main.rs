@@ -64,7 +64,7 @@ fn main() {
                     Ok(_) => {
                         append_to_log(&format!("Directory created successfully."),ids_bootlogpath);
                     }
-                    Err(e) => append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath),
+                    Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath).expect("directory creation to succeed")}
                 }
             }
             Err(e) => append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath),
@@ -82,7 +82,7 @@ fn main() {
                         Ok(_) => {
                             append_to_log(&format!("Directory created successfully."),ids_bootlogpath);
                         }
-                        Err(e) => append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath),
+                        Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath).expect("directory creation to succeed")}
                     }
                 }
                 Err(e) => append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath),
@@ -107,7 +107,7 @@ fn main() {
     } else {
         let _ = File::create(&lock_path);
         if file_check(&lock_path) {
-            append_to_log(&format!("Lock file created."),ids_bootlogpath) // to log
+            append_to_log(&format!("Lock file created."),ids_bootlogpath); // to log
         }
     }
 
