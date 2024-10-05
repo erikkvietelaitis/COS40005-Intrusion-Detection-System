@@ -333,7 +333,7 @@ mod tests {
 
     #[test]
     fn test_genhash_success() {
-        let test_file = "/tmp/test_file.txt";
+        let test_file = "./test_file.txt";
         create_temp_file_with_content(test_file, "Test content");
 
         let (success, hash) = genhash(test_file);
@@ -356,8 +356,8 @@ mod tests {
     #[test]
     fn test_update_section_files() {
         let mut previous_hashes_files = HashMap::new();
-        let mut new_hashes_files = HashMap::new();
-        let test_file = "/tmp/test_file.txt";
+        let mut new_hashes_files: HashMap<String, String> = HashMap::new();
+        let test_file = "./test_file.txt";
         create_temp_file_with_content(test_file, "Test content");
 
         previous_hashes_files.insert(test_file.to_string(), String::new());

@@ -345,6 +345,6 @@ mod tests {
         // Validate logs for existing failed IP
         assert_eq!(logs.len(), 1);
         assert!(logs[0].message.contains("192.168.1.1"));
-        assert!(logs[0].build_alert().contains("[Contains]"));
+        assert!(logs[0].build_alert().contains("[Warning]"));
     }
 }

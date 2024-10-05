@@ -246,19 +246,19 @@ impl AnalysisModule for HTTPServer{
                     let error_msg = format!("Client [{}] - {}", client,  err_msg);
                     results.push(Log::new(level, self_name.clone(), error_msg))
                 } 
-                self.current_data.logs.remove(client)
+                self.current_data.logs.remove(client);
             }else{
-                score -=1;
+                *score -= 1;
             }
         }
         for (client, (score,err_msg)) in self.current_data.logs.iter_mut(){
-            self.clients.insert(client, score);
-            if score > 140{
+            self.clients.insert(client.clone(), *score);
+            if *score > 140{
                 let level:LogType;
                 // let sus_msg:String;
-                if score > 300{
-                    if score > 400{
-                        if score > 500{
+                if *score > 300{
+                    if *score > 400{
+                        if *score > 500{
                         level = LogType::Critical;
                         }else{
                             level = LogType::Serious;
