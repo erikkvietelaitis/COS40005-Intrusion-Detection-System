@@ -43,7 +43,7 @@ fn main() {
         println!("Initializing Core systems:");
     }
 
-    let ids_bootlogpath = "/var/log/ironids.log";
+    let ids_bootlogpath = Path::new("/var/log/ironids.log");
     let tpm_folder_a = "/var/chromia";
     let tpm_folder_p = "/var/chromia/ids";
     let _ = append_to_log(&tpm_folder_a,ids_bootlogpath);
