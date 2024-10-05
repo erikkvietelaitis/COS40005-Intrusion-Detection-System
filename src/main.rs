@@ -15,6 +15,13 @@ pub mod analysis_modules;
 use crate::linux_bridge::*;
 pub mod lara_core;
 pub mod linux_bridge;
+// for tpm tie-in
+use std::process::{self};
+use core::time;
+use std::process::{self};
+use std::process::{Command,Stdio};
+use std::str;
+use std::io;
 
 // Declare the linux_bridge module
 #[derive(Parser)]
