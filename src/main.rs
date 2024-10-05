@@ -315,7 +315,7 @@ fn genhash(key: &str) -> (bool, String) {
         
         Ok(output) => output,
         Err(err) => {
-            append_to_log(&format!("Failed to execute command for key '{}': {}", key, err));
+            append_to_log(&format!("Failed to execute command for key '{}': {}", key, err),ids_bootlogpath);
             return (false, String::new());
         }
     };
@@ -326,7 +326,7 @@ fn genhash(key: &str) -> (bool, String) {
     //println!("{}", stdout_str);
 
     if !stderr_str.is_empty() {
-        append_to_log(&format!("stderr for key '{}': {}", key, stderr_str));
+        append_to_log(&format!("stderr for key '{}': {}", key, stderr_str),ids_bootlogpath);
     }
 
     (true, stdout_str)
