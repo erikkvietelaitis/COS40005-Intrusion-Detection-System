@@ -67,7 +67,7 @@ fn main() {
                     Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath).expect("directory creation to succeed")}
                 }
             }
-            Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath)}
+            Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath);}
         }
     } else {
         println!("Folder already exists.");
@@ -85,7 +85,7 @@ fn main() {
                         Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath).expect("directory creation to succeed")}
                     }
                 }
-                Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath)}
+                Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath);}
             }
         } else {
             append_to_log(&format!("Folder already exists."),ids_bootlogpath);
@@ -309,7 +309,7 @@ fn lock_check(target_pid: &u32) -> (bool, u32) {
 }
 fn genhash(key: &str) -> (bool, String) {
     let ids_bootlogpath = Path::new("/var/log/ironids.log");
-    let _ = append_to_log(&tpm_folder_a,ids_bootlogpath);
+    let _ = append_to_log(&ids_bootlogpath,ids_bootlogpath);
     let output = match Command::new("/bin/Chromia/Data/b3sum")
         .arg(key)
         .arg("--no-names")
