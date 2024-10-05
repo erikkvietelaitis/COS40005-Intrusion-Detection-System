@@ -128,7 +128,7 @@ fn main() {
     let mut i = 0;
     println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT!!");
     println!("------------------(Real Time alerts)------------------");
-
+    debug = true;
     loop {
         if debug {
             println!("Starting Tick({})", i.to_string());
