@@ -17,7 +17,6 @@ pub mod lara_core;
 pub mod linux_bridge;
 // for tpm tie-in
 use std::process::{self};
-use core::time;
 use std::process::{Command,Stdio};
 use std::str;
 use std::io;
@@ -49,9 +48,10 @@ fn main() {
         println!("Initializing Core systems:");
     }
 
-    let ids_bootlogpath = Path::new("/var/log/ironids.log");
+    
     let tpm_folder_a = "/var/chromia";
     let tpm_folder_p = "/var/chromia/ids";
+    let ids_bootlogpath = Path::new("/var/log/ironids.log");
     let _ = append_to_log(&tpm_folder_a,ids_bootlogpath);
     let fpath = Path::new(tpm_folder_a);
     if !fpath.exists() {
@@ -67,7 +67,7 @@ fn main() {
                     Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath).expect("directory creation to succeed")}
                 }
             }
-            Err(e) => append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath),
+            Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath)}
         }
     } else {
         println!("Folder already exists.");
@@ -85,7 +85,7 @@ fn main() {
                         Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath).expect("directory creation to succeed")}
                     }
                 }
-                Err(e) => append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath),
+                Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath)}
             }
         } else {
             append_to_log(&format!("Folder already exists."),ids_bootlogpath);
@@ -308,6 +308,8 @@ fn lock_check(target_pid: &u32) -> (bool, u32) {
     }
 }
 fn genhash(key: &str) -> (bool, String) {
+    let ids_bootlogpath = Path::new("/var/log/ironids.log");
+    let _ = append_to_log(&tpm_folder_a,ids_bootlogpath);
     let output = match Command::new("/bin/Chromia/Data/b3sum")
         .arg(key)
         .arg("--no-names")
