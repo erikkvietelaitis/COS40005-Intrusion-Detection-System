@@ -51,7 +51,7 @@ fn main() {
     let mut modules: Vec<Box<dyn AnalysisModule>>;
     // ADD NEW MODULES HERE \|/ use example module's exact structure
     modules = vec![
-        Box::new(<analysis_modules::example::Example as std::default::Default>::default()),
+        
         Box::new(<analysis_modules::anomaly_detection::AnomalyDetector as std::default::Default>::default()),
         Box::new(<analysis_modules::fim::FIM as std::default::Default>::default()),
         Box::new(<analysis_modules::network::Networking as std::default::Default>::default()),

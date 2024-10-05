@@ -36,6 +36,12 @@ Authors: Ben, Lachlan, Erik, Sean, Simon and Sam
 Chromia is a Host based Intrusion Detection System designed to protect your network from malicious activity.
 It provides real-time monitoring and alerts to help you maintain security.
 
+By default we will activate protection for the following areas:
+- Host system
+- Authentication
+- File system
+- CLI logging
+
 EOF
 sleep 2
 echo -e "${COLOR_RED} ${TEXT_BOLD} Chromia must be run as sudo, it may not function properly without this!"
