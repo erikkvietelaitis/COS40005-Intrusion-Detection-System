@@ -224,8 +224,8 @@ fn main() {
             let trouble_path = format!("/var/chromia/ids/{}",lcb.to_string());
             match fs::remove_file(&trouble_path) {
                 Ok(_) => append_to_log(&format!("File '{}' deleted successfully.", &lock_path),ids_bootlogpath),
-                Err(e) => append_to_log(&format!("Failed to delete file '{}': {}", &lock_path, e),ids_bootlogpath),
-            }
+                Err(e) => {append_to_log(&format!("Failed to delete file '{}': {}", &lock_path, e),ids_bootlogpath)}
+            };
         }
         if lca && lcb == 0 {
             append_to_log(&format!("IDS tampered with; lock_file deleted"),ids_bootlogpath);
