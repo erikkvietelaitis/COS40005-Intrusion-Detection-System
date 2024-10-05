@@ -107,103 +107,103 @@ impl AnalysisModule for HTTPServer{
             msg.push_str(nlcode);
             let mut suspicion:usize = 0;
             if nlcode == "400"{
-                suspicion = 20;
+                suspicion = 200;
                 msg.push_str(" Bad Request"); // 20
             }else if nlcode == "401"{
                 suspicion = 25; // 10
                 msg.push_str(" Unauthorized");
             }else if nlcode == "403"{
-                suspicion = 15;
+                suspicion = 150;
                 msg.push_str(" Forbidden");
             }else if nlcode == "404"{
-                suspicion = 5;
+                suspicion = 50;
                 msg.push_str(" Not Found");
             }else if nlcode == "405"{
-                suspicion = 10;
+                suspicion = 100;
                 msg.push_str(" Method Not Allowed");
             }else if nlcode == "406"{
-                suspicion = 15;
+                suspicion = 150;
                 msg.push_str(" Not Acceptable");
             }else if nlcode == "407"{
-                suspicion = 20;
+                suspicion = 200;
                 msg.push_str(" Proxy Authentication Required");
             }else if nlcode == "408"{
-                suspicion = 3;
+                suspicion = 30;
                 msg.push_str(" Request Timeout");
             }else if nlcode == "409"{
-                suspicion = 10;
+                suspicion = 100;
                 msg.push_str(" Conflict");
             }else if nlcode == "410"{
-                suspicion = 2;
+                suspicion = 20;
                 msg.push_str(" Gone");
             }else if nlcode == "411"{
-                suspicion = 2;
+                suspicion = 20;
                 msg.push_str(" Length Required");
             }else if nlcode == "412"{
-                suspicion = 3;
+                suspicion = 30;
                 msg.push_str(" Precondition Failed");
             }else if nlcode == "413"{
-                suspicion = 10;
+                suspicion = 100;
                 msg.push_str(" Payload Too Large");
             }else if nlcode == "414"{
-                suspicion = 5;
+                suspicion = 50;
                 msg.push_str(" URI Too Long");
             }else if nlcode == "415"{
-                suspicion = 10;
+                suspicion = 100;
                 msg.push_str(" Unsupported Media Type");
             }else if nlcode == "416"{
-                suspicion = 5;
+                suspicion = 50;
                 msg.push_str(" Range Not Satisfiable");
             }else if nlcode == "417"{
-                suspicion = 20;
+                suspicion = 200;
                 msg.push_str(" Expectation Failed");
             }else if nlcode == "418"{
                 suspicion = 0;
                 msg.push_str(" Im a teapot");//shockingly this is a real code
             }else if nlcode == "421"{
-                suspicion = 1;
+                suspicion = 10;
                 msg.push_str(" Misdirected Request");
             }else if nlcode == "422"{
-                suspicion = 9;
+                suspicion = 90;
                 msg.push_str(" Unprocessable Content");
             }else if nlcode == "429"{
-                suspicion = 15;
+                suspicion = 105;
                 msg.push_str(" Too Many Requests");
             }else if nlcode == "431"{
-                suspicion = 15;
+                suspicion = 150;
                 msg.push_str(" Request Header Fields Too Large");
             }else if nlcode == "500"{
-                suspicion = 10;
+                suspicion = 100;
                 msg.push_str(" Internal Server Error");
             }else if nlcode == "501"{
-                suspicion = 5;
+                suspicion = 50;
                 msg.push_str(" Not Implemented");
             }else if nlcode == "502"{
-                suspicion = 5;
+                suspicion = 50;
                 msg.push_str(" Bad Gateway")
             }else if nlcode == "503"{
-                suspicion = 5;
+                suspicion = 50;
                 msg.push_str(" Service Unavailable");
             }else if nlcode == "504"{
-                suspicion = 3;
+                suspicion = 30;
                 msg.push_str(" Gateway Timeout");
             }else if nlcode == "505"{
-                suspicion = 4;
+                suspicion = 40;
                 msg.push_str(" HTTP Version Not Supported");
             }else if nlcode == "506"{
                 suspicion = 0;
                 msg.push_str(" Variant Also Negotiates");
             }else if nlcode == "507"{
-                suspicion = 10;
+                suspicion = 100;
                 msg.push_str(" Insufficient Storage");
             }else if nlcode == "508"{
-                suspicion = 5;
+                suspicion = 50;
                 msg.push_str(" Loop Detected");
             }else if nlcode == "510"{
                 suspicion = 0;
                 msg.push_str(" Not Extended");
             }else if nlcode == "511"{
-                suspicion = 40;
+                suspicion = 400;
                 msg.push_str(" Network Authentication Required");
             }
             
@@ -226,12 +226,12 @@ impl AnalysisModule for HTTPServer{
             if(self.current_data.logs.contains_key(client)){
                 let (mut score, err_msg) =&self.current_data.logs[client];
                 score += score;
-                if score > 14{
+                if score > 140{
                     let level:LogType;
                     // let sus_msg:String;
-                    if score > 30{
-                        if score > 40{
-                            if score > 50{
+                    if score > 300{
+                        if score > 400{
+                            if score > 500{
                             level = LogType::Critical;
                             }else{
                                 level = LogType::Serious;
@@ -246,9 +246,36 @@ impl AnalysisModule for HTTPServer{
                     let error_msg = format!("Client [{}] - {}", client,  err_msg);
                     results.push(Log::new(level, self_name.clone(), error_msg))
                 } 
-                
+                self.current_data.logs.remove(client)
+            }else{
+                score -=1;
             }
         }
+        for (client, (score,err_msg)) in self.current_data.logs.iter_mut(){
+            self.clients.insert(client, score);
+            if score > 140{
+                let level:LogType;
+                // let sus_msg:String;
+                if score > 300{
+                    if score > 400{
+                        if score > 500{
+                        level = LogType::Critical;
+                        }else{
+                            level = LogType::Serious;
+                        }
+                    }else{
+                        level = LogType::Warning;
+
+                    }
+                }else{
+                    level = LogType::Info;
+                }
+                let error_msg = format!("Client [{}] - {}", client,  err_msg);
+                results.push(Log::new(level, self_name.clone(), error_msg))
+            } 
+        }
+
+
         return results;
     }
     fn get_name(&self) -> String{

@@ -1,10 +1,10 @@
 use crate::lara_core::*;
-use core_traits::AnalysisModule;
-use std::collections::HashMap;
-use std::process::Command;
-use std::path::Path;
 use core_structs::*;
+use core_traits::AnalysisModule;
 use dirhash::hash;
+use std::collections::HashMap;
+use std::path::Path;
+use std::process::Command;
 #[derive(Debug, Clone)]
 struct CurrentData {
     new_hashes_files: HashMap<String, String>,
@@ -25,8 +25,8 @@ fn genhash(key: &str) -> (bool, String) {
     let output = match Command::new("/bin/Chromia/Data/b3sum")
         .arg(key)
         .arg("--no-names")
-        .output() {
-        
+        .output()
+    {
         Ok(output) => output,
         Err(err) => {
             eprintln!("Failed to execute command for key '{}': {}", key, err);
@@ -36,7 +36,7 @@ fn genhash(key: &str) -> (bool, String) {
     // Convert output to string
     let stdout_str = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr_str = String::from_utf8_lossy(&output.stderr).into_owned();
-    
+
     //println!("{}", stdout_str);
 
     if !stderr_str.is_empty() {
@@ -48,11 +48,11 @@ fn genhash(key: &str) -> (bool, String) {
 
 fn genhash_folders(key: &str) -> (bool, String) {
     let dir_hash = hash(Path::new(key));
-    
+
     // Calculate the hash of the directory
     match dir_hash {
         Ok(hash_value) => {
-            println!("dirhash is {}",&hash_value);
+            println!("dirhash is {}", &hash_value);
             (true, hash_value.to_string())
         }
         Err(err) => {
@@ -61,14 +61,15 @@ fn genhash_folders(key: &str) -> (bool, String) {
             (false, errorm)
         }
     }
-    
-    //println!("{}", stdout_str);
 
-    
+    //println!("{}", stdout_str);
 }
 
 // Update section function
-fn update_section_files(previous_hashes_files: &HashMap<String, String>, new_hashes_files: &mut HashMap<String, String>) -> bool {
+fn update_section_files(
+    previous_hashes_files: &HashMap<String, String>,
+    new_hashes_files: &mut HashMap<String, String>,
+) -> bool {
     /*println!("previous_hashes:");
     for (key, hash) in previous_hashes.iter() {
         println!("Key: '{}', Hash: '{}'", key, hash);
@@ -107,7 +108,10 @@ fn update_section_files(previous_hashes_files: &HashMap<String, String>, new_has
     true
 }
 
-fn update_section_folders(previous_hashes_folders: &HashMap<String, String>, new_hashes_folders: &mut HashMap<String, String>) -> bool {
+fn update_section_folders(
+    previous_hashes_folders: &HashMap<String, String>,
+    new_hashes_folders: &mut HashMap<String, String>,
+) -> bool {
     /*println!("previous_hashes:");
     for (key, hash) in previous_hashes.iter() {
         println!("Key: '{}', Hash: '{}'", key, hash);
@@ -149,10 +153,16 @@ fn update_section_folders(previous_hashes_folders: &HashMap<String, String>, new
 impl AnalysisModule for FIM {
     fn get_data(&mut self) -> bool {
         // Update the section and handle the result
-        if !update_section_files(&mut self.previous_hashes_files, &mut self.current_data.new_hashes_files) {
+        if !update_section_files(
+            &mut self.previous_hashes_files,
+            &mut self.current_data.new_hashes_files,
+        ) {
             return false; // Return false if update_section fails
         }
-        if !update_section_folders(&mut self.previous_hashes_folders, &mut self.current_data.new_hashes_folders) {
+        if !update_section_folders(
+            &mut self.previous_hashes_folders,
+            &mut self.current_data.new_hashes_folders,
+        ) {
             return false; // Return false if update_section fails
         }
 
@@ -174,17 +184,14 @@ impl AnalysisModule for FIM {
 
     fn perform_analysis(&mut self) -> Vec<core_structs::Log> {
         let mut results: Vec<core_structs::Log> = Vec::new();
-    
+
         // Iterate over each filepath and hash in the new_hashes
         for (filepath, new_hash) in &self.current_data.new_hashes_files {
             match self.previous_hashes_files.get(filepath) {
                 Some(previous_hash) => {
                     if new_hash != previous_hash {
                         // If hashes differ, create a log entry
-                        let msg = format!(
-                            "Object '{}' has been modified!",
-                            filepath
-                        );
+                        let msg = format!("Object '{}' has been modified!", filepath);
                         eprintln!("Log: {}", msg); // Debug print for logs
                         results.push(crate::Log::new(
                             core_enums::LogType::Serious,
@@ -205,10 +212,7 @@ impl AnalysisModule for FIM {
                 Some(previous_hash) => {
                     if new_hash != previous_hash {
                         // If hashes differ, create a log entry
-                        let msg = format!(
-                            "Folder '{}' has been modified!",
-                            filepath
-                        );
+                        let msg = format!("Folder '{}' has been modified!", filepath);
                         eprintln!("Log: {}", msg); // Debug print for logs
                         results.push(crate::Log::new(
                             core_enums::LogType::Serious,
@@ -223,11 +227,11 @@ impl AnalysisModule for FIM {
                 }
             }
         }
-    
+
         // Update previous_hashes to be the same as new_hashes
         self.previous_hashes_files = self.current_data.new_hashes_files.clone();
         self.previous_hashes_folders = self.current_data.new_hashes_folders.clone();
-    
+
         results
     }
 
@@ -235,14 +239,28 @@ impl AnalysisModule for FIM {
         self.module_name.clone()
     }
     fn build_config_fields(&self) -> Vec<crate::ConfigField> {
-        let fields:Vec<ConfigField> = vec![
-            ConfigField::new("files".to_owned(),"File to be monitored for integrity violations, must be an absolute path".to_owned(),core_enums::ConfigFieldType::Integer,vec!["/etc/Chromia/config.ini".to_owned()], true),
-            ConfigField::new("folders".to_owned(),"Folder to be monitored for integrity violations, must be an absolute path".to_owned(),core_enums::ConfigFieldType::Integer,vec!["/bin/Chromia".to_owned()], true)
+        let fields: Vec<ConfigField> = vec![
+            ConfigField::new(
+                "files".to_owned(),
+                "File to be monitored for integrity violations, must be an absolute path"
+                    .to_owned(),
+                core_enums::ConfigFieldType::Integer,
+                vec!["/etc/Chromia/config.ini".to_owned()],
+                true,
+            ),
+            ConfigField::new(
+                "folders".to_owned(),
+                "Folder to be monitored for integrity violations, must be an absolute path"
+                    .to_owned(),
+                core_enums::ConfigFieldType::Integer,
+                vec!["/bin/Chromia".to_owned()],
+                true,
+            ),
         ];
-        
+
         return fields;
     }
-    fn retrieve_config_data(&mut self, data: HashMap<String,Vec<String>>) -> bool{
+    fn retrieve_config_data(&mut self, data: HashMap<String, Vec<String>>) -> bool {
         let mut files = HashMap::new();
         let mut folders: HashMap<String, String> = HashMap::new();
         //println!("{}",self.module_name);
@@ -261,7 +279,6 @@ impl AnalysisModule for FIM {
         }
         self.previous_hashes_files = files;
         self.previous_hashes_folders = folders;
-        
 
         println!("previous_hashes_files:");
         for (key, hash) in self.previous_hashes_files.iter() {
@@ -278,7 +295,6 @@ impl AnalysisModule for FIM {
 
 impl Default for FIM {
     fn default() -> Self {
-
         Self {
             previous_hashes_files: HashMap::new(),
             previous_hashes_folders: HashMap::new(),
@@ -299,5 +315,71 @@ impl Clone for FIM {
             previous_hashes_folders: self.previous_hashes_folders.clone(),
             module_name: self.module_name.clone(),
         }
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+    use std::fs::{self, File};
+    use std::io::Write;
+    use std::path::Path;
+
+    fn create_temp_file_with_content(path: &str, content: &str) {
+        let mut file = File::create(path).expect("Failed to create test file");
+        file.write_all(content.as_bytes())
+            .expect("Failed to write to test file");
+    }
+
+    #[test]
+    fn test_genhash_success() {
+        let test_file = "/tmp/test_file.txt";
+        create_temp_file_with_content(test_file, "Test content");
+
+        let (success, hash) = genhash(test_file);
+        assert!(success);
+        assert!(!hash.is_empty());
+        fs::remove_file(test_file).expect("Failed to remove test file");
+    }
+
+    #[test]
+    fn test_genhash_folders_success() {
+        let test_folder = "/tmp/test_folder";
+        fs::create_dir(test_folder).expect("Failed to create test folder");
+
+        let (success, hash) = genhash_folders(test_folder);
+        assert!(success);
+        assert!(!hash.is_empty());
+        fs::remove_dir(test_folder).expect("Failed to remove test folder");
+    }
+
+    #[test]
+    fn test_update_section_files() {
+        let mut previous_hashes_files = HashMap::new();
+        let mut new_hashes_files = HashMap::new();
+        let test_file = "/tmp/test_file.txt";
+        create_temp_file_with_content(test_file, "Test content");
+
+        previous_hashes_files.insert(test_file.to_string(), String::new());
+
+        let success = update_section_files(&previous_hashes_files, &mut new_hashes_files);
+        assert!(success);
+        assert!(new_hashes_files.contains_key(test_file));
+        fs::remove_file(test_file).expect("Failed to remove test file");
+    }
+
+    #[test]
+    fn test_update_section_folders() {
+        let mut previous_hashes_folders = HashMap::new();
+        let mut new_hashes_folders = HashMap::new();
+        let test_folder = "/tmp/test_folder";
+        fs::create_dir(test_folder).expect("Failed to create test folder");
+
+        previous_hashes_folders.insert(test_folder.to_string(), String::new());
+
+        let success = update_section_folders(&previous_hashes_folders, &mut new_hashes_folders);
+        assert!(success);
+        assert!(new_hashes_folders.contains_key(test_folder));
+        fs::remove_dir(test_folder).expect("Failed to remove test folder");
     }
 }
