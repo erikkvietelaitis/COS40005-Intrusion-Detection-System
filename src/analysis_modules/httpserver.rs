@@ -116,7 +116,7 @@ impl AnalysisModule for HTTPServer{
                 suspicion = 150;
                 msg.push_str(" Forbidden");
             }else if nlcode == "404"{
-                suspicion = 50;
+                suspicion = 5000;
                 msg.push_str(" Not Found");
             }else if nlcode == "405"{
                 suspicion = 100;
