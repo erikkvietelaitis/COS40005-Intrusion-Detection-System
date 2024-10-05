@@ -9,7 +9,8 @@ use notify::{Watcher, RecursiveMode, Config};
 use notify::event::{Event, EventKind, ModifyKind, AccessKind, CreateKind};
 use std::path::{PathBuf, Path};
 use std::os::unix::fs::MetadataExt;
-use std::io::Error as IoError;
+use std::io::{Error as IoError, ErrorKind};
+use std::fs;
 
 const MAX_RUNS: usize = 10;
 const MAX_COMMANDS: usize = 20;
@@ -61,7 +62,7 @@ impl Default for AnomalyDetector {
                 Regex::new(r"\bwget\s+.*").unwrap(),
             ],
             module_name: String::from("AnomalyDetectionModule"),
-            cpu_threshold: 80.0,
+            cpu_threshold: 30.0,
             memory_threshold: 90.0,
             cpu_history: Vec::new(),
             memory_history: Vec::new(),
@@ -124,6 +125,15 @@ impl AnalysisModule for AnomalyDetector {
 
     fn perform_analysis(&mut self) -> Vec<Log> {
         let mut results = Vec::new();
+        
+        if !self.get_data() {
+            results.push(Log::new(
+                LogType::Warning,
+                self.module_name.clone(),
+                "Failed to get data for analysis".to_string(),
+            ));
+            return results;
+        }
         
         results.append(&mut self.analyze_commands());
         results.append(&mut self.analyze_resource_usage());
@@ -290,23 +300,27 @@ impl AnomalyDetector {
     }
 
     fn fetch_cpu_usage(&self) -> Result<f32, IoError> {
-        let output = Command::new("top")
-            .arg("-bn1")
-            .output()?;
-        let data = String::from_utf8_lossy(&output.stdout);
+        let cpu_info = fs::read_to_string("/proc/stat")
+            .map_err(|e| IoError::new(ErrorKind::Other, format!("Failed to read /proc/stat: {}", e)))?;
 
-        data.lines()
-            .find(|line| line.contains("%Cpu(s)"))
-            .and_then(|line| {
-                let parts: Vec<&str> = line.split(',').collect();
-                parts.first()
-                    .and_then(|idle_part| {
-                        idle_part.split_whitespace().nth(1)
-                            .and_then(|cpu_str| cpu_str.parse::<f32>().ok())
-                    })
-            })
-            .map(|idle| Ok(100.0 - idle))
-            .unwrap_or(Err(IoError::new(std::io::ErrorKind::Other, "Failed to parse CPU usage")))
+        let mut lines = cpu_info.lines();
+        let cpu_line = lines.next()
+            .ok_or_else(|| IoError::new(ErrorKind::Other, "Failed to read CPU info from /proc/stat"))?;
+
+        let mut values = cpu_line.split_whitespace().skip(1);
+        let user: u64 = values.next().and_then(|v| v.parse().ok())
+            .ok_or_else(|| IoError::new(ErrorKind::Other, "Failed to parse user CPU time"))?;
+        let nice: u64 = values.next().and_then(|v| v.parse().ok())
+            .ok_or_else(|| IoError::new(ErrorKind::Other, "Failed to parse nice CPU time"))?;
+        let system: u64 = values.next().and_then(|v| v.parse().ok())
+            .ok_or_else(|| IoError::new(ErrorKind::Other, "Failed to parse system CPU time"))?;
+        let idle: u64 = values.next().and_then(|v| v.parse().ok())
+            .ok_or_else(|| IoError::new(ErrorKind::Other, "Failed to parse idle CPU time"))?;
+
+        let total = user + nice + system + idle;
+        let usage = (total - idle) as f32 / total as f32 * 100.0;
+
+        Ok(usage)
     }
 
     fn fetch_memory_usage(&self) -> Result<f32, IoError> {
@@ -323,7 +337,7 @@ impl AnomalyDetector {
                 let used_mem: f32 = parts.get(2)?.parse().unwrap_or(0.0);
                 Some((used_mem / total_mem) * 100.0)
             })
-            .ok_or_else(|| IoError::new(std::io::ErrorKind::Other, "Failed to parse memory usage"))
+            .ok_or_else(|| IoError::new(ErrorKind::Other, "Failed to parse memory usage"))
     }
 
     fn update_cpu_memory_history(&mut self, cpu: f32, memory: f32) {
@@ -337,8 +351,14 @@ impl AnomalyDetector {
         self.memory_history.push(memory);
     }
 
-    fn is_suspicious_command(&self, command: &str) -> bool {
-        // Whitelist common system processes
+    fn calculate_average_cpu(&self) -> f32 {
+        if self.cpu_history.is_empty() {
+            return 0.0;
+        }
+        self.cpu_history.iter().sum::<f32>() / self.cpu_history.len() as f32
+    }
+
+  fn is_suspicious_command(&self, command: &str) -> bool {
         let whitelist = [
             "/usr/bin/gnome-terminal",
             "/usr/libexec/gnome-terminal-server",
@@ -353,14 +373,13 @@ impl AnomalyDetector {
         })
     }
 
-  fn analyze_commands(&self) -> Vec<Log> {
+    fn analyze_commands(&self) -> Vec<Log> {
         let mut results = Vec::new();
 
         println!("Analyzing {} recent commands", self.current_data.recent_commands.len());
 
         for (user, command) in &self.current_data.recent_commands {
             if self.is_suspicious_command(command) {
-                // Check if the user is a system user (UID < 1000 typically)
                 if let Ok(output) = Command::new("id").arg("-u").arg(user).output() {
                     if let Ok(uid) = String::from_utf8_lossy(&output.stdout).trim().parse::<u32>() {
                         if uid >= 1000 {  // Non-system user
@@ -395,15 +414,18 @@ impl AnomalyDetector {
     fn analyze_resource_usage(&self) -> Vec<Log> {
         let mut results = Vec::new();
 
-        if self.cpu_history.len() >= MAX_RUNS && self.current_data.cpu_usage > self.cpu_threshold {
+        let avg_cpu = self.calculate_average_cpu();
+
+        if self.current_data.cpu_usage > self.cpu_threshold {
+            println!("DEBUG: High CPU usage detected: {:.2}%", self.current_data.cpu_usage);
             results.push(Log::new(
                 LogType::Warning,
                 self.module_name.clone(),
-                format!("CPU usage is high: {:.2}%", self.current_data.cpu_usage),
+                format!("CPU usage is high: {:.2}% (Average: {:.2}%)", self.current_data.cpu_usage, avg_cpu),
             ));
         }
 
-        if self.memory_history.len() >= MAX_RUNS && self.current_data.memory_usage > self.memory_threshold {
+        if self.current_data.memory_usage > self.memory_threshold {
             results.push(Log::new(
                 LogType::Warning,
                 self.module_name.clone(),
@@ -420,11 +442,15 @@ impl AnomalyDetector {
         if let Ok(events) = self.file_events.lock() {
             for (file_name, count) in events.iter() {
                 if self.suspicious_files.contains(file_name) && *count > 1 {
-                    results.push(Log::new(
-                        LogType::Warning,
-                        self.module_name.clone(),
-                        format!("Suspicious file accessed multiple times: {} ({})", file_name, count),
-                    ));
+                    if Path::new(file_name).exists() {
+                        results.push(Log::new(
+                            LogType::Warning,
+                            self.module_name.clone(),
+                            format!("Suspicious file accessed multiple times: {} ({})", file_name, count),
+                        ));
+                    } else {
+                        println!("Suspicious file not found: {}", file_name);
+                    }
                 }
             }
         }
@@ -443,33 +469,58 @@ impl AnomalyDetector {
         if let Ok(changes) = self.permission_changes.lock() {
             for (path, (old_mode, new_mode)) in changes.iter() {
                 if old_mode != new_mode {
-                    let metadata = std::fs::metadata(path).expect("Failed to get metadata");
-                    let owner_uid = metadata.uid();
-                    let owner_user = Command::new("id")
-                        .arg("-nu")
-                        .arg(owner_uid.to_string())
-                        .output()
-                        .expect("Failed to execute process");
-                    let owner_user_str = String::from_utf8_lossy(&owner_user.stdout).trim().to_string();
-
-                    if self.is_authorized_change(&owner_user_str, path) {
-                        results.push(Log::new(
-                            LogType::Info,
-                            self.module_name.clone(),
-                            format!("Authorized permission change: {} (old: {:o}, new: {:o}) by user {}", path, old_mode, new_mode, owner_user_str),
-                        ));
-                    } else if self.protected_files.contains(path) {
+                    if !Path::new(path).exists() {
                         results.push(Log::new(
                             LogType::Warning,
                             self.module_name.clone(),
-                            format!("Unauthorized permission change detected on protected file: {} (old: {:o}, new: {:o}) by user {}", path, old_mode, new_mode, owner_user_str),
+                            format!("File no longer exists: {}", path),
                         ));
-                    } else {
-                        results.push(Log::new(
-                            LogType::Info,
-                            self.module_name.clone(),
-                            format!("Permission change on non-protected file: {} (old: {:o}, new: {:o}) by user {}", path, old_mode, new_mode, owner_user_str),
-                        ));
+                        continue;
+                    }
+                    
+                    match fs::metadata(path) {
+                        Ok(metadata) => {
+                            let owner_uid = metadata.uid();
+                            match Command::new("id").arg("-nu").arg(owner_uid.to_string()).output() {
+                                Ok(output) => {
+                                    let owner_user_str = String::from_utf8_lossy(&output.stdout).trim().to_string();
+
+                                    if self.is_authorized_change(&owner_user_str, path) {
+                                        results.push(Log::new(
+                                            LogType::Info,
+                                            self.module_name.clone(),
+                                            format!("Authorized permission change: {} (old: {:o}, new: {:o}) by user {}", path, old_mode, new_mode, owner_user_str),
+                                        ));
+                                    } else if self.protected_files.contains(path) {
+                                        results.push(Log::new(
+                                            LogType::Warning,
+                                            self.module_name.clone(),
+                                            format!("Unauthorized permission change detected on protected file: {} (old: {:o}, new: {:o}) by user {}", path, old_mode, new_mode, owner_user_str),
+                                        ));
+                                    } else {
+                                        results.push(Log::new(
+                                            LogType::Info,
+                                            self.module_name.clone(),
+                                            format!("Permission change on non-protected file: {} (old: {:o}, new: {:o}) by user {}", path, old_mode, new_mode, owner_user_str),
+                                        ));
+                                    }
+                                },
+                                Err(e) => {
+                                    results.push(Log::new(
+                                        LogType::Warning,
+                                        self.module_name.clone(),
+                                        format!("Failed to get owner info for {}: {}", path, e),
+                                    ));
+                                },
+                            }
+                        },
+                        Err(e) => {
+                            results.push(Log::new(
+                                LogType::Warning,
+                                self.module_name.clone(),
+                                format!("Failed to get metadata for {}: {}", path, e),
+                            ));
+                        },
                     }
                 }
             }
@@ -483,33 +534,49 @@ impl AnomalyDetector {
         
         if let Ok(files) = self.new_files.lock() {
             for file in files.iter() {
-                let metadata = std::fs::metadata(file).expect("Failed to get metadata");
-                let owner_uid = metadata.uid();
-                let owner_user = Command::new("id")
-                    .arg("-nu")
-                    .arg(owner_uid.to_string())
-                    .output()
-                    .expect("Failed to execute process");
-                let owner_user_str = String::from_utf8_lossy(&owner_user.stdout).trim().to_string();
+                match fs::metadata(file) {
+                    Ok(metadata) => {
+                        let owner_uid = metadata.uid();
+                        match Command::new("id").arg("-nu").arg(owner_uid.to_string()).output() {
+                            Ok(output) => {
+                                let owner_user_str = String::from_utf8_lossy(&output.stdout).trim().to_string();
 
-                if !self.is_authorized_change(&owner_user_str, file) {
-                    results.push(Log::new(
-                        LogType::Warning,
-                        self.module_name.clone(),
-                        format!("Unauthorized new file created in secure folder: {} by user {}", file, owner_user_str),
-                    ));
-                } else if file.ends_with(".exe") || file.ends_with(".sh") {
-                    results.push(Log::new(
-                        LogType::Info,
-                        self.module_name.clone(),
-                        format!("Potentially suspicious new file detected in secure folder: {} by authorized user {}", file, owner_user_str),
-                    ));
-                } else {
-                    results.push(Log::new(
-                        LogType::Info,
-                        self.module_name.clone(),
-                        format!("New file detected in secure folder: {} by authorized user {}", file, owner_user_str),
-                    ));
+                                if !self.is_authorized_change(&owner_user_str, file) {
+                                    results.push(Log::new(
+                                        LogType::Warning,
+                                        self.module_name.clone(),
+                                        format!("Unauthorized new file created in secure folder: {} by user {}", file, owner_user_str),
+                                    ));
+                                } else if file.ends_with(".exe") || file.ends_with(".sh") {
+                                    results.push(Log::new(
+                                        LogType::Info,
+                                        self.module_name.clone(),
+                                        format!("Potentially suspicious new file detected in secure folder: {} by authorized user {}", file, owner_user_str),
+                                    ));
+                                } else {
+                                    results.push(Log::new(
+                                        LogType::Info,
+                                        self.module_name.clone(),
+                                        format!("New file detected in secure folder: {} by authorized user {}", file, owner_user_str),
+                                    ));
+                                }
+                            },
+                            Err(e) => {
+                                results.push(Log::new(
+                                    LogType::Warning,
+                                    self.module_name.clone(),
+                                    format!("Failed to get owner info for {}: {}", file, e),
+                                ));
+                            },
+                        }
+                    },
+                    Err(e) => {
+                        results.push(Log::new(
+                            LogType::Warning,
+                            self.module_name.clone(),
+                            format!("Failed to get metadata for {}: {}", file, e),
+                        ));
+                    },
                 }
             }
         }
@@ -523,10 +590,6 @@ impl AnomalyDetector {
         let new_files = Arc::clone(&self.new_files);
         let suspicious_files = self.suspicious_files.clone();
         let secure_folders = self.secure_folders.clone();
-        
-        let config = Config::default()
-            .with_compare_contents(false)
-            .with_poll_interval(std::time::Duration::from_secs(2));
         
         self.watcher = notify::recommended_watcher(move |res: Result<Event, notify::Error>| {
             match res {
@@ -579,7 +642,6 @@ impl AnomalyDetector {
             }
         }).unwrap();
 
-        // Update watched paths
         for path in self.watched_paths.iter().chain(self.secure_folders.iter()) {
             if path.is_dir() {
                 if let Err(e) = self.watcher.watch(path, RecursiveMode::Recursive) {
