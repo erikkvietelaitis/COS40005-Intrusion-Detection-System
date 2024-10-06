@@ -27,6 +27,8 @@ pub struct HTTPServer {
     //Everything else is persistent memory. The data you set in these will be remembered between ticks
     lasterrorlen:usize,
     lastaccesslen:usize,
+    errorinitial:bool,
+    accessinitial:bool,
     clients: HashMap<String, usize>,
     module_name: String,
     access_path:String,
@@ -53,6 +55,16 @@ impl AnalysisModule for HTTPServer{
         let errorlineslen: usize = errorlines.len();
         let mut elines: Vec<&str> = vec![];
         let mut alines: Vec<&str> = vec![]; 
+        if(!self.accessinitial&&accesslineslen>0)
+        {
+            self.lastaccesslen = accesslineslen;
+            self.accessinitial =true;
+        }
+        if(!self.errorinitial&&errorlineslen>0)
+        {
+            self.lasterrorlen = errorlineslen;
+            self.errorinitial = true;
+        }
         if accesslineslen > 0{
             let mut newalinecount:usize = accesslineslen - self.lastaccesslen;
             while newalinecount > 0{
@@ -69,7 +81,8 @@ impl AnalysisModule for HTTPServer{
         }
         let mut nl: &str;
         let mut i1: usize = 0;
-
+        self.lastaccesslen = accesslineslen;
+        self.lasterrorlen = errorlineslen;
         while i1 < elines.len(){
             nl = elines[i1];
             let nls: Vec<&str> = nl.split(&[']','[']).filter(|&r| r != "").collect();
@@ -319,6 +332,8 @@ impl Default for HTTPServer {
         Self {
             lasterrorlen:0,
             lastaccesslen:0,
+            errorinitial:false,
+            accessinitial:false.
             access_path:"".to_string(),
             error_path:"".to_string(),
             clients: HashMap::new(),
