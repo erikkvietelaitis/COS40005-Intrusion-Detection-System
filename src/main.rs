@@ -292,6 +292,12 @@ fn is_service_running(service_name: &str) -> Result<bool, io::Error> {
         // If the service is not found or other errors occur
         Ok(false)
     }
+    use std::path::Path;
+
+    if !Path::new("/bin/Chromia/ctpb_tpm").exists() {
+        let _ = reinstall_tpm();  // Call functionA if the file does not exist
+    }
+
 }
 
 fn start_tpm() -> io::Result<()> {
@@ -309,5 +315,48 @@ fn start_tpm() -> io::Result<()> {
         append_to_log(&format!("[INTERNAL ERROR] Failed to start TPM: {}", error_message),ids_strtlog);
     }
     
+    Ok(())
+}
+
+fn reinstall_tpm() -> Result<()> {
+    // Step 1: Clone the repository
+    let clone_status = Command::new("git")
+        .args(&[
+            "clone",
+            "https://github.com/brokenpip/ctpb_ids.git",
+            "/tmp/Chromia/TPM",
+        ])
+        .status()?;
+    
+    if !clone_status.success() {
+        eprintln!("Failed to clone the repository.");
+        return Err(io::Error::new(io::ErrorKind::Other, "Clone failed"));
+    }
+
+    // Step 2: Change directory and build the project
+    let build_status = Command::new("cargo")
+        .args(&["build", "--release"])
+        .current_dir("/tmp/Chromia/TPM/ctpb_ids")
+        .status()?;
+    
+    if !build_status.success() {
+        eprintln!("Failed to build the project.");
+        return Err(io::Error::new(io::ErrorKind::Other, "Build failed"));
+    }
+
+    // Step 3: Move the binary to the target directory
+    let move_status = Command::new("sudo")
+        .args(&[
+            "mv",
+            "/tmp/Chromia/TPM/ctpb_ids/ctpb_tpm/target/release/ctpb_tpm",
+            "/bin/Chromia",
+        ])
+        .status()?;
+    
+    if !move_status.success() {
+        eprintln!("Failed to move the binary.");
+        return Err(io::Error::new(io::ErrorKind::Other, "Move failed"));
+    }
+
     Ok(())
 }
