@@ -333,7 +333,7 @@ impl Default for HTTPServer {
             lasterrorlen:0,
             lastaccesslen:0,
             errorinitial:false,
-            accessinitial:false.
+            accessinitial:false,
             access_path:"".to_string(),
             error_path:"".to_string(),
             clients: HashMap::new(),
@@ -342,6 +342,7 @@ impl Default for HTTPServer {
                 logs: HashMap::new(),
                 veclogs: Vec::new(),
             },
+            access_path: todo!(),
         }
     }
 }
