@@ -20,7 +20,6 @@ use std::process::{self};
 use std::process::{Command,Stdio};
 use std::str;
 use std::io;
-use std::path::Path;
 
 // Declare the linux_bridge module
 #[derive(Parser)]
@@ -283,7 +282,7 @@ fn is_service_running(service_name: &str) -> Result<bool, io::Error> {
     let output = Command::new("systemctl")
         .args(&["is-active", service_name])
         .output()?;
-    
+
     if !Path::new("/bin/Chromia/ctpb_tpm").exists() {
         let _ = reinstall_tpm(); 
     }
