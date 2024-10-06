@@ -318,7 +318,7 @@ fn start_tpm() -> io::Result<()> {
     Ok(())
 }
 
-fn reinstall_tpm() -> Result<()> {
+fn reinstall_tpm() -> Result<(), io::Error> {
     // Step 1: Clone the repository
     let clone_status = Command::new("git")
         .args(&[
