@@ -219,7 +219,7 @@ impl AnalysisModule for HTTPServer{
                 suspicion = 400;
                 msg.push_str(" Network Authentication Required");
             }
-            
+            println!("{}",msg.clone());
             self.current_data.logs.insert(nlip.to_string(),(suspicion,msg.clone()));
             i2 = i2 + 1;
         }
