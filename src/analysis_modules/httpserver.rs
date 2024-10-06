@@ -330,3 +330,42 @@ impl Default for HTTPServer {
         }
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::collections::HashMap;
+    use std::io::{self, Write};
+    use tempfile::NamedTempFile;
+
+    #[test]
+    fn test_get_data_success() {
+        // Create temporary log files
+        let access_log = NamedTempFile::new().unwrap();
+        let error_log = NamedTempFile::new().unwrap();
+
+        writeln!(access_log.as_file(), "127.0.0.1 - - [01/Jan/2024:12:00:00 +0000] \"GET / HTTP/1.1\" 200").unwrap();
+        writeln!(error_log.as_file(), "[php:error] [01-Jan-2024 12:00:00] PHP Fatal error:  Uncaught Error: Call to undefined function test() in /var/www/html/test.php on line 1").unwrap();
+
+        let mut server = HTTPServer::default();
+        server.access_path = access_log.path().to_str().unwrap().to_string();
+        server.error_path = error_log.path().to_str().unwrap().to_string();
+
+        // Call get_data
+        let result = server.get_data();
+        assert!(result);
+        assert!(!server.current_data.logs.is_empty());
+        assert!(server.current_data.logs.contains_key("127.0.0.1"));
+    }
+
+    #[test]
+    fn test_get_data_file_not_found() {
+        let mut server = HTTPServer::default();
+        server.access_path = "non_existing_access.log".to_string();
+        server.error_path = "non_existing_error.log".to_string();
+
+        // Call get_data
+        let result = server.get_data();
+        assert!(!result); // Should return false due to missing log files
+    }
+}
