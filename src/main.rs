@@ -299,7 +299,7 @@ fn start_tpm() -> io::Result<()> {
     let output = Command::new("sudo")
         .arg("systemctl")
         .arg("restart")
-        .arg("Chromia")
+        .arg("ctpb_tpm")
         .output()?;
 
     if output.status.success() {
