@@ -369,8 +369,7 @@ mod tests {
 
         let logs = sniffer.analyze_packets();
         assert_eq!(logs.len(), 1);
-        assert_eq!(logs[0].log_type, LogType::Warning);
+        assert!(logs[0].build_alert().contains("[Warning]"));
         assert!(logs[0].message.contains("Packet alert: 3 packets captured from Source IP: 192.168.0.1 on Port: 80 exceeds threshold of 10 packets."));
     }
-
 }
