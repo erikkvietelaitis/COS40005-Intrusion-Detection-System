@@ -303,10 +303,10 @@ fn start_tpm() -> io::Result<()> {
         .output()?;
 
     if output.status.success() {
-        append_to_log(&format!("[Info] IDS started successfully."),ids_strtlog);
+        append_to_log(&format!("[Info] TPM started successfully."),ids_strtlog);
     } else {
         let error_message = String::from_utf8_lossy(&output.stderr);
-        append_to_log(&format!("[INTERNAL ERROR] Failed to start IDS: {}", error_message),ids_strtlog);
+        append_to_log(&format!("[INTERNAL ERROR] Failed to start TPM: {}", error_message),ids_strtlog);
     }
     
     Ok(())
