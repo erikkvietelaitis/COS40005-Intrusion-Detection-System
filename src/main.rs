@@ -164,11 +164,11 @@ fn main() {
         match is_service_running(service_name) {
             Ok(true) => append_to_log(&format!("[Info] '{}' is running.", service_name),ids_strtlog),
             Ok(false) => {
-                append_to_log(&format!("[CRITICAL] '{}' is not running.", service_name),ids_bootlogpath);
+                append_to_log(&format!("[CRITICAL] '{}' is not running.", service_name),ids_strtlog);
                 let _ = start_tpm();
                 Ok(())
             }
-            Err(e) => append_to_log(&format!("[INTERNAL ERROR] Error checking status: {}", e),ids_bootlogpath),
+            Err(e) => append_to_log(&format!("[INTERNAL ERROR] Error checking status: {}", e),ids_strtlog),
         };
 
         for module in modules.iter_mut() {
