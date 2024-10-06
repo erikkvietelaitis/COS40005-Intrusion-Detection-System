@@ -56,11 +56,11 @@ impl AnalysisModule for Authentication {
         let btmplineslen: usize = btmplines.len();
         let mut flines: Vec<&str> = vec![]; //= failtestdata.lines().collect();
         let mut slines: Vec<&str> = vec![]; //= successtestdata.lines().collect();
-        if self.initialbtmp && btmplineslen>0{
+        if !self.initialbtmp && btmplineslen>0{
             self.lastbtmplen = btmplineslen;
             self.initialbtmp = true;
         }
-        if self.initialwtmp && wtmplineslen>0{
+        if !self.initialwtmp && wtmplineslen>0{
             self.lastwtmplen = wtmplineslen;
             self.initialwtmp = true;
         }
