@@ -48,85 +48,25 @@ fn main() {
         println!("Initializing Core systems:");
     }
 
-    
-    let tpm_folder_a = "/var/chromia";
-    let tpm_folder_p = "/var/chromia/ids";
-    let ids_bootlogpath = Path::new("/var/log/ironids.log");
-    let _ = append_to_log(&tpm_folder_a,ids_bootlogpath);
-    let fpath = Path::new(tpm_folder_a);
-    if !fpath.exists() {
-        // Create the folder
-        match fs::create_dir(fpath) {
-            Ok(_) => {
-                append_to_log(&format!("Directory created successfully."),ids_bootlogpath);
-                let fpath2 = Path::new(tpm_folder_p);
-                match fs::create_dir(fpath2) {
-                    Ok(_) => {
-                        append_to_log(&format!("Directory created successfully."),ids_bootlogpath);
-                    }
-                    Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath).expect("directory creation to succeed")}
-                }
-            }
-            Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath);}
-        }
-    } else {
-        println!("Folder already exists.");
-        let fpath = Path::new(tpm_folder_p);
-        if !fpath.exists() {
-            // Create the folder
-            match fs::create_dir(fpath) {
-                Ok(_) => {
-                    append_to_log(&format!("Directory created successfully."),ids_bootlogpath);
-                    let fpath2 = Path::new(tpm_folder_p);
-                    match fs::create_dir(fpath2) {
-                        Ok(_) => {
-                            append_to_log(&format!("Directory created successfully."),ids_bootlogpath);
-                        }
-                        Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath).expect("directory creation to succeed")}
-                    }
-                }
-                Err(e) => {append_to_log(&format!("Failed to create directory: {}", e),ids_bootlogpath);}
-            }
-        } else {
-            append_to_log(&format!("Folder already exists."),ids_bootlogpath);
-            
-        }
-    }
+    let ids_path = "/bin/Chromia/Chromia";
+    let ids_strtlog = Path::new("/var/log/ironids.log");
 
-    let tick = time::Duration::from_millis(1000);
-    let debug = false;
-    let target_pid = process::id();
-    let lock_path = format!("/var/chromia/ids/{}",target_pid.to_string());
-    append_to_log(&format!("{}",lock_path.to_string()),ids_bootlogpath); //debug use
-
-    // 1 - see if any remnants exist
-    let (lca, lcb) = lock_check(&target_pid);
-
-    if !lca {
-        append_to_log(&format!("Previous shutdown improper!! ID of {} was found", lcb),ids_bootlogpath);
-    } else {
-        let _ = File::create(&lock_path);
-        if file_check(&lock_path) {
-            append_to_log(&format!("Lock file created."),ids_bootlogpath); // to log
-        }
-    }
-
-    
- 
-    
-    // confirm hash of TPM code
-    let tpm_path = "/bin/Chromia/ctpb_tpm";
-   
-    let (bbo, exec_hash) = genhash(&tpm_path);
+    let (bbo, exec_hash) = genhash(&ids_path);
     if bbo {
-        append_to_log(&format!("Hash: '{}'", exec_hash.trim()),ids_bootlogpath);
-        if exec_hash.trim() == "4e0c3c94b1d2f7686a7115fcc74d80d5303874d86174ca3805972e2c99a7b799".to_string() {
-            append_to_log(&format!("No tamper found for TPM."),ids_bootlogpath);
+        append_to_log(&format!("Hash: '{}'", exec_hash.trim()),ids_strtlog);
+        if exec_hash.trim() == "80151b0cc10f937dabcda74a68557f32437a59838216b1f3eabe0bd02ef3b4c2".to_string() {
+            append_to_log(&format!("No tamper found for IDS."),ids_strtlog);
         } else {
-            append_to_log(&format!("Hash for TPM not matching."),ids_bootlogpath);
+            append_to_log(&format!("Hash for IDS not matching."),ids_strtlog);
         }
     }
 
+    // create encrypted log file and stream changes to normal and enc variant 
+    // NEED log file code from IDS
+    
+    let num_iterations = 100;
+    let mut i= 0;
+    
     println!("");
     if debug {
         println!("Initializing Analysis Modules:");
@@ -218,22 +158,18 @@ fn main() {
             println!("Starting Tick({})", i.to_string());
         }
 
-        let (lca, lcb) = lock_check(&target_pid);
-        if !lca {
-            append_to_log(&format!("IDS tampered with; ID of {} was found", lcb),ids_bootlogpath);
-            let trouble_path = format!("/var/chromia/ids/{}",lcb.to_string());
-            match fs::remove_file(&trouble_path) {
-                Ok(_) => append_to_log(&format!("File '{}' deleted successfully.", &lock_path),ids_bootlogpath),
-                Err(e) => {append_to_log(&format!("Failed to delete file '{}': {}", &lock_path, e),ids_bootlogpath)}
-            };
-        }
-        if lca && lcb == 0 {
-            append_to_log(&format!("IDS tampered with; lock_file deleted"),ids_bootlogpath);
-            let _ = File::create(&lock_path);
-            if file_check(&lock_path) {
-                append_to_log(&format!("Lock file created."),ids_bootlogpath); // to log
+
+        //check TPM is running
+        let service_name = "ctpb_tpm.service";
+        match is_service_running(service_name) {
+            Ok(true) => append_to_log(&format!("[Info] '{}' is running.", service_name),ids_bootlogpath),
+            Ok(false) => {
+                append_to_log(&format!("[CRITICAL] '{}' is not running.", service_name),ids_bootlogpath);
+                let _ = start_tpm();
+                Ok(())
             }
-        }
+            Err(e) => append_to_log(&format!("[INTERNAL ERROR] Error checking status: {}", e),ids_bootlogpath),
+        };
 
         for module in modules.iter_mut() {
             if module.get_data() {
@@ -314,17 +250,6 @@ fn append_to_log(message: &str, log_dir: &Path) -> std::io::Result<()> {
     writeln!(file, "{}", message)?; // Write the message and append a newline
     Ok(())
 }
-fn lock_check(target_pid: &u32) -> (bool, u32) {
-    let lock_name = directory_read("/var/chromia/ids").unwrap_or_else(|| "aa".to_string());
-    let lock_pid: u32 = lock_name.parse().unwrap_or(0);
-    if lock_pid == 0 {
-        return (true, 0);
-    } else if lock_pid == *target_pid {
-        return (true, *target_pid);
-    } else {
-        return (false, lock_pid);
-    }
-}
 fn genhash(key: &str) -> (bool, String) {
     let ids_bootlogpath = Path::new("/var/log/ironids.log");
     let _ = append_to_log("/var/log/ironids.log",ids_bootlogpath);
@@ -351,22 +276,37 @@ fn genhash(key: &str) -> (bool, String) {
 
     (true, stdout_str)
 }
-fn directory_read(path: &str) -> Option<String> {
-    let entries = fs::read_dir(path).ok()?;
 
-    if let Some(entry) = entries.into_iter().next() {
-        let entry = entry.ok()?;
-        let path = entry.path();
+fn is_service_running(service_name: &str) -> Result<bool, io::Error> {
+    // Execute the systemctl command to check the service status
+    let output = Command::new("systemctl")
+        .args(&["is-active", service_name])
+        .output()?;
 
-        if path.is_file() {
-            if let Some(name_str) = path.file_name().and_then(|name| name.to_str()) {
-                return Some(name_str.to_string());
-            }
-        }
+    // Check if the command was successful
+    if output.status.success() {
+        // Check the output to see if the service is active
+        let status = String::from_utf8_lossy(&output.stdout);
+        Ok(status.trim() == "active")
+    } else {
+        // If the service is not found or other errors occur
+        Ok(false)
     }
-
-    None
 }
-fn file_check(path: &str) -> bool {
-    Path::new(path).exists()
+
+fn start_tpm() -> io::Result<()> {
+    let output = Command::new("sudo")
+        .arg("systemctl")
+        .arg("restart")
+        .arg("Chromia")
+        .output()?;
+
+    if output.status.success() {
+        append_to_log(&format!("[Info] IDS started successfully."),ids_strtlog);
+    } else {
+        let error_message = String::from_utf8_lossy(&output.stderr);
+        append_to_log(&format!("[INTERNAL ERROR] Failed to start IDS: {}", error_message),ids_strtlog);
+    }
+    
+    Ok(())
 }
