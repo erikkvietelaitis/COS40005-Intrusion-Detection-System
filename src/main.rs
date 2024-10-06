@@ -297,9 +297,6 @@ fn is_service_running(service_name: &str) -> Result<bool, io::Error> {
         Ok(false)
     }
     
-
-    
-
 }
 
 fn start_tpm() -> io::Result<()> {
@@ -321,44 +318,38 @@ fn start_tpm() -> io::Result<()> {
 }
 
 fn reinstall_tpm() -> Result<(), io::Error> {
-    // Step 1: Clone the repository
-    let clone_status = Command::new("git")
-        .args(&[
-            "clone",
-            "https://github.com/brokenpip/ctpb_ids.git",
-            "/tmp/Chromia/TPM",
-        ])
-        .status()?;
-    
-    if !clone_status.success() {
-        eprintln!("Failed to clone the repository.");
-        return Err(io::Error::new(io::ErrorKind::Other, "Clone failed"));
+// step 0: clean work area
+if Path::new("/tmp/Chromia").exists() {
+    if let Err(e) = fs::remove_dir_all("/tmp/Chromia") {
+        eprintln!("Failed to remove /tmp/Chromia: {}", e);
+    } else {
+        println!("Removed /tmp/Chromia directory.");
     }
+}
 
-    // Step 2: Change directory and build the project
-    let build_status = Command::new("cargo")
-        .args(&["build", "--release"])
-        .current_dir("/tmp/Chromia/TPM/ctpb_ids")
-        .status()?;
-    
-    if !build_status.success() {
-        eprintln!("Failed to build the project.");
-        return Err(io::Error::new(io::ErrorKind::Other, "Build failed"));
-    }
+// Step 1: Create the target directory and move the binary
+let create_dir_status = Command::new("sudo")
+    .args(&["mkdir", "-p", "/bin/Chromia"])
+    .status()?;
 
-    // Step 3: Move the binary to the target directory
-    let move_status = Command::new("sudo")
-        .args(&[
-            "mv",
-            "/tmp/Chromia/TPM/ctpb_ids/ctpb_tpm/target/release/ctpb_tpm",
-            "/bin/Chromia",
-        ])
-        .status()?;
-    
-    if !move_status.success() {
-        eprintln!("Failed to move the binary.");
-        return Err(io::Error::new(io::ErrorKind::Other, "Move failed"));
-    }
+if !create_dir_status.success() {
+    eprintln!("Failed to create the directory.");
+    return Err(io::Error::new(io::ErrorKind::Other, "Directory creation failed"));
+}
 
-    Ok(())
+// Step 2: Clone the repository
+let clone_status = Command::new("wget")
+    .args(&[
+        "https://github.com/brokenpip/ctpb_ids/blob/f48abb6262f0b70c2d6f387039eae2b1f6ffadf3/ctpb_tpm",
+        "-P",
+        "/bin/Chromia"
+    ])
+    .status()?;
+
+if !clone_status.success() {
+    eprintln!("Failed to clone the binary.");
+    return Err(io::Error::new(io::ErrorKind::Other, "Clone failed"));
+}
+
+Ok(())
 }
