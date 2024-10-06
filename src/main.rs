@@ -318,38 +318,38 @@ fn start_tpm() -> io::Result<()> {
 }
 
 fn reinstall_tpm() -> Result<(), io::Error> {
-// step 0: clean work area
-if Path::new("/tmp/Chromia").exists() {
-    if let Err(e) = fs::remove_dir_all("/tmp/Chromia") {
-        eprintln!("Failed to remove /tmp/Chromia: {}", e);
-    } else {
-        println!("Removed /tmp/Chromia directory.");
+    // step 0: clean work area
+    if Path::new("/tmp/Chromia").exists() {
+        if let Err(e) = fs::remove_dir_all("/tmp/Chromia") {
+            eprintln!("Failed to remove /tmp/Chromia: {}", e);
+        } else {
+            println!("Removed /tmp/Chromia directory.");
+        }
     }
-}
 
-// Step 1: Create the target directory and move the binary
-let create_dir_status = Command::new("sudo")
-    .args(&["mkdir", "-p", "/bin/Chromia"])
-    .status()?;
+    // Step 1: Create the target directory and move the binary
+    let create_dir_status = Command::new("sudo")
+        .args(&["mkdir", "-p", "/bin/Chromia"])
+        .status()?;
 
-if !create_dir_status.success() {
-    eprintln!("Failed to create the directory.");
-    return Err(io::Error::new(io::ErrorKind::Other, "Directory creation failed"));
-}
+    if !create_dir_status.success() {
+        eprintln!("Failed to create the directory.");
+        return Err(io::Error::new(io::ErrorKind::Other, "Directory creation failed"));
+    }
 
-// Step 2: Clone the repository
-let clone_status = Command::new("wget")
-    .args(&[
-        "https://github.com/brokenpip/ctpb_ids/blob/f48abb6262f0b70c2d6f387039eae2b1f6ffadf3/ctpb_tpm",
-        "-P",
-        "/bin/Chromia"
-    ])
-    .status()?;
+    // Step 2: Clone the repository
+    let clone_status = Command::new("wget")
+        .args(&[
+            "https://github.com/brokenpip/ctpb_ids/blob/f48abb6262f0b70c2d6f387039eae2b1f6ffadf3/ctpb_tpm",
+            "-P",
+            "/bin/Chromia"
+        ])
+        .status()?;
 
-if !clone_status.success() {
-    eprintln!("Failed to clone the binary.");
-    return Err(io::Error::new(io::ErrorKind::Other, "Clone failed"));
-}
+    if !clone_status.success() {
+        eprintln!("Failed to clone the binary.");
+        return Err(io::Error::new(io::ErrorKind::Other, "Clone failed"));
+    }
 
-Ok(())
+    Ok(())
 }
