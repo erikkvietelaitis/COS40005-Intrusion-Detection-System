@@ -27,6 +27,8 @@ pub struct Authentication {
     psips: Vec<FailedLogInIp>,
     lastbtmplen:usize,
     lastwtmplen:usize,
+    initialbtmp:bool,
+    initialwtmp:bool,
     module_name: String,
 }
 impl AnalysisModule for Authentication {
@@ -54,6 +56,14 @@ impl AnalysisModule for Authentication {
         let btmplineslen: usize = btmplines.len();
         let mut flines: Vec<&str> = vec![]; //= failtestdata.lines().collect();
         let mut slines: Vec<&str> = vec![]; //= successtestdata.lines().collect();
+        if self.initialbtmp && btmplineslen>0{
+            self.lastbtmplen = btmplineslen;
+            self.initialbtmp = true;
+        }
+        if self.initialwtmp && wtmplineslen>0{
+            self.lastwtmplen = wtmplineslen;
+            self.initialwtmp = true;
+        }
         if wtmplineslen > 0{
             let mut newslinecount:usize = wtmplineslen - self.lastwtmplen;
             while newslinecount > 0{
@@ -294,6 +304,8 @@ impl Default for Authentication {
             psips: vec![],
             lastbtmplen:0,
             lastwtmplen:0,
+            initialbtmp:false,
+            initialwtmp:false,
             current_data: CurrentData {
                 cfips: vec![],
                 csips: vec![],
