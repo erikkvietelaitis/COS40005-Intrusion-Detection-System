@@ -132,7 +132,7 @@ impl AnalysisModule for HTTPServer{
                 suspicion = 5000;
                 msg.push_str(" Not Found");
             }else if nlcode == "405"{
-                suspicion = 100;
+                suspicion = 10000;
                 msg.push_str(" Method Not Allowed");
             }else if nlcode == "406"{
                 suspicion = 150;
