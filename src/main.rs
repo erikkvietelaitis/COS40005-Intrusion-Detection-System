@@ -150,6 +150,7 @@ fn main() {
 
     let mut logs: Vec<Log> = Vec::new();
     let mut i = 0;
+    let mut info_counter = 0;
     println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT!!");
     println!("------------------(Real Time alerts)------------------");
 
@@ -162,14 +163,19 @@ fn main() {
         //check TPM is running
         let service_name = "ctpb_tpm.service";
         match is_service_running(service_name) {
-            Ok(true) => append_to_log(&format!("[Info] '{}' is running.", service_name),ids_strtlog),
-            Ok(false) => {
-                append_to_log(&format!("[CRITICAL] '{}' is not running.", service_name),ids_strtlog);
-                let _ = start_tpm();
-                Ok(())
+            Ok(true) => {
+                info_counter += 1; // Increment the info counter
+                if info_counter >= 100 {
+                    append_to_log(&format!("[Info] '{}' is running.", service_name));
+                    info_counter = 0; // Reset the counter
+                }
             }
-            Err(e) => append_to_log(&format!("[INTERNAL ERROR] Error checking status: {}", e),ids_strtlog),
-        };
+            Ok(false) => {
+                append_to_log(&format!("[CRITICAL] '{}' is not running.", service_name));
+                let _ = start_ids();
+            }
+            Err(e) => append_to_log(&format!("[INTERNAL ERROR] Error checking status: {}", e)),
+        }
 
         for module in modules.iter_mut() {
             if module.get_data() {
