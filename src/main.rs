@@ -162,7 +162,7 @@ fn main() {
         //check TPM is running
         let service_name = "ctpb_tpm.service";
         match is_service_running(service_name) {
-            Ok(true) => append_to_log(&format!("[Info] '{}' is running.", service_name),ids_bootlogpath),
+            Ok(true) => append_to_log(&format!("[Info] '{}' is running.", service_name),ids_strtlog),
             Ok(false) => {
                 append_to_log(&format!("[CRITICAL] '{}' is not running.", service_name),ids_bootlogpath);
                 let _ = start_tpm();
@@ -295,6 +295,7 @@ fn is_service_running(service_name: &str) -> Result<bool, io::Error> {
 }
 
 fn start_tpm() -> io::Result<()> {
+    let ids_strtlog = Path::new("/var/log/ironids.log");
     let output = Command::new("sudo")
         .arg("systemctl")
         .arg("restart")
