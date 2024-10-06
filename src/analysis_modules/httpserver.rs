@@ -342,7 +342,6 @@ impl Default for HTTPServer {
                 logs: HashMap::new(),
                 veclogs: Vec::new(),
             },
-            access_path: todo!(),
         }
     }
 }
