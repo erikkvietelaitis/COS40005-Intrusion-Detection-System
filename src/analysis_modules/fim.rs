@@ -212,7 +212,6 @@ impl AnalysisModule for FIM {
                 Some(previous_hash) => {
                     if new_hash != previous_hash {
                         // If hashes differ, create a log entry
-                        let msg = format!("Folder '{}' has been modified!", filepath);
                         let msg = format!("Folder '{}' has been modified! previous hash was {} and new hash is {}", filepath, &previous_hash, &new_hash);
                         eprintln!("Log: {}", msg); // Debug print for logs
                         results.push(crate::Log::new(
