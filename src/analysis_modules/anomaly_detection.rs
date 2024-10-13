@@ -11,9 +11,11 @@ use std::path::PathBuf;
 use std::os::unix::fs::MetadataExt;
 use std::io::Error as IoError;
 use crate::linux_bridge::sam;
+use std::time::{Instant, Duration};
 
 const MAX_RUNS: usize = 10;
 const MAX_COMMANDS: usize = 20;
+const PERMISSION_CHANGE_COOLDOWN: Duration = Duration::from_secs(60);
 
 #[derive(Clone, Debug)]
 struct SystemData {
@@ -32,7 +34,7 @@ pub struct AnomalyDetector {
     cpu_history: Vec<f32>,
     memory_history: Vec<f32>,
     file_events: Arc<Mutex<HashMap<String, usize>>>,
-    permission_changes: Arc<Mutex<HashMap<String, (u32, u32)>>>,
+    permission_changes: Arc<Mutex<HashMap<String, (u32, u32, Instant)>>>,
     new_files: Arc<Mutex<Vec<String>>>,
     suspicious_files: HashSet<String>,
     watcher: notify::RecommendedWatcher,
@@ -63,7 +65,7 @@ impl Default for AnomalyDetector {
             ],
             module_name: String::from("AnomalyDetectionModule"),
             cpu_threshold: 80.0,
-            memory_threshold: 90.0,
+            memory_threshold: 3.0, // Updated to match the config.ini setting
             cpu_history: Vec::new(),
             memory_history: Vec::new(),
             file_events,
@@ -100,19 +102,21 @@ impl AnalysisModule for AnomalyDetector {
         }
 
         let cpu_output = sam::cpu_usage();
-        if let Some(cpu_usage) = parse_cpu_usage(&cpu_output) {
-            self.current_data.cpu_usage = cpu_usage;
-        } else {
-            println!("Failed to parse CPU usage");
-            return false;
+        match parse_cpu_usage(&cpu_output) {
+            Some(cpu_usage) => self.current_data.cpu_usage = cpu_usage,
+            None => {
+                println!("Failed to parse CPU usage. Raw output: {:?}", cpu_output);
+                return false;
+            }
         }
 
         let mem_output = sam::memory_usage();
-        if let Some(mem_usage) = parse_memory_usage(&mem_output) {
-            self.current_data.memory_usage = mem_usage;
-        } else {
-            println!("Failed to parse memory usage");
-            return false;
+        match parse_memory_usage(&mem_output) {
+            Some(mem_usage) => self.current_data.memory_usage = mem_usage,
+            None => {
+                println!("Failed to parse memory usage. Raw output: {:?}", mem_output);
+                return false;
+            }
         }
 
         self.update_cpu_memory_history(self.current_data.cpu_usage, self.current_data.memory_usage);
@@ -335,7 +339,7 @@ impl AnomalyDetector {
                             results.push(Log::new(
                                 LogType::Warning,
                                 self.module_name.clone(),
-                                format!("Suspicious command executed by {} on {}: {}", user, terminal, command),
+                                format!("Suspicious command executed by: {} on {}: {}", user, terminal, command),
                             ));
                         }
                     }
@@ -347,7 +351,7 @@ impl AnomalyDetector {
                     results.push(Log::new(
                         LogType::Warning,
                         self.module_name.clone(),
-                        format!("Suspicious command pattern '{}' matched by {} on {}: {}", description, user, terminal, command),
+                        format!("Suspicious command pattern '{}' matched by: {} on {}: {}", description, user, terminal, command),
                     ));
                     break;
                 }
@@ -368,7 +372,7 @@ impl AnomalyDetector {
                 results.push(Log::new(
                     LogType::Warning,
                     self.module_name.clone(),
-                    format!("CPU usage is high: {:.2}% (20% above average of {:.2}%). Run 'top' command to identify resource-intensive processes.", current_cpu, avg_cpu),
+                    format!("CPU usage is high: {:.2}% (20% above average of {:.2}%).      Run 'top' command to identify resource-intensive processes.", current_cpu, avg_cpu),
                 ));
             }
         }
@@ -381,7 +385,7 @@ impl AnomalyDetector {
                 results.push(Log::new(
                     LogType::Warning,
                     self.module_name.clone(),
-                    format!("Memory usage is high: {:.2}% (20% above average of {:.2}%). Run 'free -m' and 'top' commands to identify memory-intensive processes.", current_memory, avg_memory),
+                    format!("Memory usage is high: {:.2}% (20% above average of {:.2}%).    Run 'free -m' and 'top' commands to identify memory-intensive processes.", current_memory, avg_memory),
                 ));
             }
         }
@@ -414,39 +418,43 @@ impl AnomalyDetector {
 
     fn analyze_permission_changes(&self) -> Vec<Log> {
         let mut results = Vec::new();
+        let now = Instant::now();
         
-        if let Ok(changes) = self.permission_changes.lock() {
-            for (path, (old_mode, new_mode)) in changes.iter() {
-                if old_mode != new_mode {
+        if let Ok(mut changes) = self.permission_changes.lock() {
+            for (path, (old_mode, new_mode, last_alert_time)) in changes.iter_mut() {
+                if old_mode != new_mode && now.duration_since(*last_alert_time) >= PERMISSION_CHANGE_COOLDOWN {
                     match std::fs::metadata(path) {
                         Ok(metadata) => {
                             let owner_uid = metadata.uid();
                             if let Ok(output) = Command::new("id").arg("-nu").arg(owner_uid.to_string()).output() {
                                 let owner_user_str = String::from_utf8_lossy(&output.stdout).trim().to_string();
 
-                                if self.is_authorized_change(&owner_user_str, path) {
-                                    results.push(Log::new(
+                                let log = if self.is_authorized_change(&owner_user_str, path) {
+                                    Log::new(
                                         LogType::Info,
                                         self.module_name.clone(),
-                                        format!("Authorized permission change: {} (old: {:o}, new: {:o}) by user {}. Run 'ls -l {}' to view current permissions.", path, old_mode, new_mode, owner_user_str, path),
-                                    ));
+                                        format!("Authorized permission change: {} (old permission: {:o}, new changed permission: {:o}) by {}. Run 'ls -l {}' to view current permissions.", path, old_mode, new_mode, owner_user_str, path),
+                                    )
                                 } else if self.protected_files.contains(path) {
-                                    results.push(Log::new(
+                                    Log::new(
                                         LogType::Warning,
                                         self.module_name.clone(),
-                                        format!("Unauthorized permission change detected on protected file: {} (old: {:o}, new: {:o}) by user {}. Run 'ls -l {}' to view current permissions and 'ausearch -f {}' for audit logs.", path, old_mode, new_mode, owner_user_str, path, path),
-                                    ));
+                                        format!("Unauthorized permission change detected on protected file: {} (old permission: {:o}, new changed permission: {:o}) by: {}. Run 'ls -l {}' to view current permissions and 'ausearch -f {}' for audit logs.", path, old_mode, new_mode, owner_user_str, path, path),
+                                    )
                                 } else {
-                                    results.push(Log::new(
+                                    Log::new(
                                         LogType::Info,
                                         self.module_name.clone(),
-                                        format!("Permission change on non-protected file: {} (old: {:o}, new: {:o}) by user {}. Run 'ls -l {}' to view current permissions.", path, old_mode, new_mode, owner_user_str, path),
-                                    ));
-                                }
+                                        format!("Permission change on non-protected file: {} (old permission: {:o}, new changed permission: {:o}) by user {}. Run 'ls -l {}' to view current permissions.", path, old_mode, new_mode, owner_user_str, path),
+                                    )
+                                };
+
+                                results.push(log);
+                                *last_alert_time = now;
                             }
                         },
                         Err(_) => {
-                            // File no longer exists or is inaccessible, skip logging
+                            // File no longer exists or is inaccessible, --> skip logging
                         }
                     }
                 }
@@ -487,7 +495,7 @@ impl AnomalyDetector {
                         }
                     }
                 }
-                // If metadata can't be read, we silently skip this file
+                // If metadata can't be read, we silently skip this file!!
             }
         }
         
@@ -527,13 +535,13 @@ impl AnomalyDetector {
                                         let mut changes = permission_changes.lock().unwrap();
                                         if let Some(path_str) = path.to_str() {
                                             changes.entry(path_str.to_string())
-                                                .and_modify(|(old, current)| {
+                                                .and_modify(|(old, current, _)| {
                                                     if *current != new_mode {
                                                         *old = *current;
                                                         *current = new_mode;
                                                     }
                                                 })
-                                                .or_insert((new_mode, new_mode));
+                                                .or_insert((new_mode, new_mode, Instant::now() - PERMISSION_CHANGE_COOLDOWN));
                                         }
                                     }
                                 }
