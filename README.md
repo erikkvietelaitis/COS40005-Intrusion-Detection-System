@@ -147,7 +147,7 @@ The config.ini has all relevent setting/ options for the function of Chromia
 #### Logs and Understaing the Logs 
 The log file will be lo9cated at 
 ```
-var/log/Chromia
+/var/log/Chromia
 ```
 This is the location of the outputed logs of the Chromia Host Based IDS. All the logs are collated together in to the single .log file. 
 
