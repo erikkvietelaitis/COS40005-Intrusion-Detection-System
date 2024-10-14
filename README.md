@@ -175,6 +175,34 @@ The normal operation of the log file, should include:
 <br>
 The current time and date, the associated "module" that detected the concern, an associated concen level, and a print out detailing the problem.
 
+### Troubleshooting
+1. We recommend saving the install.sh to the Downloads file.
+2. If having commplications we suggest to run the install.sh as root, as suggested in the installion heading.
+3. Install, all the required dependences seperatley, as the install script should, skip currently installed versions 
+- git
+- net-tools
+- curl
+- rust
+- rust packages
+- B3Sum
+4. Its possible, but unlikely the Github weblinks have changed and you may need to pull, Chromia Host IDS and the TPM models this can be done via clicking the green code button  and coping the HTTPS link, and coping and creating the files and making it via
+``` 
+git clone https://github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git #Chromia Host Based IDS
+git clone https://github.com/brokenpip/ctpb_ids #Required TPM model
+```
+If you are having to build your own version, please complete the previous steps, the cloned repos using 
+```
+cargo build 
+```
+Copy the built excutables into a file located in 
+'''
+/bin/Chromia
+'''
+B3sum should remian in the cargo file of the local directory that is running the Chromia Host IDS
+
+5. If all else failes, please reach out and contact one of the tagged developers and our make a bug request log
+
+
 NOTES:
 [^1]: Chromia has only been tested and currently designed for Ubuntu 24.04 LTS, it maybe possible to run on other Debian based systems, but your mileage may very.
 
