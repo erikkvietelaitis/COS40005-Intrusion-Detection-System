@@ -207,9 +207,9 @@ Copy the built excutables which should be located for example at:
 $HOME/Downloads/COS40005-Intrusion-Detection-System/target/release
 ```
 into a newley created file located at 
-'''
+```
 /bin/Chromia
-'''
+```
 5. If all else failes, please reach out and contact one of the tagged developers and our make a bug request log
 
 
