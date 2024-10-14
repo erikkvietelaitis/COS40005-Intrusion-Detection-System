@@ -210,11 +210,10 @@ into a newley created file located at
 ```
 /bin/Chromia
 ```
-5. If all else failes, please reach out and contact one of the tagged developers and our make a bug request log
+5. If all else failes, please reach out and contact one of the tagged developers and or make a bug request log
 
 
 NOTES:
 [^1]: Chromia has only been tested and currently designed for Ubuntu 24.04 LTS, it maybe possible to run on other Debian based systems, but your mileage may very.
-
 [^2]: For Chromia to work we have to make two .service files as part of the install script. these are to help insure that Chromia remains active when closed as well as also restart after the Host device has been reset.
 [^3]: Chromia may run and print logs but may not work properly as all files may not be properly configured
