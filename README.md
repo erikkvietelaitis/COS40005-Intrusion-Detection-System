@@ -164,17 +164,23 @@ This is the location of the outputed logs of the Chromia Host Based IDS. All the
 Fig 1: Example of a Network related concern
 
 ```
-[2024-09-29 13:46:35]=[AnomalyDetectionModule]=[Warning]:CPU usage is high: 90.90%
-[2024-09-29 13:46:36]=[AnomalyDetectionModule]=[Warning]:CPU usage is high: 91.30%
-[2024-09-29 13:46:37]=[AnomalyDetectionModule]=[Warning]:CPU usage is high: 95.00%
+CPU usage is high: 3.30% (20% above average of 0.77%). Run 'top' command to identify resource-intensive processes.
 ```
 
 Fig 2: Example of a general Ananomly realted concern
+
+```
+Permission change on non-protected file: /home/user/Desktop/RENAME/RENAME/test.txt (old: 100664, new: 100777) by user user. Run 'ls -l /home/user/Desktop/RENAME/RENAME/test.txt' to view current permissions.
+```
+Fig 3: A File persmission change 
+
+```
+Suspicious command executed by user on :    pts/4    telnet example.com
+```
+Fig 4: A Suspicious command
 <br>
 These examples provided, demonstrate what the log file printout should look like.
-The normal operation of the log file, should include:
-<br>
-The current time and date, the associated "module" that detected the concern, an associated concen level, and a print out detailing the problem.
+
 
 ### Troubleshooting
 
