@@ -191,7 +191,7 @@ The current time and date, the associated "module" that detected the concern, an
 git clone https://github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git #Chromia Host Based IDS
 git clone https://github.com/brokenpip/ctpb_ids #Required TPM model
 ```
-If you are having to build your own version, please complete the previous steps 1-4, first, as the cloned repos use 3. dependnces in the install and general runing process
+If you are having to build your own version, please complete the previous steps 1-4, first, as the cloned repos use the outlined dependnces in step 3. for the installation and general runing process
 <br>
 locate the cargo toml files of the seperate systems and:
 eg:
