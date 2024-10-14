@@ -162,7 +162,7 @@ The log file will be located at
 /var/log/Chromia.log
 ```
 
-This is the location of the outputed logs of the Chromia Host Based IDS. All the logs are collated together in to the single .log file.
+This is the location of the outputed logs of the Chromia Host Based IDS. All the logs are collated together in to a single .log file.
 
 ![alt text](Screenshot_20241014_133650.png)
 Fig 1: Example of a Network related concern
