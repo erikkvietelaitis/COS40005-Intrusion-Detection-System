@@ -164,9 +164,12 @@ The log file will be lo9cated at
 
 This is the location of the outputed logs of the Chromia Host Based IDS. All the logs are collated together in to the single .log file.
 
-![alt text](Screenshot_20241014_133530.png)
-
 ![alt text](Screenshot_20241014_133650.png)
+
+![alt text](Screenshot_20241014_133530.png)
+These examples provided, demonstrate what the log file printout should look like.
+The normal operation of the log file, should include:
+The current time and date, the associated "module" that detected the concern, concen level, and print out realted to the problem.
 
 NOTES:
 [^1]: Chromia has only been tested and currently designed for Ubuntu 24.04 LTS, it maybe possible to run on other Debian based systems, but your mileage may very.
