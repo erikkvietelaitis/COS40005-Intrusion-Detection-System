@@ -123,7 +123,7 @@ This will open a "raw" view of the install.sh script allowing you to audit it.
 Once happy right click on the raw install.sh code and Save As.
 Save the install.sh in any directory.
 
-###Installation
+### Installation
 
 Once the install script is downloaded 
 Installation can be completed via changing to the directory where the install.sh script was installed and then run:
