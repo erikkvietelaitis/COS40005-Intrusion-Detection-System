@@ -132,8 +132,8 @@ Save the install.sh in any directory. We recommend the Downloads directory.
 
 ### Installation
 
-Once the install script is downloaded
-Installation can be completed via changing to the directory where the install.sh script was installed and then run:
+Once the install script is saved and downloaded, in to the directory (Downloads)
+Installation can be completed via changing to the directory where the install.sh script was saved to and then run:
 
 ```
 chmod +x install.sh   #Making the script exacutable
