@@ -156,7 +156,7 @@ The config.ini has all relevent setting/ options for the function of Chromia
 
 #### Logs and Understaing the Logs
 
-The log file will be lo9cated at
+The log file will be located at
 
 ```
 /var/log/Chromia.log
