@@ -172,6 +172,7 @@ Fig 2: Example of a general Ananomly realted concern
 <br>
 These examples provided, demonstrate what the log file printout should look like.
 The normal operation of the log file, should include:
+<br>
 The current time and date, the associated "module" that detected the concern, an associated concen level, and a print out detailing the problem.
 
 NOTES:
