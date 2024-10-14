@@ -135,13 +135,23 @@ In the installation process you maybe asked to install rust we recommend to selc
 
 You maybe prompted in the install process to enter your password, this is to build, start, and reload the systemd services[^2]. This promopt will occour 4 to 5 times and is a normal and expected. If you dont enter your passowrd it could cause the system to not install properlly or have complications in the installation process 
 
-AFTER INSTALLATION: IT IS IMPORTANT TO REFER TO THE CONFIG.INI FILE[^3]
+#### AFTER INSTALLATION: IT IS IMPORTANT TO REFER TO THE CONFIG.INI FILE[^3]
 
 Please refer to
 
+```
 /etc/config.ini
-
+```
 The config.ini has all relevent setting/ options for the function of Chromia
+
+#### Logs and Understaing the Logs 
+The log file will be lo9cated at 
+```
+var/log/Chromia
+```
+This is the location of the outputed logs of the Chromia Host Based IDS. All the logs are collated together in to the single .log file. 
+
+
 
 NOTES:
 [^1]: Chromia has only been tested and currently designed for Ubuntu 24.04 LTS, it maybe possible to run on other Debian based systems, but your mileage may very.
