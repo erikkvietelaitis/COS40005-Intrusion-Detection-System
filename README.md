@@ -185,21 +185,31 @@ The current time and date, the associated "module" that detected the concern, an
 - rust
 - rust packages
 - B3Sum
-4. Its possible, but unlikely the Github weblinks have changed and you may need to pull, Chromia Host IDS and the TPM models this can be done via clicking the green code button  and coping the HTTPS link, and coping and creating the files and making it via
+4. Its possible, but unlikely the Github weblinks have changed and you may need to pull, Chromia Host IDS and the TPM models this can be done via clicking the green code button  and coping the HTTPS link,
+  this will mena you are going to have to clone and make the files yourself
 ``` 
 git clone https://github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git #Chromia Host Based IDS
 git clone https://github.com/brokenpip/ctpb_ids #Required TPM model
 ```
-If you are having to build your own version, please complete the previous steps, the cloned repos using 
+If you are having to build your own version, please complete the previous steps 1-4, first, as the cloned repos use 3. dependnces in the install and general runing process
+<br>
+locate the cargo toml files of the seperate systems and:
+eg:
 ```
-cargo build 
+$HOME/Downloads/COS40005-Intrusion-Detection-System
 ```
-Copy the built excutables into a file located in 
+and then run in the terminal
+```
+cargo build --release
+```
+Copy the built excutables which should be located for example at:
+```
+$HOME/Downloads/COS40005-Intrusion-Detection-System/target/release
+```
+into a newley created file located at 
 '''
 /bin/Chromia
 '''
-B3sum should remian in the cargo file of the local directory that is running the Chromia Host IDS
-
 5. If all else failes, please reach out and contact one of the tagged developers and our make a bug request log
 
 
