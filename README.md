@@ -164,10 +164,18 @@ The log file will be located at
 
 This is the location of the outputed logs of the Chromia Host Based IDS. All the logs are collated together in to a single .log file.
 
-![alt text](Screenshot_20241014_133650.png)
+```
+[2024-09-29 13:46:25]=[Networking]=[Serious]:Alert: Expected blocked port 631 is open.
+```
+
 Fig 1: Example of a Network related concern
 
-![alt text](Screenshot_20241014_133530.png)
+```
+[2024-09-29 13:46:35]=[AnomalyDetectionModule]=[Warning]:CPU usage is high: 90.90%
+[2024-09-29 13:46:36]=[AnomalyDetectionModule]=[Warning]:CPU usage is high: 91.30%
+[2024-09-29 13:46:37]=[AnomalyDetectionModule]=[Warning]:CPU usage is high: 95.00%
+```
+
 Fig 2: Example of a general Ananomly realted concern
 <br>
 These examples provided, demonstrate what the log file printout should look like.
@@ -176,42 +184,54 @@ The normal operation of the log file, should include:
 The current time and date, the associated "module" that detected the concern, an associated concen level, and a print out detailing the problem.
 
 ### Troubleshooting
+
 1. We recommend saving the install.sh to the Downloads file.
 2. If having commplications we suggest to run the install.sh as root, as suggested in the installion heading.
-3. Install, all the required dependences seperatley, as the install script should, skip currently installed versions 
+3. Install, all the required dependences seperatley, as the install script should, skip currently installed versions
+
 - git
 - net-tools
 - curl
 - rust
 - rust packages
 - B3Sum
-4. Its possible, but unlikely the Github weblinks have changed and you may need to pull, Chromia Host IDS and the TPM models this can be done via clicking the green code button  and coping the HTTPS link,
-  this will mena you are going to have to clone and make the files yourself
-``` 
+
+4. Its possible, but unlikely the Github weblinks have changed and you may need to pull, Chromia Host IDS and the TPM models this can be done via clicking the green code button and coping the HTTPS link,
+   this will mena you are going to have to clone and make the files yourself
+
+```
 git clone https://github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git #Chromia Host Based IDS
 git clone https://github.com/brokenpip/ctpb_ids #Required TPM model
 ```
+
 If you are having to build your own version, please complete the previous steps 1-4, first, as the cloned repos use the outlined dependnces in step 3. for the installation and general runing process
 <br>
 locate the cargo toml files of the seperate systems and:
 eg:
+
 ```
 $HOME/Downloads/COS40005-Intrusion-Detection-System
 ```
+
 and then run in the terminal
+
 ```
 cargo build --release
 ```
+
 Copy the built excutables which should be located for example at:
+
 ```
 $HOME/Downloads/COS40005-Intrusion-Detection-System/target/release
 ```
-into a newley created file located at 
+
+into a newley created file located at
+
 ```
 /bin/Chromia
 ```
-5. If all else failes, please reach out and contact one of the tagged developers and or make a bug request log
 
+5. If all else failes, please reach out and contact one of the tagged developers and or make a bug request log
 
 NOTES:
 [^1]: Chromia has only been tested and currently designed for Ubuntu 24.04 LTS, it maybe possible to run on other Debian based systems, but your mileage may very.
