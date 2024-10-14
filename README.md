@@ -1,4 +1,5 @@
 # COS40005-Intrusion-Detection-System
+
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 
 <a name="readme-top"></a>
@@ -79,6 +80,7 @@
 <!-- ABOUT THE PROJECT -->
 
 ## About The Project
+
 Students where asked by BadSecurity Inc to develop a Host Based Intrustion Detection System. We where tasked to do the reuqired reasurch and determine the best means of development.
 Chromia was created by student attedning at Swinburne University as part of there final year project:
 Students include:
@@ -93,6 +95,7 @@ Students include:
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Built With
+
 - [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 - [![Shell](https://img.shields.io/badge/shell-%23121011.svg?style=for-the-badge&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
 
@@ -101,11 +104,15 @@ Students include:
 <!-- GETTING STARTED -->
 
 ## Getting Started
+
 Chromia has a limited install distrubtion[^1] and has limited testing, please submit report bugs realted to the Guthub Repo for further assesment, but at this time development has no plans for expanding to other distros.
+
 ### Prerequisites
+
 Users that want to try Chromia Host Based IDS will have to download via GitHub the install.sh script. This script will work to install all required dependences as well as create the required software.
 This can be completed via downlaoding the script via:
 Chromia will install 3rd party depndecies as part of the install process as so it can function this can include:
+
 - git
 - net-tools
 - curl
@@ -116,7 +123,7 @@ Chromia will install 3rd party depndecies as part of the install process as so i
 The install script will also have to create directries and severvice files for installation[^2]. as to ensure that the service runs to the best that we can provide.
 <br>
 <a href="https://raw.githubusercontent.com/erikkvietelaitis/COS40005-Intrusion-Detection-System/readme/install.sh" download="install.sh">
-  <img src="https://img.shields.io/badge/Download%20Install%20Script-blue?style=for-the-badge" alt="Download Install Script">
+<img src="https://img.shields.io/badge/Download%20Install%20Script-blue?style=for-the-badge" alt="Download Install Script">
 </a>
 <br>
 This will open a "raw" view of the install.sh script allowing you to audit it.
@@ -125,15 +132,17 @@ Save the install.sh in any directory.
 
 ### Installation
 
-Once the install script is downloaded 
+Once the install script is downloaded
 Installation can be completed via changing to the directory where the install.sh script was installed and then run:
+
 ```
 chmod +x install.sh   #Making the script exacutable
 sudo ./install.sh     #Installing the excutable script
 ```
+
 In the installation process you maybe asked to install rust we recommend to selcet option 1 as this is the simplest install path that is known not to break the rust install process
 
-You maybe prompted in the install process to enter your password, this is to build, start, and reload the systemd services[^2]. This promopt will occour 4 to 5 times and is a normal and expected. If you dont enter your passowrd it could cause the system to not install properlly or have complications in the installation process 
+You maybe prompted in the install process to enter your password, this is to build, start, and reload the systemd services[^2]. This promopt will occour 4 to 5 times and is a normal and expected. If you dont enter your passowrd it could cause the system to not install properlly or have complications in the installation process
 
 #### AFTER INSTALLATION: IT IS IMPORTANT TO REFER TO THE CONFIG.INI FILE[^3]
 
@@ -142,22 +151,25 @@ Please refer to
 ```
 /etc/config.ini
 ```
+
 The config.ini has all relevent setting/ options for the function of Chromia
 
-#### Logs and Understaing the Logs 
-The log file will be lo9cated at 
+#### Logs and Understaing the Logs
+
+The log file will be lo9cated at
+
 ```
 /var/log/Chromia.log
 ```
-This is the location of the outputed logs of the Chromia Host Based IDS. All the logs are collated together in to the single .log file. 
 
+This is the location of the outputed logs of the Chromia Host Based IDS. All the logs are collated together in to the single .log file.
 
+![alt text](Screenshot_20241014_133530.png)
+
+![alt text](Screenshot_20241014_133650.png)
 
 NOTES:
 [^1]: Chromia has only been tested and currently designed for Ubuntu 24.04 LTS, it maybe possible to run on other Debian based systems, but your mileage may very.
 
 [^2]: For Chromia to work we have to make two .service files as part of the install script. these are to help insure that Chromia remains active when closed as well as also restart after the Host device has been reset.
-
 [^3]: Chromia may run and print logs but may not work properly as all files may not be properly configured
-
-
