@@ -128,7 +128,7 @@ The install script will also have to create directries and severvice files for i
 <br>
 This will open a "raw" view of the install.sh script allowing you to audit it.
 Once happy right click on the raw install.sh code and Save As.
-Save the install.sh in any directory.
+Save the install.sh in any directory. We recommend the Downloads directory.
 
 ### Installation
 
