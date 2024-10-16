@@ -28,7 +28,7 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">Chromia Hostbased IDS</h3>
+<h3 align="center">Chromia Host-based IDS</h3>
 
   <p align="center">
     A host-based intrusion detection system that can detect, monitor and alert on malicious activity or attacks on a linux-based webserver.
@@ -74,8 +74,8 @@
 
 ## About The Project
 
-Students where asked by BadSecurity Inc to develop a Host Based Intrustion Detection System. We where tasked to do the reuqired reasurch and determine the best means of development.
-Chromia was created by student attedning at Swinburne University as part of there final year project:
+Students where asked by BadSecurity Inc to develop a Host-based Intrustion Detection System. We where tasked to do the required reasurch and determine the best means of development.
+Chromia was created by student attending at Swinburne University as part of their final year project:
 Students include:
 <br>
 [![GitHub username](https://img.shields.io/badge/GitHub-Ben-blue?style=for-the-badge&logo=github)](https://github.com/brokenpip)
@@ -98,11 +98,11 @@ Students include:
 
 ## Getting Started
 
-Chromia has a limited install distrubtion[^1] and has limited testing, please submit report bugs realted to the Guthub Repo for further assesment, but at this time development has no plans for expanding to other distros.
+Chromia has a limited install distribution[^1] and has had limited testing, please submit report bugs related to the Github Repo for further assessment, but at this time development has no plans for expanding to other distros.
 
 ### Prerequisites
 
-Users that want to try Chromia Host Based IDS will have to download via GitHub the install.sh script. This script will work to install all required dependences as well as create the required software.
+Users that want to try Chromia Host-based IDS will have to download via GitHub the install.sh script. This script will work to install all required dependences as well as create the required software.
 This can be completed via downlaoding the script via:
 Chromia will install 3rd party depndecies as part of the install process as so it can function this can include:
 
@@ -113,7 +113,7 @@ Chromia will install 3rd party depndecies as part of the install process as so i
 - rust packages
 - B3Sum
 
-The install script will also have to create directries and severvice files for installation[^2]. as to ensure that the service runs to the best that we can provide.
+The install script will also have to create directories and service files for installation[^2]. as to ensure that the service runs to the best that we can provide.
 <br>
 <a href="https://raw.githubusercontent.com/erikkvietelaitis/COS40005-Intrusion-Detection-System/readme/install.sh" download="install.sh">
 <img src="https://img.shields.io/badge/Download%20Install%20Script-blue?style=for-the-badge" alt="Download Install Script">
@@ -135,7 +135,7 @@ sudo ./install.sh     #Installing the excutable script
 
 In the installation process you maybe asked to install rust we recommend to selcet option 1 as this is the simplest install path that is known not to break the rust install process
 
-You maybe prompted in the install process to enter your password, this is to build, start, and reload the systemd services[^2]. This promopt will occour 4 to 5 times and is normal and expected. If you dont enter your passowrd it could cause the system to not install properlly or have complications in the installation process
+You maybe prompted in the install process to enter your password, this is to build, start, and reload the systemd services[^2]. This prompt will occur 4 to 5 times and is normal and expected. If you dont enter your passowrd it could cause the system to not install properly or have complications in the installation process.
 
 #### AFTER INSTALLATION: IT IS IMPORTANT TO REFER TO THE CONFIG.INI FILE[^3]
 
@@ -145,7 +145,7 @@ Please refer to
 /etc/config.ini
 ```
 
-The config.ini has all relevent setting/ options for the function of Chromia
+The config.ini has all relevent settings options for the function of Chromia
 
 #### Logs and Understaing the Logs
 
@@ -164,10 +164,10 @@ This is the location of the outputed logs of the Chromia Host Based IDS. All the
 Fig 1: Example of a Network related concern
 
 ```
-CPU usage is high: 3.30% (20% above average of 0.77%). Run 'top' command to identify resource-intensive processes.
+CPU usage is high: 3.30% (20% above average of 0.77%). Run 'top' command to identify resource-intensive processes'.
 ```
 
-Fig 2: Example of a general Ananomly realted concern
+Fig 2: Example of a general Anomaly related concern
 
 ```
 Permission change on non-protected file: /home/user/Desktop/RENAME/RENAME/test.txt (old: 100664, new: 100777) by user user. Run 'ls -l /home/user/Desktop/RENAME/RENAME/test.txt' to view current permissions.
@@ -186,7 +186,7 @@ These examples provided, demonstrate what the log file printout should look like
 
 1. We recommend saving the install.sh to the Downloads file.
 2. If having commplications we suggest to run the install.sh as root, as suggested in the installion heading.
-3. Install, all the required dependences seperatley, as the install script should, skip currently installed versions
+3. Install, all the required dependences separately, as the install script should, skip currently installed versions
 
 - git
 - net-tools
@@ -196,14 +196,14 @@ These examples provided, demonstrate what the log file printout should look like
 - B3Sum
 
 4. Its possible, but unlikely the Github weblinks have changed and you may need to pull, Chromia Host IDS and the TPM models this can be done via clicking the green code button and coping the HTTPS link,
-   this will mena you are going to have to clone and make the files yourself
+   this will mean you are going to have to clone and make the files yourself
 
 ```
-git clone https://github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git #Chromia Host Based IDS
-git clone https://github.com/brokenpip/ctpb_ids #Required TPM model
+git clone --branch readme https://github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git #Chromia Host Based IDS
+git clone --branch prodhttps://github.com/brokenpip/ctpb_ids #Required TPM model
 ```
 
-If you are having to build your own version, please complete the previous steps 1-4, first, as the cloned repos use the outlined dependnces in step 3. for the installation and general runing process
+If you are having to build your own version, please complete the previous steps 1-4, first, as the cloned repos use the outlined dependnces in step 3. for the installation and general running process
 <br>
 locate the cargo toml files of the seperate systems and:
 eg:
@@ -218,19 +218,19 @@ and then run in the terminal
 cargo build --release
 ```
 
-Copy the built excutables which should be located for example at:
+Copy the built executables which should be located for example at:
 
 ```
 $HOME/Downloads/COS40005-Intrusion-Detection-System/target/release
 ```
 
-into a newley created file located at
+into a newly created file located at
 
 ```
 /bin/Chromia
 ```
 
-5. If all else failes, please reach out and contact one of the tagged developers and or make a bug request log
+5. If all else fails, please reach out and contact one of the tagged developers and or make a bug request log
 
 NOTES:
 [^1]: Chromia has only been tested and currently designed for Ubuntu 24.04 LTS, it maybe possible to run on other Debian based systems, but your mileage may very.
