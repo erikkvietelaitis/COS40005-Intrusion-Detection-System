@@ -31,5 +31,4 @@ rust-ini = "0.21.1"
 serde_json = "1.0.127"
 
 # New dependencies for AnomalyDetector
-colored = "2.0"
 audit = "0.3"
