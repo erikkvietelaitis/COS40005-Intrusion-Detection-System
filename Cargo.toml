@@ -30,5 +30,3 @@ port_scanner = "0.1.5"
 rust-ini = "0.21.1"
 serde_json = "1.0.127"
 
-# New dependencies for AnomalyDetector
-audit = "0.3"
