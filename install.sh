@@ -135,7 +135,7 @@ sudo mkdir -p /bin/Chromia/Data
 sudo cp ~/.cargo/bin/b3sum /bin/Chromia/Data
 
 # Git clone CTPB IDS
-git clone https:///github.com/brokenpip/ctpb_ids.git /tmp/Chromia/TPM
+git clone --branch statusprod https:///github.com/brokenpip/ctpb_ids.git /tmp/Chromia/TPM
 
 
 # Build CTPB IDS
