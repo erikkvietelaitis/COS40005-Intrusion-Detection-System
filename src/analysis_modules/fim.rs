@@ -242,20 +242,18 @@ impl AnalysisModule for FIM {
         let fields: Vec<ConfigField> = vec![
             ConfigField::new(
                 "files".to_owned(),
-                "Files to be monitored for integrity violations, must be an absolute path"
-                    .to_owned(),
-                "Absolute paths start with the / from the root folder".to_owned(),
-                "e.g. /home/ids/FILENAME".to_owned(),
+                "Files to be monitored for integrity violations, must be an absolute path, 
+                Absolute paths start with the / from the root folder
+                e.g. /home/ids/FILENAME".to_owned(),
                 core_enums::ConfigFieldType::Integer,
                 vec!["/etc/Chromia/config.ini".to_owned()],
                 true,
             ),
             ConfigField::new(
                 "folders".to_owned(),
-                "Folders to be monitored for integrity violations, must be an absolute path"
+                "Folders to be monitored for integrity violations, must be an absolute path.
+                Absolute paths start with the / from the root folder. e.g. /home/ids/FOLDER_NAME"
                     .to_owned(),
-                "Absolute paths start with the / from the root folder".to_owned(),
-                "e.g. /home/ids/FOLDER_NAME".to_owned(),
                 core_enums::ConfigFieldType::Integer,
                 vec!["/bin/Chromia".to_owned()],
                 true,
