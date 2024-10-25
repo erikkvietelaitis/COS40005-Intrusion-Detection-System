@@ -12,6 +12,8 @@ This module will use the principles of cryptographic hashes to detect changes to
 The FIM module will monitor the config file and codebase folder by default.
 To add other files or folders; you can modify the config.ini file and then restart the IDS.
 ### Files
+-add another entry like below and swap the path for the file/object you want
 files[]=/home/ids/Documents/GitHub/COS40005-Intrusion-Detection-System/test
 ### Folders
+-add another entry like below and swap the path for the folder you want
 folders[]=/var/chromia
