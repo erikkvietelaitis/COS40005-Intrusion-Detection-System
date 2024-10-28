@@ -166,15 +166,15 @@ fn main() {
             Ok(true) => {
                 info_counter += 1; // Increment the info counter
                 if info_counter >= 100 {
-                    append_to_log(&format!("[Info] '{}' is running.", service_name));
+                    append_to_log(&format!("[Info] '{}' is running.", service_name),&log_dir);
                     info_counter = 0; // Reset the counter
                 }
             }
             Ok(false) => {
-                append_to_log(&format!("[CRITICAL] '{}' is not running.", service_name));
+                append_to_log(&format!("[CRITICAL] '{}' is not running.", service_name),&log_dir);
                 let _ = start_ids();
             }
-            Err(e) => append_to_log(&format!("[INTERNAL ERROR] Error checking status: {}", e)),
+            Err(e) => append_to_log(&format!("[INTERNAL ERROR] Error checking status: {}", e),&log_dir),
         }
 
         for module in modules.iter_mut() {
