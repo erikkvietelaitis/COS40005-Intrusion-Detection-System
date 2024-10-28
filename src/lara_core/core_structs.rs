@@ -2,10 +2,10 @@ use crate::lara_core::core_enums::*;
 use chrono::{DateTime, Local};
 
 pub struct Log {
-    message: String,
-    module: String,
-    time: DateTime<Local>,
-    log_type: LogType,
+    pub message: String,
+    pub module: String,
+    pub time: DateTime<Local>,
+    pub log_type: LogType,
 }
 impl Log {
     pub fn new(log_type: LogType, module: String, message: String) -> Self {

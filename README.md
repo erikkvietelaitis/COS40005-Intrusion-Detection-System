@@ -1,8 +1,9 @@
 # COS40005-Intrusion-Detection-System
-Design a host-based intrusion detection system that can detect, monitor and alert on malicious activity or attacks on a linux-based webserver.
 
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+
 <a name="readme-top"></a>
+
 <!--
 *** Thanks for checking out the Best-README-Template. If you have a suggestion
 *** that would make this better, please fork the repo and create a pull request
@@ -10,8 +11,6 @@ Design a host-based intrusion detection system that can detect, monitor and aler
 *** Don't forget to give the project a star!
 *** Thanks again! Now go create something AMAZING! :D
 -->
-
-
 
 <!-- PROJECT SHIELDS -->
 <!--
@@ -21,14 +20,6 @@ Design a host-based intrusion detection system that can detect, monitor and aler
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-
-
 
 <!-- PROJECT LOGO -->
 <br />
@@ -37,10 +28,10 @@ Design a host-based intrusion detection system that can detect, monitor and aler
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">project_title</h3>
+<h3 align="center">Chromia Host-based IDS</h3>
 
   <p align="center">
-    project_description
+    A host-based intrusion detection system that can detect, monitor and alert on malicious activity or attacks on a linux-based webserver.
     <br />
     <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
     <br />
@@ -52,8 +43,6 @@ Design a host-based intrusion detection system that can detect, monitor and aler
     <a href="https://github.com/github_username/repo_name/issues">Request Feature</a>
   </p>
 </div>
-
-
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -81,170 +70,169 @@ Design a host-based intrusion detection system that can detect, monitor and aler
   </ol>
 </details>
 
-
-
 <!-- ABOUT THE PROJECT -->
+
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
+Students where asked by BadSecurity Inc to develop a Host-based Intrustion Detection System. We where tasked to do the required reasurch and determine the best means of development.
+Chromia was created by student attending at Swinburne University as part of their final year project:
+Students include:
+<br>
+[![GitHub username](https://img.shields.io/badge/GitHub-Ben-blue?style=for-the-badge&logo=github)](https://github.com/brokenpip)
+[![GitHub username](https://img.shields.io/badge/GitHub-Lachlan-blue?style=for-the-badge&logo=github)](https://github.com/DoctorLock)
+[![GitHub username](https://img.shields.io/badge/GitHub-Erik-blue?style=for-the-badge&logo=github)](https://github.com/erikkvietelaitis)
+[![GitHub username](https://img.shields.io/badge/GitHub-Sam-blue?style=for-the-badge&logo=github)](https://github.com/samsharma12)
+[![GitHub username](https://img.shields.io/badge/GitHub-Simon-blue?style=for-the-badge&logo=github)](https://github.com/SimonPH2)
+[![GitHub username](https://img.shields.io/badge/GitHub-Sean-blue?style=for-the-badge&logo=github)](https://github.com/stackingheaps)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### Built With
 
-* [![Next][Next.js]][Next-url]
-* [![React][React.js]][React-url]
-* [![Vue][Vue.js]][Vue-url]
-* [![Angular][Angular.io]][Angular-url]
-* [![Svelte][Svelte.dev]][Svelte-url]
-* [![Laravel][Laravel.com]][Laravel-url]
-* [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-* [![JQuery][JQuery.com]][JQuery-url]
+- [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
+- [![Shell](https://img.shields.io/badge/shell-%23121011.svg?style=for-the-badge&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- GETTING STARTED -->
+
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+Chromia has a limited install distribution[^1] and has had limited testing, please submit report bugs related to the Github Repo for further assessment, but at this time development has no plans for expanding to other distros.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+Users that want to try Chromia Host-based IDS will have to download via GitHub the install.sh script. This script will work to install all required dependences as well as create the required software.
+This can be completed via downlaoding the script via:
+Chromia will install 3rd party depndecies as part of the install process as so it can function this can include:
+
+- git
+- net-tools
+- curl
+- rust
+- rust packages
+- B3Sum
+
+The install script will also have to create directories and service files for installation[^2]. as to ensure that the service runs to the best that we can provide.
+<br>
+<a href="https://raw.githubusercontent.com/erikkvietelaitis/COS40005-Intrusion-Detection-System/readme/install.sh" download="install.sh">
+<img src="https://img.shields.io/badge/Download%20Install%20Script-blue?style=for-the-badge" alt="Download Install Script">
+</a>
+<br>
+This will open a "raw" view of the install.sh script allowing you to audit it.
+Once happy right click on the raw install.sh code and Save As.
+Save the install.sh in any directory. We recommend the Downloads directory.
 
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/github_username/repo_name.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
+Once the install script is saved and downloaded, in to the directory (Downloads)
+Installation can be completed via changing to the directory where the install.sh script was saved to and then running in the terminal:
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+```
+chmod +x install.sh   #Making the script exacutable
+sudo ./install.sh     #Installing the excutable script
+```
 
+In the installation process you maybe asked to install rust we recommend to selcet option 1 as this is the simplest install path that is known not to break the rust install process
 
+You maybe prompted in the install process to enter your password, this is to build, start, and reload the systemd services[^2]. This prompt will occur 4 to 5 times and is normal and expected. If you dont enter your passowrd it could cause the system to not install properly or have complications in the installation process.
 
-<!-- USAGE EXAMPLES -->
-## Usage
+#### AFTER INSTALLATION: IT IS IMPORTANT TO REFER TO THE CONFIG.INI FILE[^3]
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+Please refer to
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+```
+/etc/config.ini
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+The config.ini has all relevent settings options for the function of Chromia
 
+#### Logs and Understaing the Logs
 
+The log file will be located at
 
-<!-- ROADMAP -->
-## Roadmap
+```
+/var/log/Chromia.log
+```
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+This is the location of the outputed logs of the Chromia Host Based IDS. All the logs are collated together in to a single .log file.
 
-See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
+```
+[2024-09-29 13:46:25]=[Networking]=[Serious]:Alert: Expected blocked port 631 is open.
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+Fig 1: Example of a Network related concern
 
+```
+CPU usage is high: 3.30% (20% above average of 0.77%). Run 'top' command to identify resource-intensive processes'.
+```
 
+Fig 2: Example of a general Anomaly related concern
 
-<!-- CONTRIBUTING -->
-## Contributing
+```
+Permission change on non-protected file: /home/user/Desktop/RENAME/RENAME/test.txt (old: 100664, new: 100777) by user user. Run 'ls -l /home/user/Desktop/RENAME/RENAME/test.txt' to view current permissions.
+```
+Fig 3: A File persmission change 
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+```
+Suspicious command executed by user on :    pts/4    telnet example.com
+```
+Fig 4: A Suspicious command
+<br>
+These examples provided, demonstrate what the log file printout should look like.
 
 
+### Troubleshooting
 
-<!-- LICENSE -->
-## License
+1. We recommend saving the install.sh to the Downloads file.
+2. If having commplications we suggest to run the install.sh as root, as suggested in the installion heading.
+3. Install, all the required dependences separately, as the install script should, skip currently installed versions
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+- git
+- net-tools
+- curl
+- rust
+- rust packages
+- B3Sum
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+4. Its possible, but unlikely the Github weblinks have changed and you may need to pull, Chromia Host IDS and the TPM models this can be done via clicking the green code button and coping the HTTPS link,
+   this will mean you are going to have to clone and make the files yourself
 
+```
+git clone --branch readme https://github.com/erikkvietelaitis/COS40005-Intrusion-Detection-System.git #Chromia Host Based IDS
+git clone --branch prodhttps://github.com/brokenpip/ctpb_ids #Required TPM model
+```
 
+If you are having to build your own version, please complete the previous steps 1-4, first, as the cloned repos use the outlined dependnces in step 3. for the installation and general running process
+<br>
+locate the cargo toml files of the seperate systems and:
+eg:
 
-<!-- CONTACT -->
-## Contact
+```
+$HOME/Downloads/COS40005-Intrusion-Detection-System
+```
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
+and then run in the terminal
 
-Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
+```
+cargo build --release
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+Copy the built executables which should be located for example at:
 
+```
+$HOME/Downloads/COS40005-Intrusion-Detection-System/target/release
+```
 
+into a newly created file located at
 
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
+```
+/bin/Chromia
+```
 
-* []()
-* []()
-* []()
+5. If all else fails, please reach out and contact one of the tagged developers and or make a bug request log
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
-[issues-url]: https://github.com/github_username/repo_name/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
-[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
-[product-screenshot]: images/screenshot.png
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
-[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[React-url]: https://reactjs.org/
-[Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
-[Vue-url]: https://vuejs.org/
-[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
-[Angular-url]: https://angular.io/
-[Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
-[Svelte-url]: https://svelte.dev/
-[Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
-[Laravel-url]: https://laravel.com
-[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
-[Bootstrap-url]: https://getbootstrap.com
-[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 
+NOTES:
+[^1]: Chromia has only been tested and currently designed for Ubuntu 24.04 LTS, it maybe possible to run on other Debian based systems, but your mileage may very.
+[^2]: For Chromia to work we have to make two .service files as part of the install script. these are to help insure that Chromia remains active when closed as well as also restart after the Host device has been reset.
+[^3]: Chromia may run and print logs but may not work properly as all files may not be properly configured

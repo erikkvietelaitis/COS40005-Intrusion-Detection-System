@@ -198,7 +198,7 @@ fn main() {
 
         section = match config.get(&module.get_name()) {
             Some(s) => s.clone(),
-            None => section_not_found(module.get_name()),
+            None => return false,
         };
         if !module.retrieve_config_data(section){
             println!("{} could not be started due to an error in the config file! Please review errors and restart Chromia",module.get_name());
@@ -212,7 +212,7 @@ fn main() {
     let mut i = 0;
     println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT!!");
     println!("------------------(Real Time alerts)------------------");
-
+    debug = true;
     loop {
         if debug {
             println!("Starting Tick({})", i.to_string());

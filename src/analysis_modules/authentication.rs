@@ -301,3 +301,50 @@ impl Default for Authentication {
         }
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_perform_analysis_new_failed_ip() {
+        let mut auth = Authentication {
+            current_data: CurrentData {
+                cfips: vec![FailedLogInIp { ip: "192.168.1.1".to_string(), num: 1 }],
+                csips: Vec::new(),
+            },
+            pfips: Vec::new(),
+            psips: Vec::new(),
+            lastbtmplen: 0,
+            lastwtmplen: 0,
+            module_name: "TestModule".to_string(),
+        };
+
+        let logs = auth.perform_analysis();
+
+        // Validate logs for new failed IP
+        assert_eq!(logs.len(), 1);
+        assert!(logs[0].message.contains("192.168.1.1"));
+        assert!(logs[0].build_alert().contains("[Info]"));
+    }
+
+    #[test]
+    fn test_perform_analysis_existing_failed_ip() {
+        let mut auth = Authentication {
+            current_data: CurrentData {
+                cfips: vec![FailedLogInIp { ip: "192.168.1.1".to_string(), num: 1 }],
+                csips: Vec::new(),
+            },
+            pfips: vec![FailedLogInIp { ip: "192.168.1.1".to_string(), num: 2 }],
+            psips: Vec::new(),
+            lastbtmplen: 0,
+            lastwtmplen: 0,
+            module_name: "TestModule".to_string(),
+        };
+
+        let logs = auth.perform_analysis();
+
+        // Validate logs for existing failed IP
+        assert_eq!(logs.len(), 1);
+        assert!(logs[0].message.contains("192.168.1.1"));
+        assert!(logs[0].build_alert().contains("[Warning]"));
+    }
+}

@@ -194,3 +194,47 @@ impl Clone for Networking {
         }
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
+
+    #[test]
+    fn test_calculate_blocked_ports() {
+        let expected_open_ports: HashSet<u16> = [22, 443].iter().cloned().collect();
+        let max_ports = 100;
+        let blocked_ports = Networking::calculate_blocked_ports(&expected_open_ports, max_ports);
+        let expected_blocked_ports: HashSet<u16> = (1..=max_ports).filter(|&port| !expected_open_ports.contains(&port)).collect();
+        
+        assert_eq!(blocked_ports, expected_blocked_ports);
+    }
+
+    #[test]
+    fn test_generate_unique_alerts() {
+        let mut networking = Networking::default();
+        networking.module_name = String::from("TestModule");
+        
+        networking.previously_closed_ports.insert(80);
+        networking.alerted_ports.insert(443);
+        
+        let open_ports: HashSet<u16> = [80, 443].iter().cloned().collect();
+        let blocked_ports: HashSet<u16> = [22].iter().cloned().collect(); // Expect 22 to be blocked
+
+        let alerts = networking.generate_unique_alerts(&open_ports, &blocked_ports);
+        
+        assert_eq!(alerts.len(), 2); // Two alerts should be generated
+        assert!(alerts.iter().any(|log| log.build_alert().contains("Previously closed port 80 is now open.")));
+        assert!(alerts.iter().any(|log| log.build_alert().contains("Expected blocked port 22 is open.")));
+    }
+    #[test]
+    fn test_get_data() {
+        let mut networking = Networking::default();
+        networking.last_scanned_port = 0; // Reset to start scanning from the beginning
+
+        assert!(networking.get_data()); // Should return true
+        
+        // Check if the current data has been updated correctly
+        assert_eq!(networking.current_data.start_port, 1);
+        assert_eq!(networking.current_data.end_port, 501); // Since the default is 500 ports per tick
+    }
+}

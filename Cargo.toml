@@ -29,13 +29,5 @@ audit = "0.3"
 port_scanner = "0.1.5"
 rust-ini = "0.21.1"
 serde_json = "1.0.127"
-
 [dependencies.pnet]
 version = "0.35.0"
-
-
-
-
-[[bin]]
-name = "test_anomaly_detector"
-path = "src/bin/test_anomaly_detector.rs"

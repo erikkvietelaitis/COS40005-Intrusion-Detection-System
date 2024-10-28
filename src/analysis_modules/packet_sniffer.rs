@@ -290,3 +290,86 @@ impl Clone for PacketSniffer {
         }
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Duration;
+
+    // Helper function to create a test PacketSniffer
+    fn create_sniffer() -> PacketSniffer {
+        PacketSniffer::new("TestSniffer", "lo", 10, None)
+    }
+
+    #[test]
+    fn test_packet_sniffer_initialization() {
+        let sniffer = create_sniffer();
+        assert_eq!(sniffer.module_name, "TestSniffer");
+        assert_eq!(sniffer.interface_name, "lo");
+        assert_eq!(sniffer.packet_threshold, 10);
+        assert!(sniffer.host_ip.is_none());
+        assert!(!sniffer.has_errors);
+    }
+
+    #[test]
+    fn test_capture_packets_empty() {
+        let sniffer = create_sniffer();
+        sniffer.capture_packets(Duration::from_secs(1)); // Capture for 1 second
+
+        let packets = sniffer.packets.lock().unwrap();
+        assert!(packets.is_empty());
+    }
+
+    #[test]
+    fn test_analyze_packets_no_alerts() {
+        let sniffer = create_sniffer();
+        let packets = vec![
+            PacketData {
+                source_ip: Some("192.168.0.1".to_string()),
+                source_port: Some(80),
+            },
+            PacketData {
+                source_ip: Some("192.168.0.2".to_string()),
+                source_port: Some(80),
+            },
+        ];
+
+        // Simulate captured packets
+        {
+            let mut locked_packets = sniffer.packets.lock().unwrap();
+            locked_packets.extend(packets);
+        }
+
+        let logs = sniffer.analyze_packets();
+        assert!(logs.is_empty());
+    }
+
+    #[test]
+    fn test_analyze_packets_with_alerts() {
+        let sniffer = create_sniffer();
+        let packets = vec![
+            PacketData {
+                source_ip: Some("192.168.0.1".to_string()),
+                source_port: Some(80),
+            },
+            PacketData {
+                source_ip: Some("192.168.0.1".to_string()),
+                source_port: Some(80),
+            },
+            PacketData {
+                source_ip: Some("192.168.0.1".to_string()),
+                source_port: Some(80),
+            },
+        ];
+
+        // Simulate captured packets
+        {
+            let mut locked_packets = sniffer.packets.lock().unwrap();
+            locked_packets.extend(packets);
+        }
+
+        let logs = sniffer.analyze_packets();
+        assert_eq!(logs.len(), 1);
+        assert!(logs[0].build_alert().contains("[Warning]"));
+        assert!(logs[0].message.contains("Packet alert: 3 packets captured from Source IP: 192.168.0.1 on Port: 80 exceeds threshold of 10 packets."));
+    }
+}
