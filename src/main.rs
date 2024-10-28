@@ -172,9 +172,12 @@ fn main() {
             }
             Ok(false) => {
                 append_to_log(&format!("[CRITICAL] '{}' is not running.", service_name),&log_dir);
-                let _ = start_ids();
+                let _ = start_tpm();
             }
-            Err(e) => append_to_log(&format!("[INTERNAL ERROR] Error checking status: {}", e),&log_dir),
+            Err(e) => {
+                append_to_log(&format!("[INTERNAL ERROR] Error checking status: {}", e),&log_dir);
+            }
+            
         }
 
         for module in modules.iter_mut() {
