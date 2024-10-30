@@ -236,15 +236,15 @@ impl AnalysisModule for HTTPServer{
         let mut results: Vec<core_structs::Log> = Vec::new();
         let self_name = self.get_name();
         for (client, score) in self.clients.iter_mut(){
-            if(self.current_data.logs.contains_key(client)){
+            if self.current_data.logs.contains_key(client) {
                 let (mut score, err_msg) =&self.current_data.logs[client];
                 score += score;
-                if score > 14{
+                if score > 2000{
                     let level:LogType;
                     // let sus_msg:String;
-                    if score > 30{
-                        if score > 40{
-                            if score > 50{
+                    if score > 2500{
+                        if score > 3000{
+                            if score > 4000{
                             level = LogType::Critical;
                             }else{
                                 level = LogType::Serious;
@@ -259,8 +259,33 @@ impl AnalysisModule for HTTPServer{
                     let error_msg = format!("Client [{}] - {}", client,  err_msg);
                     results.push(Log::new(level, self_name.clone(), error_msg))
                 } 
-                
+                self.current_data.logs.remove(client);
+            }else{
+                *score -= 1;
             }
+        }
+        for (client, (score,err_msg)) in self.current_data.logs.iter_mut(){
+            self.clients.insert(client.clone(), *score);
+            if *score > 2000{
+                let level:LogType;
+                // let sus_msg:String;
+                if *score > 2500{
+                    if *score > 3000{
+                        if *score > 4000{
+                        level = LogType::Critical;
+                        }else{
+                            level = LogType::Serious;
+                        }
+                    }else{
+                        level = LogType::Warning;
+
+                    }
+                }else{
+                    level = LogType::Info;
+                }
+                let error_msg = format!("Client [{}] - {}", client,  err_msg);
+                results.push(Log::new(level, self_name.clone(), error_msg))
+            } 
         }
         return results;
     }
