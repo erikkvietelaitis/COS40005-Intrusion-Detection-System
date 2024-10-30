@@ -352,6 +352,8 @@ mod tests {
             lastbtmplen: 0,
             lastwtmplen: 0,
             module_name: "TestModule".to_string(),
+            initialbtmp: todo!(),
+            initialwtmp: todo!(),
         };
 
         let logs = auth.perform_analysis();

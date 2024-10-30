@@ -77,9 +77,8 @@ fn main() {
         Ok(number) => number,
         Err(_) => &1000
     };
-    let verbose_output: bool = if(core_fields_default.get("verboseConsole").unwrap()[0] =="true") {true} else{false};
-    let print_logs: bool = if(core_fields_default.get("printLogs").unwrap()[0] =="true") {true} else{false};
-    
+    let verbose_output: bool = if core_fields.get("verboseConsole").unwrap()[0] == "true" {true} else{false};
+    let print_logs: bool = if core_fields.get("printLogs").unwrap()[0] =="true" {true} else{false};
     let tick_intervals = Duration::from_millis(*tick_int_u);
     let log_dir_str = core_fields.get("logLocation").unwrap_or(core_fields_default.get("logLocation").unwrap());
     let log_dir =  Path::new(&log_dir_str[0]);
