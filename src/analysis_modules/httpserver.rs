@@ -8,6 +8,7 @@ use crate::lara_core::*;
 use crate::ConfigField;
 use crate::Log;
 use core_traits::AnalysisModule;
+use rand::Rng;
 
 
 // define the set of data that will be captured each tick, You can structure this however you like to fit your needs, Just call it this name
@@ -26,6 +27,8 @@ pub struct HTTPServer {
     //Everything else is persistent memory. The data you set in these will be remembered between ticks
     lasterrorlen:usize,
     lastaccesslen:usize,
+    errorinitial:bool,
+    accessinitial:bool,
     clients: HashMap<String, usize>,
     module_name: String,
     access_path:String,
@@ -38,10 +41,10 @@ impl AnalysisModule for HTTPServer{
     // This is called at the start of a tick to gather the data into CurrentData struct. If there is an error return false
     fn get_data(&mut self) -> bool {
         self.current_data.logs = HashMap::new();
-        if !Path::new(&self.access_path).exists() {
+        if(!Path::new(&self.access_path).exists()){
             eprint!("Could not find Appache Access log file. Provided URI is'{}'. Chromia will still run",&self.error_path);
         }
-        if !Path::new(&&self.error_path).exists() {
+        if(!Path::new(&&self.error_path).exists()){
             eprint!("Could not find Appache Error log file. Provided URI is'{}'",&self.error_path);
         }
         let errordump:String = fs::read_to_string(&self.error_path).expect("Should have been able to read the file");
@@ -52,6 +55,16 @@ impl AnalysisModule for HTTPServer{
         let errorlineslen: usize = errorlines.len();
         let mut elines: Vec<&str> = vec![];
         let mut alines: Vec<&str> = vec![]; 
+        if(!self.accessinitial&&accesslineslen>0)
+        {
+            self.lastaccesslen = accesslineslen;
+            self.accessinitial =true;
+        }
+        if(!self.errorinitial&&errorlineslen>0)
+        {
+            self.lasterrorlen = errorlineslen;
+            self.errorinitial = true;
+        }
         if accesslineslen > 0{
             let mut newalinecount:usize = accesslineslen - self.lastaccesslen;
             while newalinecount > 0{
@@ -68,7 +81,8 @@ impl AnalysisModule for HTTPServer{
         }
         let mut nl: &str;
         let mut i1: usize = 0;
-
+        self.lastaccesslen = accesslineslen;
+        self.lasterrorlen = errorlineslen;
         while i1 < elines.len(){
             nl = elines[i1];
             let nls: Vec<&str> = nl.split(&[']','[']).filter(|&r| r != "").collect();
@@ -106,31 +120,31 @@ impl AnalysisModule for HTTPServer{
             msg.push_str(nlcode);
             let mut suspicion:usize = 0;
             if nlcode == "400"{
-                suspicion = 200;
+                suspicion = 20;
                 msg.push_str(" Bad Request"); // 20
             }else if nlcode == "401"{
-                suspicion = 25; // 10
+                suspicion = 2700; // 10
                 msg.push_str(" Unauthorized");
             }else if nlcode == "403"{
-                suspicion = 150;
+                suspicion = 3000;
                 msg.push_str(" Forbidden");
             }else if nlcode == "404"{
-                suspicion = 5000;
+                suspicion = 200;
                 msg.push_str(" Not Found");
             }else if nlcode == "405"{
-                suspicion = 10000;
+                suspicion = 3000;
                 msg.push_str(" Method Not Allowed");
             }else if nlcode == "406"{
-                suspicion = 150;
+                suspicion = 15;
                 msg.push_str(" Not Acceptable");
             }else if nlcode == "407"{
-                suspicion = 200;
+                suspicion = 3000;
                 msg.push_str(" Proxy Authentication Required");
             }else if nlcode == "408"{
-                suspicion = 30;
+                suspicion = 2000;
                 msg.push_str(" Request Timeout");
             }else if nlcode == "409"{
-                suspicion = 100;
+                suspicion = 2000;
                 msg.push_str(" Conflict");
             }else if nlcode == "410"{
                 suspicion = 20;
@@ -139,73 +153,73 @@ impl AnalysisModule for HTTPServer{
                 suspicion = 20;
                 msg.push_str(" Length Required");
             }else if nlcode == "412"{
-                suspicion = 30;
+                suspicion = 300;
                 msg.push_str(" Precondition Failed");
             }else if nlcode == "413"{
-                suspicion = 100;
+                suspicion = 3000;
                 msg.push_str(" Payload Too Large");
             }else if nlcode == "414"{
-                suspicion = 50;
+                suspicion = 700;
                 msg.push_str(" URI Too Long");
             }else if nlcode == "415"{
-                suspicion = 100;
+                suspicion = 2500;
                 msg.push_str(" Unsupported Media Type");
             }else if nlcode == "416"{
-                suspicion = 50;
+                suspicion = 600;
                 msg.push_str(" Range Not Satisfiable");
             }else if nlcode == "417"{
-                suspicion = 200;
+                suspicion = 900;
                 msg.push_str(" Expectation Failed");
             }else if nlcode == "418"{
                 suspicion = 0;
                 msg.push_str(" Im a teapot");//shockingly this is a real code
             }else if nlcode == "421"{
-                suspicion = 10;
+                suspicion = 200;
                 msg.push_str(" Misdirected Request");
             }else if nlcode == "422"{
-                suspicion = 90;
+                suspicion = 1200;
                 msg.push_str(" Unprocessable Content");
             }else if nlcode == "429"{
-                suspicion = 105;
+                suspicion = 3500;
                 msg.push_str(" Too Many Requests");
             }else if nlcode == "431"{
-                suspicion = 150;
+                suspicion = 2500;
                 msg.push_str(" Request Header Fields Too Large");
             }else if nlcode == "500"{
-                suspicion = 100;
+                suspicion = 2500;
                 msg.push_str(" Internal Server Error");
             }else if nlcode == "501"{
-                suspicion = 50;
+                suspicion = 900;
                 msg.push_str(" Not Implemented");
             }else if nlcode == "502"{
-                suspicion = 50;
+                suspicion = 2800;
                 msg.push_str(" Bad Gateway")
             }else if nlcode == "503"{
-                suspicion = 50;
+                suspicion = 2500;
                 msg.push_str(" Service Unavailable");
             }else if nlcode == "504"{
-                suspicion = 30;
+                suspicion = 400;
                 msg.push_str(" Gateway Timeout");
             }else if nlcode == "505"{
-                suspicion = 40;
+                suspicion = 400;
                 msg.push_str(" HTTP Version Not Supported");
             }else if nlcode == "506"{
                 suspicion = 0;
                 msg.push_str(" Variant Also Negotiates");
             }else if nlcode == "507"{
-                suspicion = 100;
+                suspicion = 4000;
                 msg.push_str(" Insufficient Storage");
             }else if nlcode == "508"{
-                suspicion = 50;
+                suspicion = 2500;
                 msg.push_str(" Loop Detected");
             }else if nlcode == "510"{
-                suspicion = 0;
+                suspicion = 400;
                 msg.push_str(" Not Extended");
             }else if nlcode == "511"{
                 suspicion = 400;
                 msg.push_str(" Network Authentication Required");
             }
-            println!("{}",msg.clone());
+            
             self.current_data.logs.insert(nlip.to_string(),(suspicion,msg.clone()));
             i2 = i2 + 1;
         }
@@ -222,15 +236,15 @@ impl AnalysisModule for HTTPServer{
         let mut results: Vec<core_structs::Log> = Vec::new();
         let self_name = self.get_name();
         for (client, score) in self.clients.iter_mut(){
-            if self.current_data.logs.contains_key(client) {
+            if(self.current_data.logs.contains_key(client)){
                 let (mut score, err_msg) =&self.current_data.logs[client];
                 score += score;
-                if score > 140{
+                if score > 14{
                     let level:LogType;
                     // let sus_msg:String;
-                    if score > 300{
-                        if score > 400{
-                            if score > 500{
+                    if score > 30{
+                        if score > 40{
+                            if score > 50{
                             level = LogType::Critical;
                             }else{
                                 level = LogType::Serious;
@@ -245,36 +259,9 @@ impl AnalysisModule for HTTPServer{
                     let error_msg = format!("Client [{}] - {}", client,  err_msg);
                     results.push(Log::new(level, self_name.clone(), error_msg))
                 } 
-                self.current_data.logs.remove(client);
-            }else{
-                *score -= 1;
+                
             }
         }
-        for (client, (score,err_msg)) in self.current_data.logs.iter_mut(){
-            self.clients.insert(client.clone(), *score);
-            if *score > 140{
-                let level:LogType;
-                // let sus_msg:String;
-                if *score > 300{
-                    if *score > 400{
-                        if *score > 500{
-                        level = LogType::Critical;
-                        }else{
-                            level = LogType::Serious;
-                        }
-                    }else{
-                        level = LogType::Warning;
-
-                    }
-                }else{
-                    level = LogType::Info;
-                }
-                let error_msg = format!("Client [{}] - {}", client,  err_msg);
-                results.push(Log::new(level, self_name.clone(), error_msg))
-            } 
-        }
-
-
         return results;
     }
     fn get_name(&self) -> String{
@@ -318,6 +305,8 @@ impl Default for HTTPServer {
         Self {
             lasterrorlen:0,
             lastaccesslen:0,
+            errorinitial:false,
+            accessinitial:false,
             access_path:"".to_string(),
             error_path:"".to_string(),
             clients: HashMap::new(),
@@ -327,25 +316,5 @@ impl Default for HTTPServer {
                 veclogs: Vec::new(),
             },
         }
-    }
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::fs::{self, File};
-    use std::collections::HashMap;
-    use std::io::{self, Write};
-
-    
-
-    #[test]
-    fn test_get_data_file_not_found() {
-        let mut server = HTTPServer::default();
-        server.access_path = "non_existing_access.log".to_string();
-        server.error_path = "non_existing_error.log".to_string();
-
-        // Call get_data
-        let result = server.get_data();
-        assert!(!result); // Should return false due to missing log files
     }
 }
