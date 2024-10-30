@@ -98,7 +98,6 @@ pub fn memory_usage() -> String {
 }
 
 use std::process::{Stdio};
-use std::io::Read;
 
 //Function to pull the CPU usage  from the top command, store the result in a buffer and return the CPU usage as a string.
   // Run the `top` command and capture its output

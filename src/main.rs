@@ -8,7 +8,7 @@ use std::time::Duration;
 use std::vec;
 use std::fs::File;
 use lara_core::core_traits::AnalysisModule;
-use std::{thread, time};
+use std::thread;
 
 use crate::lara_core::core_structs::*;
 pub mod analysis_modules;
@@ -27,7 +27,7 @@ struct Args {
 fn main() {
     let mut debug = false;
     let args = Args::parse();
-    if (args.debug) {
+    if args.debug {
         debug = true;
     }
     // TODO: Put startup info in seperate function

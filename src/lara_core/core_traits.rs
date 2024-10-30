@@ -20,6 +20,6 @@ pub trait AnalysisModule {
      */
     fn get_name(&self) -> String;
 
-    fn build_config_fields(&self) -> (Vec<ConfigField>);
+    fn build_config_fields(&self) -> Vec<ConfigField>;
     fn retrieve_config_data(&mut self, data: HashMap<String, Vec<String>>) -> bool;
 }
