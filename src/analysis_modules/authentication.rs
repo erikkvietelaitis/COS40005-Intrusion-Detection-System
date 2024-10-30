@@ -27,6 +27,8 @@ pub struct Authentication {
     psips: Vec<FailedLogInIp>,
     lastbtmplen:usize,
     lastwtmplen:usize,
+    initialbtmp:bool,
+    initialwtmp:bool,
     module_name: String,
 }
 impl AnalysisModule for Authentication {
@@ -54,6 +56,14 @@ impl AnalysisModule for Authentication {
         let btmplineslen: usize = btmplines.len();
         let mut flines: Vec<&str> = vec![]; //= failtestdata.lines().collect();
         let mut slines: Vec<&str> = vec![]; //= successtestdata.lines().collect();
+        if !self.initialbtmp && btmplineslen>0{
+            self.lastbtmplen = btmplineslen;
+            self.initialbtmp = true;
+        }
+        if !self.initialwtmp && wtmplineslen>0{
+            self.lastwtmplen = wtmplineslen;
+            self.initialwtmp = true;
+        }
         if wtmplineslen > 0{
             let mut newslinecount:usize = wtmplineslen - self.lastwtmplen;
             while newslinecount > 0{
@@ -79,7 +89,8 @@ impl AnalysisModule for Authentication {
             //nls stands for new line split. this part of the code splits the line based on white spaces
             let nls: Vec<&str> = nl.split("[").collect();
             //nlip stands for new line ip. the ip adderess should always be the 11th string in the line
-            let nlip:&str =nls[7];
+            let nlipsplit: Vec<&str> =nls[7].split_whitespace().collect();
+            let nlip:&str = nlipsplit[0];
             //checks to see if the vector is empty
             if fips.len() != 0{
                 let mut i2: usize = 0;
@@ -117,7 +128,8 @@ impl AnalysisModule for Authentication {
             if !nls[4].contains("reboot") && !nls[4].contains("runlevel") && !nls[4].contains("shutdown") && !nls[5].contains("tty2"){
                 //print!("{}",nls[3]);
                 //print!("{}",nls[4]);
-                let nlip:&str =nls[7];
+                let nlipsplit: Vec<&str> =nls[7].split_whitespace().collect();
+                let nlip:&str = nlipsplit[0];
                 if sips.len() != 0{
                     let mut i4: usize = 0;
                     //this is used to see if the ip has been handeled within the vector
@@ -294,6 +306,8 @@ impl Default for Authentication {
             psips: vec![],
             lastbtmplen:0,
             lastwtmplen:0,
+            initialbtmp:false,
+            initialwtmp:false,
             current_data: CurrentData {
                 cfips: vec![],
                 csips: vec![],
