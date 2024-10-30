@@ -23,6 +23,7 @@ struct Args {
     #[arg(short, long, action)]
     debug: bool,
 }
+
 fn main() {
     let mut debug = false;
     let args = Args::parse();
@@ -31,23 +32,7 @@ fn main() {
     }
     // TODO: Put startup info in seperate function
     println!("Chromia({}) is starting", env!("CARGO_PKG_VERSION"));
-    println!("------------------");
-    if debug {
-        println!("========== Host System Info: ==========");
-        println!("> Host Name :{}", system::system_host_name());
-        println!("> OS: {}", system::system_name());
-        println!("> OS version: {}", system::system_os_version());
-        println!("> Kernal version: {}", system::system_kernel_version());
-        println!("> Current Time: {}", system::system_time());
-        println!("=======================================");
-        println!("Initializing Core systems:");
-    }
 
-    println!("");
-    if debug {
-        println!("Initializing Analysis Modules:");
-        println!("");
-    }
     let mut modules: Vec<Box<dyn AnalysisModule>>;
     // ADD NEW MODULES HERE \|/ use example module's exact structure
     modules = vec![
@@ -59,7 +44,6 @@ fn main() {
         Box::new(<analysis_modules::packet_sniffer::PacketSniffer as std::default::Default>::default()),
         Box::new(<analysis_modules::httpserver::HTTPServer as std::default::Default>::default())
     ];
-    println!("    loaded {} module/s", modules.len().to_string());
 
     if !Path::new("/etc/Chromia/config.ini").exists() {
         create_config(modules);
@@ -77,7 +61,9 @@ fn main() {
     let mut core_fields_default: HashMap<String, Vec<String>> = HashMap::new();
     core_fields_default.insert("tickInterval".to_owned(),vec!["1000".to_owned()]);
     core_fields_default.insert("logLocation".to_owned(), vec!["/var/log/Chormia.log".to_owned()]);
-
+    core_fields_default.insert("verboseConsole".to_owned(), vec!["true".to_owned()]);
+    core_fields_default.insert("printLogs".to_owned(), vec!["true".to_owned()]);
+  
     let core_fields: HashMap<String, Vec<String>> = match config.get("CoreSystem") {
         Some(s) => s.clone(),
         None => core_fields_default.clone(),
@@ -91,24 +77,36 @@ fn main() {
         Ok(number) => number,
         Err(_) => &1000
     };
+    let verbose_output: bool = if(core_fields_default.get("verboseConsole").unwrap()[0] =="true") {true} else{false};
+    let print_logs: bool = if(core_fields_default.get("printLogs").unwrap()[0] =="true") {true} else{false};
+    
     let tick_intervals = Duration::from_millis(*tick_int_u);
     let log_dir_str = core_fields.get("logLocation").unwrap_or(core_fields_default.get("logLocation").unwrap());
     let log_dir =  Path::new(&log_dir_str[0]);
     if log_dir.exists() {
-        println!("Log File found at dir '{}'",log_dir_str[0]);
+        if verbose_output{
+            println!("Log File found at dir '{}'",log_dir_str[0]);
+        }
     } else {
-        println!("Log File dir '{}' does not exist, creating now.", log_dir_str[0]);
+        if verbose_output{
+            println!("Log File dir '{}' does not exist, creating now.", log_dir_str[0]);
+        }
         match File::create(log_dir_str[0].clone()) {
             Ok(mut file) => {
-                println!("Log file at '{}' created successfully.", log_dir_str[0]);
+                if verbose_output{
+                        println!("Log file at '{}' created successfully.", log_dir_str[0]);
+                }
             }
             Err(err) => {
                 eprintln!("Error creating log '{}': {:?}", log_dir_str[0], err);
             }
         }
     }
+    
     // Should be loaded by configuration. Higher number means lower performance impact of the IDS
-    println!("Tick Interval: {}ms", tick_intervals.as_millis());
+    if verbose_output{
+        println!("Tick Interval: {}ms", tick_intervals.as_millis());
+    }
     modules.retain_mut(| module|{
         let section: HashMap<String, Vec<String>>;
 
@@ -123,23 +121,26 @@ fn main() {
             return true;
         }
     });
+    if verbose_output{
+        println!("    loaded {} module/s", modules.len().to_string());
+    }
 
     let mut logs: Vec<Log> = Vec::new();
     let mut i = 0;
-    println!("STARTUP SUCCESSFULL CHROMIA IS NOW ON LOOKOUT!!");
-    println!("------------------(Real Time alerts)------------------");
-    debug = true;
+    if print_logs{
+        println!("------------------(Real Time alerts)------------------");
+    }
     loop {
-        if debug {
+        if verbose_output {
             println!("Starting Tick({})", i.to_string());
         }
         for module in modules.iter_mut() {
             if module.get_data() {
-                if debug {
+                if verbose_output {
                     println!("Module:'{}' successfully gathered data", module.get_name());
                 }
             } else {
-                if debug {
+                if verbose_output {
                     println!(
                         "ERROR::Module:'{}' failed trying to collect data",
                         module.get_name()
@@ -148,11 +149,8 @@ fn main() {
             }
             logs.append(&mut module.perform_analysis());
         }
-        if debug {
-            println!("Following logs were generated this tick:");
-        }
         for log in logs.iter() {
-            if debug {
+            if print_logs {
                 println!("{}", log.build_alert());
             }
             let _ = append_to_log(&log.build_alert(),&log_dir);
@@ -175,7 +173,7 @@ fn create_config(mut modules: Vec<Box<dyn AnalysisModule>>) {
     let mut config_file_contents: String = String::new();
     let mut fields: Vec<ConfigField>;
     //Define core system fields
-    config_file_contents.push_str("[CoreSystem]\n;The time in milliseconds that the systems waits between checks \n;Higher numbers reduce performance impact and timeliness of alerts\ntickInterval=1000\n;Location to write log file\nlogLocation=/var/log/Chormia.log\n");
+    config_file_contents.push_str("[CoreSystem]\n;The time in milliseconds that the systems waits between checks \n;Higher numbers reduce performance impact and timeliness of alerts\ntickInterval=1000\n;Location to write log file\nlogLocation=/var/log/Chormia.log\n; Should Chromia print logs to console\nprintLogs=true\n; Print extra information about Chromia's status\nverboseConsole=true\n");
     for module in modules.iter_mut() {
         config_file_contents.push_str("[");
         config_file_contents.push_str(&module.get_name());
