@@ -8,7 +8,6 @@ use crate::lara_core::*;
 use crate::ConfigField;
 use crate::Log;
 use core_traits::AnalysisModule;
-use rand::Rng;
 
 
 // define the set of data that will be captured each tick, You can structure this however you like to fit your needs, Just call it this name
@@ -39,10 +38,10 @@ impl AnalysisModule for HTTPServer{
     // This is called at the start of a tick to gather the data into CurrentData struct. If there is an error return false
     fn get_data(&mut self) -> bool {
         self.current_data.logs = HashMap::new();
-        if(!Path::new(&self.access_path).exists()){
+        if !Path::new(&self.access_path).exists() {
             eprint!("Could not find Appache Access log file. Provided URI is'{}'. Chromia will still run",&self.error_path);
         }
-        if(!Path::new(&&self.error_path).exists()){
+        if !Path::new(&&self.error_path).exists() {
             eprint!("Could not find Appache Error log file. Provided URI is'{}'",&self.error_path);
         }
         let errordump:String = fs::read_to_string(&self.error_path).expect("Should have been able to read the file");
@@ -223,7 +222,7 @@ impl AnalysisModule for HTTPServer{
         let mut results: Vec<core_structs::Log> = Vec::new();
         let self_name = self.get_name();
         for (client, score) in self.clients.iter_mut(){
-            if(self.current_data.logs.contains_key(client)){
+            if self.current_data.logs.contains_key(client) {
                 let (mut score, err_msg) =&self.current_data.logs[client];
                 score += score;
                 if score > 140{
