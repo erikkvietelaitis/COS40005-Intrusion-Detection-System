@@ -18,6 +18,7 @@ pub struct FIM {
     pub previous_hashes_files: HashMap<String, String>,
     pub previous_hashes_folders: HashMap<String, String>,
     module_name: String,
+    firstLoop: bool,
 }
 
 // Function to generate hash using the key
@@ -52,12 +53,12 @@ fn genhash_folders(key: &str) -> (bool, String) {
     // Calculate the hash of the directory
     match dir_hash {
         Ok(hash_value) => {
-            println!("dirhash is {}", &hash_value);
+            // println!("dirhash is {}", &hash_value);
             (true, hash_value.to_string())
         }
         Err(err) => {
             let errorm = err.to_string();
-            println!("Error in dirhash: {}", errorm);
+            // println!("Error in dirhash: {}", errorm);
             (false, errorm)
         }
     }
@@ -80,9 +81,9 @@ fn update_section_files(
     // Iterate over each file path in previous_hashes
     for (key, _) in previous_hashes_files {
         if Path::new(key).exists() {
-            println!("{} exists!", key);
+            // println!("{} exists!", key);
         } else {
-            println!("{} DOES NOT exist!", key);
+            // println!("{} DOES NOT exi?st!", key);
             // Optionally handle files that existed before but are now missing
         }
 
@@ -122,7 +123,7 @@ fn update_section_folders(
     // Iterate over each file path in previous_hashes
     for (key, _) in previous_hashes_folders {
         if Path::new(key).exists() {
-            println!("{} exists!", key);
+            // println!("{} exists!", key);
         } else {
             println!("{} DOES NOT exist!", key);
             // Optionally handle files that existed before but are now missing
@@ -192,7 +193,6 @@ impl AnalysisModule for FIM {
                     if new_hash != previous_hash {
                         // If hashes differ, create a log entry
                         let msg = format!("Object '{}' has been modified! previous hash was {} and new hash is {}", filepath, &previous_hash, &new_hash);
-                        eprintln!("Log: {}", msg); // Debug print for logs
                         results.push(crate::Log::new(
                             core_enums::LogType::Serious,
                             self.module_name.clone(),
@@ -213,7 +213,6 @@ impl AnalysisModule for FIM {
                     if new_hash != previous_hash {
                         // If hashes differ, create a log entry
                         let msg = format!("Folder '{}' has been modified! previous hash was {} and new hash is {}", filepath, &previous_hash, &new_hash);
-                        eprintln!("Log: {}", msg); // Debug print for logs
                         results.push(crate::Log::new(
                             core_enums::LogType::Serious,
                             self.module_name.clone(),
@@ -231,8 +230,12 @@ impl AnalysisModule for FIM {
         // Update previous_hashes to be the same as new_hashes
         self.previous_hashes_files = self.current_data.new_hashes_files.clone();
         self.previous_hashes_folders = self.current_data.new_hashes_folders.clone();
-
-        results
+        if self.firstLoop {
+            self.firstLoop = false;
+            return vec![];
+        }else{
+            return results;
+        }
     }
 
     fn get_name(&self) -> String {
@@ -282,14 +285,7 @@ impl AnalysisModule for FIM {
         self.previous_hashes_files = files;
         self.previous_hashes_folders = folders;
 
-        println!("previous_hashes_files:");
-        for (key, hash) in self.previous_hashes_files.iter() {
-            println!("Key: '{}', Hash: '{}'", key, hash);
-        }
-        println!("previous_hashes_folders:");
-        for (key, hash) in self.previous_hashes_folders.iter() {
-            println!("Key: '{}', Hash: '{}'", key, hash);
-        }
+
 
         return true;
     }
@@ -301,6 +297,7 @@ impl Default for FIM {
             previous_hashes_files: HashMap::new(),
             previous_hashes_folders: HashMap::new(),
             module_name: String::from("FIM"),
+            firstLoop:true,
             current_data: CurrentData {
                 new_hashes_files: HashMap::new(),
                 new_hashes_folders: HashMap::new(),
@@ -316,6 +313,7 @@ impl Clone for FIM {
             previous_hashes_files: self.previous_hashes_files.clone(),
             previous_hashes_folders: self.previous_hashes_folders.clone(),
             module_name: self.module_name.clone(),
+            firstLoop: self.firstLoop,
         }
     }
 }

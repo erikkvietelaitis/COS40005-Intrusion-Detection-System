@@ -129,7 +129,7 @@ impl AnalysisModule for HTTPServer{
                 suspicion = 3000;
                 msg.push_str(" Forbidden");
             }else if nlcode == "404"{
-                suspicion = 200;
+                suspicion = 100;
                 msg.push_str(" Not Found");
             }else if nlcode == "405"{
                 suspicion = 3000;
@@ -237,14 +237,14 @@ impl AnalysisModule for HTTPServer{
         let self_name = self.get_name();
         for (client, score) in self.clients.iter_mut(){
             if self.current_data.logs.contains_key(client) {
-                let (mut score, err_msg) =&self.current_data.logs[client];
-                score += score;
-                if score > 2000{
+                let (new_score, err_msg) =&self.current_data.logs[client];
+                *score += new_score;
+                if *score > 2000{
                     let level:LogType;
                     // let sus_msg:String;
-                    if score > 2500{
-                        if score > 3000{
-                            if score > 4000{
+                    if *score > 2500{
+                        if *score > 3000{
+                            if *score > 4000{
                             level = LogType::Critical;
                             }else{
                                 level = LogType::Serious;
@@ -256,12 +256,12 @@ impl AnalysisModule for HTTPServer{
                     }else{
                         level = LogType::Info;
                     }
-                    let error_msg = format!("Client [{}] - {}", client,  err_msg);
+                    let error_msg = format!("Client [{}] - {} client rating:{}", client,  err_msg, score);
                     results.push(Log::new(level, self_name.clone(), error_msg))
                 } 
                 self.current_data.logs.remove(client);
             }else{
-                *score -= 1;
+                *score -= 20;
             }
         }
         for (client, (score,err_msg)) in self.current_data.logs.iter_mut(){
