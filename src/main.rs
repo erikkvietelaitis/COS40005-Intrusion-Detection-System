@@ -141,6 +141,9 @@ fn main() {
         }
         
         // Check binary existance
+        if verbose_output {
+            println!("Checking TPM binary.");
+        }
         let service_name = "ctpb_tpm.service";
         match is_service_running(service_name) {
             Ok(true) => {
