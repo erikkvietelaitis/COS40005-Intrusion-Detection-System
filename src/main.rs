@@ -32,6 +32,7 @@ fn main() {
     }
     // TODO: Put startup info in seperate function
     println!("Chromia({}) is starting", env!("CARGO_PKG_VERSION"));
+    let ids_strtlog = Path::new("/var/log/ironids.log");
 
     let mut modules: Vec<Box<dyn AnalysisModule>>;
     // ADD NEW MODULES HERE \|/ use example module's exact structure
@@ -133,6 +134,26 @@ fn main() {
         if verbose_output {
             println!("Starting Tick({})", i.to_string());
         }
+        
+        // Check binary existance
+        let service_name = "ctpb_tpm.service";
+        match is_service_running(service_name) {
+            Ok(true) => {
+                info_counter += 1; // Increment the info counter
+                if info_counter >= 100 {
+                    append_to_log(&format!("[Info] '{}' is running.", service_name),ids_strtlog);
+                    info_counter = 0; // Reset the counter
+                }
+            }
+            Ok(false) => {
+                append_to_log(&format!("[CRITICAL] '{}' is not running.", service_name),ids_strtlog);
+                let _ = start_tpm();
+                thread::sleep(Duration::from_millis(5000));
+            }
+            Err(e) => append_to_log(&format!("[INTERNAL ERROR] Error checking status: {}", e),ids_strtlog),
+        }
+        
+        
         for module in modules.iter_mut() {
             if module.get_data() {
                 if verbose_output {
@@ -207,5 +228,95 @@ fn append_to_log(message: &str, log_dir: &Path) -> std::io::Result<()> {
         .open(log_dir)?;
 
     writeln!(file, "{}", message)?; // Write the message and append a newline
+    Ok(())
+}
+
+fn reinstall_tpm() -> Result<(), io::Error> {
+    // step 0: clean work area
+    if Path::new("/tmp/TPM").exists() {
+        if let Err(e) = fs::remove_dir_all("/tmp/TPM") {
+            eprintln!("Failed to remove /tmp/TPM: {}", e);
+        } else {
+            println!("Removed /tmp/TPM directory.");
+        }
+    }
+
+    // Step 1: Create the target directory and move the binary
+    let create_dir_status = Command::new("sudo")
+        .args(&["mkdir", "-p", "/bin/TPM"])
+        .status()?;
+    
+    if !create_dir_status.success() {
+        eprintln!("Failed to create the directory.");
+        return Err(io::Error::new(io::ErrorKind::Other, "Directory creation failed"));
+    }
+
+    // Step 2: Clone the repository
+    let clone_status = Command::new("sudo")
+        .args(&[
+            "wget",
+            "https://github.com/brokenpip/ctpb_ids/raw/refs/heads/main/ctpb_tpm",
+            "-P",
+            "/bin/TPM"
+        ])
+        .status()?;
+    
+    if !clone_status.success() {
+        eprintln!("Failed to clone the binary.");
+        return Err(io::Error::new(io::ErrorKind::Other, "Clone failed"));
+    }
+
+    let fix_perm = Command::new("sudo")
+        .args(&[
+            "chmod",
+            "+x",
+            "/bin/TPM/ctpb_tpm"
+        ])
+        .status()?;
+
+    if !fix_perm.success() {
+        eprintln!("Failed to update permission.");
+        return Err(io::Error::new(io::ErrorKind::Other, "Chmod failed"));
+    }
+
+    thread::sleep(Duration::from_millis(5000));
+    Ok(())
+}
+
+fn is_service_running(service_name: &str) -> Result<bool, io::Error> {
+    // Execute the systemctl command to check the service status
+    let output = Command::new("systemctl")
+        .args(&["is-active", service_name])
+        .output()?;
+
+    if !Path::new("/bin/TPM/ctpb_tpm").exists() {
+        let _ = reinstall_tpm(); 
+    }
+
+    // Check if the command was successful
+    if output.status.success() {
+        // Check the output to see if the service is active
+        let status = String::from_utf8_lossy(&output.stdout);
+        Ok(status.trim() == "active")
+    } else {
+        // If the service is not found or other errors occur
+        Ok(false)
+    }
+}
+
+fn start_tpm() -> io::Result<()> {
+    let output = Command::new("sudo")
+        .arg("systemctl")
+        .arg("restart")
+        .arg("Chromia")
+        .output()?;
+
+    if output.status.success() {
+        append_to_log(&format!("[Info] IDS started successfully."),ids_strtlog);
+    } else {
+        let error_message = String::from_utf8_lossy(&output.stderr);
+        append_to_log(&format!("[INTERNAL ERROR] Failed to start IDS: {}", error_message),ids_strtlog);
+    }
+    
     Ok(())
 }

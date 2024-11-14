@@ -18,7 +18,7 @@ pub struct FIM {
     pub previous_hashes_files: HashMap<String, String>,
     pub previous_hashes_folders: HashMap<String, String>,
     module_name: String,
-    firstLoop: bool,
+    first_loop: bool,
 }
 
 // Function to generate hash using the key
@@ -230,8 +230,8 @@ impl AnalysisModule for FIM {
         // Update previous_hashes to be the same as new_hashes
         self.previous_hashes_files = self.current_data.new_hashes_files.clone();
         self.previous_hashes_folders = self.current_data.new_hashes_folders.clone();
-        if self.firstLoop {
-            self.firstLoop = false;
+        if self.first_loop {
+            self.first_loop = false;
             return vec![];
         }else{
             return results;
@@ -297,7 +297,7 @@ impl Default for FIM {
             previous_hashes_files: HashMap::new(),
             previous_hashes_folders: HashMap::new(),
             module_name: String::from("FIM"),
-            firstLoop:true,
+            first_loop:true,
             current_data: CurrentData {
                 new_hashes_files: HashMap::new(),
                 new_hashes_folders: HashMap::new(),
@@ -313,7 +313,7 @@ impl Clone for FIM {
             previous_hashes_files: self.previous_hashes_files.clone(),
             previous_hashes_folders: self.previous_hashes_folders.clone(),
             module_name: self.module_name.clone(),
-            firstLoop: self.firstLoop,
+            first_loop: self.first_loop,
         }
     }
 }
