@@ -251,31 +251,63 @@ fn reinstall_tpm() -> Result<(), io::Error> {
         }
     }
 
-    // Step 1: Create the target directory and move the binary
-    let create_dir_status = Command::new("sudo")
-        .args(&["mkdir", "-p", "/bin/Chromia"])
-        .status()?;
-    
-    if !create_dir_status.success() {
-        eprintln!("Failed to create the directory.");
-        return Err(io::Error::new(io::ErrorKind::Other, "Directory creation failed"));
-    }
-
-    // Step 2: Clone the repository
-    let clone_status = Command::new("sudo")
+    // Step 1: Clone the 'mainpluservice' branch to /tmp/TPM directory
+    let clone_status = Command::new("git")
         .args(&[
-            "wget",
-            "https://github.com/brokenpip/ctpb_ids/raw/refs/heads/main/ctpb_tpm",
-            "-P",
-            "/bin/Chromia"
+            "clone",
+            "--branch", "mainpluservice", // Clone the 'mainpluservice' branch
+            "https://github.com/brokenpip/ctpb_ids.git",
+            "/tmp/TPM",
         ])
         .status()?;
-    
+
     if !clone_status.success() {
-        eprintln!("Failed to clone the binary.");
+        eprintln!("Failed to clone the repository.");
         return Err(io::Error::new(io::ErrorKind::Other, "Clone failed"));
     }
 
+    // Step 2: Build the Rust binary
+    let build_status = Command::new("cargo")
+        .current_dir("/tmp/TPM") // Ensure we're in the cloned repo directory
+        .arg("build")
+        .arg("--release") // Build the release version
+        .status()?;
+
+    if !build_status.success() {
+        eprintln!("Failed to build the Rust binary.");
+        return Err(io::Error::new(io::ErrorKind::Other, "Build failed"));
+    }
+
+    // Step 3: Move the built binary to /bin/Chromia
+    let target_binary_path = "/tmp/TPM/target/release/ctpb_tpm";
+    if !Path::new(target_binary_path).exists() {
+        eprintln!("Built binary not found at: {}", target_binary_path);
+        return Err(io::Error::new(io::ErrorKind::NotFound, "Binary not found"));
+    }
+
+    // Step 4: Ensure /bin/Chromia exists, create if necessary
+    if !Path::new("/bin/Chromia").exists() {
+        let create_dir_status = Command::new("sudo")
+            .args(&["mkdir", "-p", "/bin/Chromia"])
+            .status()?;
+
+        if !create_dir_status.success() {
+            eprintln!("Failed to create the directory /bin/Chromia.");
+            return Err(io::Error::new(io::ErrorKind::Other, "Directory creation failed"));
+        }
+    }
+
+    // Step 5: Move the binary to the desired location
+    let move_status = Command::new("sudo")
+        .args(&["mv", target_binary_path, "/bin/Chromia/ctpb_tpm"])
+        .status()?;
+
+    if !move_status.success() {
+        eprintln!("Failed to move the binary.");
+        return Err(io::Error::new(io::ErrorKind::Other, "Move failed"));
+    }
+
+    // Step 6: Set the correct permissions for the binary
     let fix_perm = Command::new("sudo")
         .args(&[
             "chmod",
@@ -292,6 +324,7 @@ fn reinstall_tpm() -> Result<(), io::Error> {
     thread::sleep(Duration::from_millis(5000));
     Ok(())
 }
+
 
 fn is_service_running(service_name: &str) -> Result<bool, io::Error> {
     // Execute the systemctl command to check the service status
