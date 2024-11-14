@@ -316,14 +316,14 @@ fn start_tpm() -> io::Result<()> {
     let output = Command::new("sudo")
         .arg("systemctl")
         .arg("restart")
-        .arg("Chromia")
+        .arg("ctpb_tpm")
         .output()?;
 
     if output.status.success() {
-        let _ = append_to_log(&format!("[Info] IDS started successfully."),ids_strtlog);
+        let _ = append_to_log(&format!("[Info] TPM started successfully."),ids_strtlog);
     } else {
         let error_message = String::from_utf8_lossy(&output.stderr);
-        let _ = append_to_log(&format!("[INTERNAL ERROR] Failed to start IDS: {}", error_message),ids_strtlog);
+        let _ = append_to_log(&format!("[INTERNAL ERROR] Failed to start TPM: {}", error_message),ids_strtlog);
     }
     
     Ok(())
