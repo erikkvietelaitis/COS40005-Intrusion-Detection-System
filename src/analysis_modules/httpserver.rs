@@ -8,7 +8,6 @@ use crate::lara_core::*;
 use crate::ConfigField;
 use crate::Log;
 use core_traits::AnalysisModule;
-use rand::Rng;
 
 
 // define the set of data that will be captured each tick, You can structure this however you like to fit your needs, Just call it this name
@@ -41,10 +40,10 @@ impl AnalysisModule for HTTPServer{
     // This is called at the start of a tick to gather the data into CurrentData struct. If there is an error return false
     fn get_data(&mut self) -> bool {
         self.current_data.logs = HashMap::new();
-        if(!Path::new(&self.access_path).exists()){
+        if !Path::new(&self.access_path).exists(){
             eprint!("Could not find Appache Access log file. Provided URI is'{}'. Chromia will still run",&self.error_path);
         }
-        if(!Path::new(&&self.error_path).exists()){
+        if !Path::new(&&self.error_path).exists(){
             eprint!("Could not find Appache Error log file. Provided URI is'{}'",&self.error_path);
         }
         let errordump:String = fs::read_to_string(&self.error_path).expect("Should have been able to read the file");
@@ -55,12 +54,12 @@ impl AnalysisModule for HTTPServer{
         let errorlineslen: usize = errorlines.len();
         let mut elines: Vec<&str> = vec![];
         let mut alines: Vec<&str> = vec![]; 
-        if(!self.accessinitial&&accesslineslen>0)
+        if !self.accessinitial&&accesslineslen>0
         {
             self.lastaccesslen = accesslineslen;
             self.accessinitial =true;
         }
-        if(!self.errorinitial&&errorlineslen>0)
+        if !self.errorinitial&&errorlineslen>0
         {
             self.lasterrorlen = errorlineslen;
             self.errorinitial = true;

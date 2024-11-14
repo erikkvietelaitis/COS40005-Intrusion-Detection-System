@@ -16,6 +16,10 @@ use crate::linux_bridge::*;
 pub mod lara_core;
 pub mod linux_bridge;
 
+use std::process::Command;
+use std::str;
+use std::io;
+
 // Declare the linux_bridge module
 #[derive(Parser)]
 struct Args {
@@ -127,6 +131,7 @@ fn main() {
 
     let mut logs: Vec<Log> = Vec::new();
     let mut i = 0;
+    let mut info_counter = 0;
     if print_logs{
         println!("------------------(Real Time alerts)------------------");
     }
@@ -141,16 +146,18 @@ fn main() {
             Ok(true) => {
                 info_counter += 1; // Increment the info counter
                 if info_counter >= 100 {
-                    append_to_log(&format!("[Info] '{}' is running.", service_name),ids_strtlog);
+                    let _ = append_to_log(&format!("[Info] '{}' is running.", service_name),ids_strtlog);
                     info_counter = 0; // Reset the counter
                 }
             }
             Ok(false) => {
-                append_to_log(&format!("[CRITICAL] '{}' is not running.", service_name),ids_strtlog);
+                let _ = append_to_log(&format!("[CRITICAL] '{}' is not running.", service_name),ids_strtlog);
                 let _ = start_tpm();
                 thread::sleep(Duration::from_millis(5000));
             }
-            Err(e) => append_to_log(&format!("[INTERNAL ERROR] Error checking status: {}", e),ids_strtlog),
+            Err(e) => {
+                let _ = append_to_log(&format!("[INTERNAL ERROR] Error checking status: {}", e),ids_strtlog);
+            }
         }
         
         
@@ -305,6 +312,7 @@ fn is_service_running(service_name: &str) -> Result<bool, io::Error> {
 }
 
 fn start_tpm() -> io::Result<()> {
+    let ids_strtlog = Path::new("/var/log/ironids.log");
     let output = Command::new("sudo")
         .arg("systemctl")
         .arg("restart")
@@ -312,10 +320,10 @@ fn start_tpm() -> io::Result<()> {
         .output()?;
 
     if output.status.success() {
-        append_to_log(&format!("[Info] IDS started successfully."),ids_strtlog);
+        let _ = append_to_log(&format!("[Info] IDS started successfully."),ids_strtlog);
     } else {
         let error_message = String::from_utf8_lossy(&output.stderr);
-        append_to_log(&format!("[INTERNAL ERROR] Failed to start IDS: {}", error_message),ids_strtlog);
+        let _ = append_to_log(&format!("[INTERNAL ERROR] Failed to start IDS: {}", error_message),ids_strtlog);
     }
     
     Ok(())
