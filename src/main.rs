@@ -255,7 +255,7 @@ fn reinstall_tpm() -> Result<(), io::Error> {
     let clone_status = Command::new("git")
         .args(&[
             "clone",
-            "--branch", "mainpluservice", // Clone the 'mainpluservice' branch
+            "--branch", "statusprod", // Clone the 'mainpluservice' branch
             "https://github.com/brokenpip/ctpb_ids.git",
             "/tmp/TPM",
         ])
